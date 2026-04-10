@@ -4,13 +4,17 @@ import { prisma } from "@/lib/prisma";
 
 export const runtime = "nodejs";
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
-
 const SITE_URL =
   process.env.NEXT_PUBLIC_SITE_URL || "https://masbesaura.com";
 
 const SUCCESS_URL = `${SITE_URL}/reservar/exito?session_id={CHECKOUT_SESSION_ID}`;
 const CANCEL_URL = `${SITE_URL}/reservar/cancelado`;
+
+function getStripe() {
+  const key = process.env.STRIPE_SECRET_KEY;
+  if (!key) throw new Error("STRIPE_SECRET_KEY no configurada en Vercel");
+  return new Stripe(key);
+}
 
 type HabitacionBody = {
   tipo: "habitacion";
@@ -107,7 +111,7 @@ async function handleHabitacion(body: HabitacionBody) {
     .filter(Boolean)
     .join(" · ");
 
-  const session = await stripe.checkout.sessions.create({
+  const session = await getStripe().checkout.sessions.create({
     mode: "payment",
     locale: "es",
     line_items: [
@@ -148,7 +152,7 @@ async function handleHabitacion(body: HabitacionBody) {
 }
 
 async function handleActividad(body: ActividadBody) {
-  const session = await stripe.checkout.sessions.create({
+  const session = await getStripe().checkout.sessions.create({
     mode: "payment",
     locale: "es",
     line_items: [
@@ -178,7 +182,7 @@ async function handleActividad(body: ActividadBody) {
 }
 
 async function handleCabanya(body: CabanyaBody) {
-  const session = await stripe.checkout.sessions.create({
+  const session = await getStripe().checkout.sessions.create({
     mode: "payment",
     locale: "es",
     line_items: [
@@ -206,7 +210,7 @@ async function handleCabanya(body: CabanyaBody) {
 }
 
 async function handleAlquiler(body: AlquilerBody) {
-  const session = await stripe.checkout.sessions.create({
+  const session = await getStripe().checkout.sessions.create({
     mode: "payment",
     locale: "es",
     line_items: [
@@ -287,7 +291,7 @@ async function handleLegacyReserva(reserva_id: string) {
     })),
   ];
 
-  const session = await stripe.checkout.sessions.create({
+  const session = await getStripe().checkout.sessions.create({
     mode: "payment",
     line_items: lineItems,
     customer_email: reserva.email_cliente,

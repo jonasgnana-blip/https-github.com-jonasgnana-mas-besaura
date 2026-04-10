@@ -23,15 +23,17 @@ export default function BotonReservaHabitacion({ nombre, opcion, precio, label }
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ tipo: "habitacion", nombre, opcion, precio }),
       });
-      const data = await res.json();
+      const text = await res.text();
+      let data: { url?: string; error?: string };
+      try { data = JSON.parse(text); } catch { data = { error: `Error del servidor (${res.status})` }; }
       if (data.url) {
         window.location.href = data.url;
       } else {
         setError(data.error ?? "Error al iniciar el pago");
         setLoading(false);
       }
-    } catch {
-      setError("Error de conexión. Inténtalo de nuevo.");
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Error de conexión");
       setLoading(false);
     }
   }
