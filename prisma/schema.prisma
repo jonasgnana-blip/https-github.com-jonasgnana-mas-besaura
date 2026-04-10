@@ -1,0 +1,106 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../app/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Habitacion {
+  id           String    @id @default(cuid())
+  nombre       String
+  descripcion  String
+  precio_noche Decimal   @db.Decimal(10, 2)
+  capacidad    Int
+  imagenes     String[]
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  reservas     Reserva[]
+  bloqueos     BloqueoManual[]
+
+  @@map("habitaciones")
+}
+
+model Complemento {
+  id          String       @id @default(cuid())
+  nombre      String
+  descripcion String
+  precio      Decimal      @db.Decimal(10, 2)
+  tipo_cobro  TipoCobro
+  activo      Boolean      @default(true)
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  reservas    ReservaComplemento[]
+
+  @@map("complementos")
+}
+
+model Reserva {
+  id                String         @id @default(cuid())
+  habitacion_id     String
+  fecha_entrada     DateTime       @db.Date
+  fecha_salida      DateTime       @db.Date
+  estado            EstadoReserva  @default(PENDIENTE_PAGO)
+  precio_total      Decimal        @db.Decimal(10, 2)
+  nombre_cliente    String
+  email_cliente     String
+  telefono_cliente  String
+  stripe_session_id String?        @unique
+  createdAt         DateTime       @default(now())
+  updatedAt         DateTime       @updatedAt
+  expira_en         DateTime?
+
+  habitacion        Habitacion     @relation(fields: [habitacion_id], references: [id])
+  complementos      ReservaComplemento[]
+
+  @@map("reservas")
+}
+
+model SistemaConfig {
+  clave     String   @id
+  valor     String
+  updatedAt DateTime @updatedAt
+
+  @@map("sistema_config")
+}
+
+model BloqueoManual {
+  id            String     @id @default(cuid())
+  habitacion_id String
+  fecha_inicio  DateTime   @db.Date
+  fecha_fin     DateTime   @db.Date
+  motivo        String?
+  createdAt     DateTime   @default(now())
+
+  habitacion    Habitacion @relation(fields: [habitacion_id], references: [id])
+
+  @@map("bloqueos_manuales")
+}
+
+model ReservaComplemento {
+  id             String      @id @default(cuid())
+  reserva_id     String
+  complemento_id String
+  precio_aplicado Decimal    @db.Decimal(10, 2)
+
+  reserva        Reserva     @relation(fields: [reserva_id], references: [id], onDelete: Cascade)
+  complemento    Complemento @relation(fields: [complemento_id], references: [id])
+
+  @@unique([reserva_id, complemento_id])
+  @@map("reserva_complementos")
+}
+
+enum EstadoReserva {
+  PENDIENTE_PAGO
+  CONFIRMADA
+  CANCELADA
+  EXPIRADA
+}
+
+enum TipoCobro {
+  PAGO_UNICO
+  POR_NOCHE
+}

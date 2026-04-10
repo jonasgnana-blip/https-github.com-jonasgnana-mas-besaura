@@ -1,6 +1,5 @@
 import Link from "next/link";
 import {
-  TreePine,
   Users,
   Flame,
   Heart,
@@ -8,7 +7,9 @@ import {
   Mail,
   Phone,
   ChevronDown,
-  Star,
+  Sparkles,
+  TreePine,
+  HeartHandshake,
 } from "lucide-react";
 import HeroSlider from "./components/HeroSlider";
 
@@ -25,7 +26,7 @@ export default function Home() {
             Mas Besaura
           </span>
           <nav className="hidden md:flex items-center gap-8 text-sm text-[#4A6741] font-medium tracking-wide">
-            <a href="#la-casa" className="hover:text-[#2C1810] transition-colors">
+            <a href="#proposito" className="hover:text-[#2C1810] transition-colors">
               La Casa
             </a>
             <a href="#actividades" className="hover:text-[#2C1810] transition-colors">
@@ -50,7 +51,7 @@ export default function Home() {
 
         <div className="relative z-10 text-center px-6 max-w-3xl">
           <p className="text-[#C4A882] text-sm tracking-[0.25em] uppercase mb-4 font-medium">
-            Casa Rural · Cataluña
+            La Vila de Buscarons · Vidrà (Girona)
           </p>
           <h1
             className="text-6xl md:text-8xl text-[#F0EAD6] leading-none mb-6"
@@ -60,9 +61,8 @@ export default function Home() {
             <br />
             Besaura
           </h1>
-          <p className="text-[#E8DCC8] text-lg md:text-xl leading-relaxed mb-10 font-light">
-            Un lugar donde el tiempo se detiene. Talleres, retiros y momentos
-            en familia entre bosques y piedra antigua.
+          <p className="text-[#E8DCC8] text-lg md:text-xl leading-relaxed mb-10 font-light max-w-xl mx-auto">
+            Un lugar seguro entre ríos y bosques salvajes para tu sanación y despertar.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link
@@ -71,76 +71,75 @@ export default function Home() {
             >
               Ver disponibilidad
             </Link>
-            <a
-              href="#la-casa"
+            <Link
+              href="/la-casa"
               className="px-8 py-3.5 border border-[#F0EAD6]/50 text-[#F0EAD6] rounded-full font-medium hover:border-[#F0EAD6] transition-colors"
             >
               Descubrir la casa
-            </a>
+            </Link>
           </div>
         </div>
 
         <a
-          href="#la-casa"
+          href="#proposito"
           className="absolute bottom-16 z-10 text-[#F0EAD6]/60 hover:text-[#F0EAD6] transition-colors animate-bounce"
         >
           <ChevronDown size={28} />
         </a>
       </section>
 
-      {/* ─── LA CASA ─── */}
-      <section id="la-casa" className="py-24 px-6 bg-[#FAFAF6]">
+      {/* ─── PROPÓSITO ─── */}
+      <section id="proposito" className="py-24 px-6 bg-[#FAFAF6]">
         <div className="max-w-5xl mx-auto grid md:grid-cols-2 gap-16 items-center">
           <div className="aspect-[4/5] bg-[#E8DCC8] rounded-2xl overflow-hidden relative">
-            <div
-              className="absolute inset-0"
-              style={{
-                background:
-                  "linear-gradient(135deg, #C4A882 0%, #8B6914 50%, #4A6741 100%)",
-              }}
+            <img
+              src="/images/arch-sunset.jpg"
+              alt="Arco de Mas Besaura al atardecer"
+              className="absolute inset-0 w-full h-full object-cover"
             />
-            <div className="absolute inset-0 flex items-center justify-center">
-              <TreePine size={80} className="text-[#F0EAD6]/40" />
-            </div>
           </div>
 
           <div>
             <p className="text-[#4A6741] text-sm tracking-[0.2em] uppercase font-medium mb-4">
-              Nuestra historia
+              Nuestro Propósito
             </p>
             <h2
               className="text-4xl md:text-5xl text-[#2C1810] leading-tight mb-6"
               style={{ fontFamily: "var(--font-playfair), Georgia, serif" }}
             >
-              Una masía de piedra, siglos de alma
+              Una masía entre hayedos, ríos y cascadas
             </h2>
             <p className="text-[#2C1810]/70 leading-relaxed mb-4">
-              Mas Besaura es una masía tradicional catalana restaurada con amor
-              y respeto por sus materiales originales: piedra, madera y cal.
-              Rodeada de bosque mediterráneo, es el escenario perfecto para
-              desconectar del ruido y reconectar con lo esencial.
+              Mas Besaura es una masía tradicional restaurada con amor y respeto
+              por su entorno natural: hayedos, ríos salvajes, cascadas luminosas,
+              ermitas ancestrales.
             </p>
             <p className="text-[#2C1810]/70 leading-relaxed mb-8">
-              Organizamos talleres artesanales, retiros de bienestar y escapadas
-              familiares para todos aquellos que buscan experiencias auténticas
-              lejos de las pantallas.
+              Organizamos retiros y actividades con el propósito de reconocer
+              nuestra naturaleza esencial, sanar los vínculos familiares y la
+              relación entre hombres y mujeres. Puedes alquilar la casa y la
+              sala exterior — un antiguo granero de 350 m².
             </p>
-            <div className="grid grid-cols-3 gap-6 pt-6 border-t border-[#E8DCC8]">
+            <div className="flex flex-col gap-4 pt-6 border-t border-[#E8DCC8]">
               {[
-                { value: "15+", label: "Años de historia" },
-                { value: "200+", label: "Familias acogidas" },
-                { value: "4.9★", label: "Valoración media" },
-              ].map(({ value, label }) => (
-                <div key={label} className="text-center">
-                  <div
-                    className="text-2xl text-[#4A6741] mb-1"
-                    style={{ fontFamily: "var(--font-playfair), Georgia, serif" }}
-                  >
-                    {value}
-                  </div>
-                  <div className="text-xs text-[#2C1810]/50 uppercase tracking-wide">
-                    {label}
-                  </div>
+                {
+                  icon: <Flame size={16} className="text-[#8B6914] shrink-0 mt-0.5" />,
+                  label: "Actividades terapéuticas y de ocio familiar",
+                },
+                {
+                  icon: <HeartHandshake size={16} className="text-[#4A6741] shrink-0 mt-0.5" />,
+                  label: "Diseño personalizado de sanación individual y de pareja",
+                },
+                {
+                  icon: <Sparkles size={16} className="text-[#C4A882] shrink-0 mt-0.5" />,
+                  label: "Equipo multidisciplinar",
+                },
+              ].map(({ icon, label }) => (
+                <div key={label} className="flex items-start gap-3">
+                  {icon}
+                  <span className="text-sm text-[#2C1810]/75 uppercase tracking-wide font-medium leading-snug">
+                    + {label}
+                  </span>
                 </div>
               ))}
             </div>
@@ -159,7 +158,9 @@ export default function Home() {
               className="text-4xl md:text-5xl text-[#2C1810]"
               style={{ fontFamily: "var(--font-playfair), Georgia, serif" }}
             >
-              Experiencias para el alma
+              Un espacio de integración
+              <br />
+              para el alma y el cuerpo
             </h2>
           </div>
 
@@ -167,10 +168,10 @@ export default function Home() {
             {[
               {
                 icon: <Flame size={32} className="text-[#8B6914]" />,
-                title: "Talleres",
+                title: "Retiros",
                 description:
-                  "Cerámica, cocina tradicional, cestería, fermentación… Aprendizajes que conectan las manos con la tierra.",
-                tags: ["Fin de semana", "Grupos pequeños"],
+                  "Yoga, meditación, danza, trabajo con el fuego, constelaciones familiares. Espacios de pausa y cuidado en entornos naturales sin wifi.",
+                tags: ["Sanación", "Grupos & Individual"],
               },
               {
                 icon: <Users size={32} className="text-[#4A6741]" />,
@@ -180,11 +181,11 @@ export default function Home() {
                 tags: ["Todas las edades", "Todo el año"],
               },
               {
-                icon: <Heart size={32} className="text-[#C4A882]" />,
-                title: "Retiros",
+                icon: <HeartHandshake size={32} className="text-[#C4A882]" />,
+                title: "Talleres",
                 description:
-                  "Yoga, meditación y silencio. Espacios de pausa y cuidado en entornos naturales sin wifi.",
-                tags: ["Desconexión", "Grupos & Individual"],
+                  "Cerámica, cocina tradicional, cestería, fermentación, gestión emocional. Aprendizajes que conectan las manos con la tierra.",
+                tags: ["Fin de semana", "Grupos pequeños"],
               },
             ].map(({ icon, title, description, tags }) => (
               <div
@@ -234,8 +235,8 @@ export default function Home() {
             ¿Cuándo quieres venir?
           </h2>
           <p className="text-[#E8DCC8]/70 text-lg mb-10 leading-relaxed">
-            Selecciona tus fechas, elige tus complementos y confirma en minutos.
-            Sin intermediarios, sin sorpresas.
+            Alquila la casa completa o solo la sala La Cabanya.
+            Selecciona tus fechas y confirma en minutos.
           </p>
           <Link
             href="/reservar"
@@ -257,8 +258,8 @@ export default function Home() {
               Mas Besaura
             </span>
             <p className="text-sm leading-relaxed">
-              Casa rural en plena naturaleza. Un espacio para el descanso, el
-              aprendizaje y la conexión.
+              Casa rural en Vidrà, Girona. Un espacio seguro entre ríos y
+              bosques salvajes para tu sanación y despertar.
             </p>
           </div>
 
@@ -277,7 +278,7 @@ export default function Home() {
               </li>
               <li className="flex items-center gap-2">
                 <MapPin size={14} className="text-[#C4A882]" />
-                Cataluña, España
+                Vidrà, Girona · Cataluña
               </li>
             </ul>
           </div>
@@ -288,9 +289,9 @@ export default function Home() {
             </h4>
             <ul className="space-y-2 text-sm">
               {[
-                { label: "La Casa", href: "#la-casa" },
-                { label: "Talleres", href: "#actividades" },
+                { label: "La Casa", href: "/la-casa" },
                 { label: "Retiros", href: "#actividades" },
+                { label: "Talleres", href: "#actividades" },
                 { label: "Reservar", href: "/reservar" },
               ].map(({ label, href }) => (
                 <li key={label}>
@@ -304,7 +305,7 @@ export default function Home() {
         </div>
 
         <div className="max-w-5xl mx-auto mt-12 pt-8 border-t border-[#F0EAD6]/10 text-center text-xs text-[#E8DCC8]/40">
-          © {new Date().getFullYear()} Mas Besaura. Todos los derechos reservados.
+          © {new Date().getFullYear()} Mas Besaura · Vidrà, Girona. Todos los derechos reservados.
         </div>
       </footer>
     </div>
