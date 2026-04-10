@@ -1,5 +1,6 @@
 import Link from "next/link";
-import { ArrowLeft, Bed, Users, Flame, ChevronRight } from "lucide-react";
+import { Bed, Users, Flame, ChevronRight } from "lucide-react";
+import NavBar from "@/app/components/NavBar";
 
 const HABITACIONES = [
   {
@@ -58,30 +59,7 @@ const ESPACIOS_COMUNES = [
 export default function LaCasa() {
   return (
     <div className="min-h-screen bg-[#FAFAF6]">
-      {/* ─── HEADER ─── */}
-      <header className="fixed top-0 left-0 right-0 z-50 bg-[#FAFAF6]/90 backdrop-blur-sm border-b border-[#E8DCC8]">
-        <div className="max-w-6xl mx-auto px-6 flex items-center justify-between h-16">
-          <Link
-            href="/"
-            className="flex items-center gap-2 text-[#4A6741] hover:text-[#2C1810] transition-colors text-sm font-medium"
-          >
-            <ArrowLeft size={16} />
-            Volver al inicio
-          </Link>
-          <span
-            className="text-xl tracking-wide text-[#2C1810]"
-            style={{ fontFamily: "var(--font-playfair), Georgia, serif" }}
-          >
-            Mas Besaura
-          </span>
-          <Link
-            href="/reservar"
-            className="px-5 py-2 bg-[#4A6741] text-[#F0EAD6] rounded-full hover:bg-[#3A5432] transition-colors text-sm"
-          >
-            Reservar
-          </Link>
-        </div>
-      </header>
+      <NavBar />
 
       {/* ─── HERO ─── */}
       <section className="relative h-[55vh] flex items-end overflow-hidden pt-16">
@@ -241,10 +219,10 @@ export default function LaCasa() {
                   </p>
                 </div>
                 <Link
-                  href="/reservar"
+                  href="/alquiler"
                   className="shrink-0 flex items-center gap-2 px-7 py-3.5 bg-[#C4A882] text-[#2C1810] rounded-full font-semibold hover:bg-[#F0EAD6] transition-colors"
                 >
-                  Reservar La Cabanya
+                  Alquilar La Cabanya
                   <ChevronRight size={16} />
                 </Link>
               </div>
@@ -276,7 +254,7 @@ export default function LaCasa() {
             Al mediodía puedes cocinarte en la casa o explorar los alrededores — muy aconsejable.
           </p>
           <Link
-            href="/reservar"
+            href="/alojamiento"
             className="inline-block px-10 py-4 bg-[#C4A882] text-[#2C1810] rounded-full font-semibold text-lg hover:bg-[#F0EAD6] transition-colors"
           >
             Consultar disponibilidad

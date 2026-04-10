@@ -40,7 +40,7 @@ export default function NavBar() {
               </Link>
             ))}
             <Link
-              href="/reservar"
+              href="/alojamiento"
               className="px-5 py-2 bg-[#4A6741] text-[#F0EAD6] rounded-full hover:bg-[#3A5432] transition-colors text-sm"
             >
               Reservar
@@ -71,7 +71,7 @@ export default function NavBar() {
               </Link>
             ))}
             <Link
-              href="/reservar"
+              href="/alojamiento"
               onClick={() => setOpen(false)}
               className="inline-block px-5 py-2 bg-[#4A6741] text-[#F0EAD6] rounded-full hover:bg-[#3A5432] transition-colors text-sm font-medium text-center"
             >
