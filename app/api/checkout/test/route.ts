@@ -10,8 +10,9 @@ export async function GET() {
   if (stripeKey) {
     try {
       const Stripe = (await import("stripe")).default;
-      const stripe = new Stripe(stripeKey);
-      // Test con una llamada mínima
+      const stripe = new Stripe(stripeKey, {
+        httpClient: Stripe.createFetchHttpClient(),
+      });
       await stripe.checkout.sessions.list({ limit: 1 });
       stripeTest = "OK";
     } catch (e) {

@@ -12,7 +12,9 @@ const CANCEL_URL = `${SITE_URL}/reservar/cancelado`;
 function getStripe() {
   const key = process.env.STRIPE_SECRET_KEY;
   if (!key) throw new Error("STRIPE_SECRET_KEY no configurada en Vercel");
-  return new Stripe(key);
+  return new Stripe(key, {
+    httpClient: Stripe.createFetchHttpClient(),
+  });
 }
 
 type HabitacionBody = {
