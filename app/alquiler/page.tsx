@@ -1,7 +1,10 @@
 import type { Metadata } from "next";
 import NavBar from "@/app/components/NavBar";
 import AlquilerCliente from "./AlquilerCliente";
+import { getUnavailableDates } from "@/app/actions/reservas";
 import { Phone, MapPin, Check } from "lucide-react";
+
+export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
   title: "Alquiler Casa para Retiros",
@@ -25,7 +28,12 @@ const POLITICA = [
   "Sin devolución a menos de 1 mes.",
 ];
 
-export default function AlquilerPage() {
+export default async function AlquilerPage() {
+  const [datesCabanya, datesCasa] = await Promise.all([
+    getUnavailableDates("la-cabanya"),
+    getUnavailableDates("mas-besaura-casa"),
+  ]);
+
   return (
     <div className="min-h-screen bg-[#FAFAF6]">
       <NavBar />
@@ -155,7 +163,7 @@ export default function AlquilerPage() {
 
       {/* ─── CALCULADORA + RESERVA ─── */}
       <section className="py-16 px-6 bg-[#F0EAD6]">
-        <div className="max-w-2xl mx-auto">
+        <div className="max-w-3xl mx-auto">
           <div className="text-center mb-10">
             <p className="text-[#4A6741] text-sm tracking-[0.2em] uppercase font-medium mb-3">
               Reserva
@@ -167,7 +175,7 @@ export default function AlquilerPage() {
               ¿Cuándo y con quién?
             </h2>
           </div>
-          <AlquilerCliente />
+          <AlquilerCliente datesCabanya={datesCabanya} datesCasa={datesCasa} />
         </div>
       </section>
 

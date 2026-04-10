@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import NavBar from "@/app/components/NavBar";
-import { BotonActividad, CabanyaActividadReserva } from "./ActividadCard";
+import { BotonActividad, CabanyaActividadReserva, ComidaCaseraReserva, ActividadConFecha } from "./ActividadCard";
+import { getUnavailableDates } from "@/app/actions/reservas";
 import { Phone, MapPin } from "lucide-react";
 
 export const dynamic = "force-dynamic";
@@ -11,7 +12,9 @@ export const metadata: Metadata = {
     "Experiencias en la naturaleza y el alma. Rutas familiares, BTT con brunch, constelaciones familiares, inmersión terapéutica y alquiler de La Cabanya en Mas Besaura, Vidrà.",
 };
 
-export default function ActividadesPage() {
+export default async function ActividadesPage() {
+  const unavailableDatesCabanya = await getUnavailableDates("la-cabanya");
+
   return (
     <div className="min-h-screen bg-[#FAFAF6]">
       <NavBar />
@@ -73,21 +76,13 @@ export default function ActividadesPage() {
               <p className="text-[#2C1810]/60 text-sm mb-6">
                 <span className="font-medium text-[#2C1810]">10€/adulto</span> · Niños menores de 16 años: gratis
               </p>
-              <div className="flex flex-wrap gap-3">
+              <div className="flex flex-wrap gap-3 items-start">
                 <BotonActividad
                   label="10€ Actividad"
-                  
                   nombre="Ruta Orientació i Gimcana"
-                  
                   precio={10}
                 />
-                <BotonActividad
-                  label="15€ Actividad + Comida Casera"
-                  
-                  nombre="Ruta Orientació i Gimcana"
-                  
-                  precio={15}
-                />
+                <ComidaCaseraReserva />
               </div>
             </div>
           </div>
@@ -113,12 +108,11 @@ export default function ActividadesPage() {
               <p className="text-[#2C1810]/60 text-sm mb-6">
                 <span className="font-medium text-[#2C1810]">20€/persona</span>
               </p>
-              <BotonActividad
-                label="20€ Reservar"
-                
+              <ActividadConFecha
                 nombre="Ruta BTT amb Brunch"
-                
                 precio={20}
+                descripcion="Diferentes rutas por la zona entre el Ripollès y la Garrotxa con desayuno de tenedor incluido."
+                unavailableDates={[]}
               />
             </div>
             <div className="aspect-[4/3] rounded-2xl overflow-hidden order-1 md:order-2">
@@ -158,12 +152,11 @@ export default function ActividadesPage() {
               <p className="text-[#2C1810]/60 text-sm mb-6">
                 <span className="font-medium text-[#2C1810]">35€/persona</span> · 2h – 3h
               </p>
-              <BotonActividad
-                label="35€ Reservar"
-                
+              <ActividadConFecha
                 nombre="Constel·lació Familiar"
-                
                 precio={35}
+                descripcion="Trabajo terapéutico en grupo, familia o equipo profesional, que combina dinámicas grupales e indicaciones terapéuticas."
+                unavailableDates={[]}
               />
             </div>
           </div>
@@ -191,11 +184,12 @@ export default function ActividadesPage() {
               </p>
               <BotonActividad
                 label="369€ Reservar"
-                
                 nombre="Immersió Terapèutica"
-                
                 precio={369}
               />
+              <p className="text-[#2C1810]/50 text-xs mt-3">
+                Contacta con nosotros para fechas
+              </p>
             </div>
             <div className="aspect-[4/3] rounded-2xl overflow-hidden order-1 md:order-2">
               <img
@@ -208,16 +202,49 @@ export default function ActividadesPage() {
 
           <div className="border-t border-[#E8DCC8]" />
 
-          {/* 5. Sala Cabanya — Alquiler */}
+          {/* 5. Retiro: Sanar la Relació entre Homes i Dones */}
           <div className="grid md:grid-cols-2 gap-10 items-center">
             <div className="aspect-[4/3] rounded-2xl overflow-hidden">
               <img
-                src="/images/hero8.jpg"
-                alt="Sala Cabanya"
+                src="/images/hero9.jpg"
+                alt="Retiro Sanar la Relació entre Homes i Dones"
                 className="w-full h-full object-cover"
               />
             </div>
             <div>
+              <p className="text-[#4A6741] text-xs tracking-[0.2em] uppercase font-medium mb-3">
+                Retiro Terapéutico
+              </p>
+              <h2
+                className="text-2xl md:text-3xl text-[#2C1810] mb-4"
+                style={{ fontFamily: "var(--font-playfair), Georgia, serif" }}
+              >
+                Retiro: Sanar la Relació entre Homes i Dones
+              </h2>
+              <p className="text-[#2C1810]/70 leading-relaxed mb-4 text-sm">
+                Un proceso de sanación colectiva que trabaja los vínculos, heridas y patrones
+                en la relación entre hombres y mujeres. Un espacio de encuentro, verdad y
+                transformación.
+              </p>
+              <p className="text-[#2C1810]/60 text-sm mb-6">
+                <span className="font-medium text-[#2C1810]">369€/persona</span>
+              </p>
+              <BotonActividad
+                label="369€ Reservar"
+                nombre="Retiro Sanar la Relació entre Homes i Dones"
+                precio={369}
+              />
+              <p className="text-[#2C1810]/50 text-xs mt-3">
+                Contacta con nosotros para próximas fechas · info@masbesaura.com
+              </p>
+            </div>
+          </div>
+
+          <div className="border-t border-[#E8DCC8]" />
+
+          {/* 6. Sala Cabanya — Alquiler */}
+          <div className="grid md:grid-cols-2 gap-10 items-center">
+            <div className="order-2 md:order-1">
               <p className="text-[#4A6741] text-xs tracking-[0.2em] uppercase font-medium mb-3">
                 Alquiler Sala
               </p>
@@ -234,7 +261,14 @@ export default function ActividadesPage() {
               <p className="text-[#2C1810]/60 text-sm mb-6">
                 <span className="font-medium text-[#2C1810]">10€/persona/día</span>
               </p>
-              <CabanyaActividadReserva />
+              <CabanyaActividadReserva unavailableDates={unavailableDatesCabanya} />
+            </div>
+            <div className="aspect-[4/3] rounded-2xl overflow-hidden order-1 md:order-2">
+              <img
+                src="/images/hero8.jpg"
+                alt="Sala Cabanya"
+                className="w-full h-full object-cover"
+              />
             </div>
           </div>
 

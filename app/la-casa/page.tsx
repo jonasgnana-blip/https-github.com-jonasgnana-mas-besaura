@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Bed, Users, Flame, ChevronRight } from "lucide-react";
 import NavBar from "@/app/components/NavBar";
+import ImageFader from "@/app/components/ImageFader";
 
 const HABITACIONES = [
   {
@@ -63,12 +64,8 @@ export default function LaCasa() {
 
       {/* ─── HERO ─── */}
       <section className="relative h-[55vh] flex items-end overflow-hidden pt-16">
+        <ImageFader />
         <div className="absolute inset-0">
-          <img
-            src="/images/masia-snow.jpg"
-            alt="Mas Besaura en invierno"
-            className="w-full h-full object-cover object-center"
-          />
           <div className="absolute inset-0 bg-gradient-to-t from-[#2C1810]/80 via-[#2C1810]/20 to-transparent" />
         </div>
         <div className="relative z-10 px-6 pb-12 max-w-6xl mx-auto w-full">
