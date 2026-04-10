@@ -12,9 +12,9 @@ function b64uEncode(buf: ArrayBuffer): string {
     .replace(/=/g, "");
 }
 
-function b64uDecode(s: string): Uint8Array {
+function b64uDecode(s: string): Uint8Array<ArrayBuffer> {
   const padded = s.replace(/-/g, "+").replace(/_/g, "/");
-  return Uint8Array.from(atob(padded), (c) => c.charCodeAt(0));
+  return Uint8Array.from(atob(padded), (c) => c.charCodeAt(0)) as Uint8Array<ArrayBuffer>;
 }
 
 async function getHmacKey(): Promise<CryptoKey> {
