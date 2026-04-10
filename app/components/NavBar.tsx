@@ -83,7 +83,7 @@ export default function NavBar() {
 
       {/* ─── WHATSAPP FLOATING BUTTON ─── */}
       <a
-        href="https://wa.me/34XXXXXXXXX"
+        href="https://wa.me/34665822542"
         target="_blank"
         rel="noopener noreferrer"
         aria-label="WhatsApp"

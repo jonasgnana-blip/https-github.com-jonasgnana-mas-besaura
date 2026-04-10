@@ -76,16 +76,16 @@ export default function ActividadesPage() {
               <div className="flex flex-wrap gap-3">
                 <BotonActividad
                   label="10€ Actividad"
-                  tipo="actividad"
+                  
                   nombre="Ruta Orientació i Gimcana"
-                  opcion="actividad"
+                  
                   precio={10}
                 />
                 <BotonActividad
                   label="15€ Actividad + Comida Casera"
-                  tipo="actividad"
+                  
                   nombre="Ruta Orientació i Gimcana"
-                  opcion="actividad_comida"
+                  
                   precio={15}
                 />
               </div>
@@ -115,9 +115,9 @@ export default function ActividadesPage() {
               </p>
               <BotonActividad
                 label="20€ Reservar"
-                tipo="actividad"
+                
                 nombre="Ruta BTT amb Brunch"
-                opcion="btt_brunch"
+                
                 precio={20}
               />
             </div>
@@ -160,9 +160,9 @@ export default function ActividadesPage() {
               </p>
               <BotonActividad
                 label="35€ Reservar"
-                tipo="actividad"
+                
                 nombre="Constel·lació Familiar"
-                opcion="constelacio"
+                
                 precio={35}
               />
             </div>
@@ -191,9 +191,9 @@ export default function ActividadesPage() {
               </p>
               <BotonActividad
                 label="369€ Reservar"
-                tipo="actividad"
+                
                 nombre="Immersió Terapèutica"
-                opcion="immersio"
+                
                 precio={369}
               />
             </div>
@@ -277,7 +277,7 @@ export default function ActividadesPage() {
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg>
               </a>
               <a
-                href="https://wa.me/34XXXXXXXXX"
+                href="https://wa.me/34665822542"
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label="WhatsApp"

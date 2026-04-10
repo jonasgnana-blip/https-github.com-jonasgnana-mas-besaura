@@ -7,34 +7,30 @@ export default function AlquilerCliente() {
   const [personas, setPersonas] = useState(1);
   const [dias, setDias] = useState(1);
   const [loading, setLoading] = useState<"mitad" | "total" | null>(null);
+  const [error, setError] = useState("");
 
   const totalCompleto = personas * dias * 80;
   const totalMitad = Math.round(totalCompleto / 2);
 
   async function handleReservar(tipo: "mitad" | "total") {
     setLoading(tipo);
+    setError("");
     const precio = tipo === "mitad" ? totalMitad : totalCompleto;
     try {
       const res = await fetch("/api/checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          tipo: "alquiler",
-          nombre: "Alquiler Casa Retiros",
-          opcion: tipo,
-          precio,
-          cantidad: 1,
-        }),
+        body: JSON.stringify({ tipo: "alquiler", precio, personas, dias }),
       });
       const data = await res.json();
       if (data.url) {
         window.location.href = data.url;
       } else {
-        console.error("No checkout URL", data);
+        setError(data.error ?? "Error al iniciar el pago");
         setLoading(null);
       }
-    } catch (err) {
-      console.error(err);
+    } catch {
+      setError("Error de conexión. Inténtalo de nuevo.");
       setLoading(null);
     }
   }
@@ -75,7 +71,6 @@ export default function AlquilerCliente() {
         </div>
       </div>
 
-      {/* Totals */}
       <div className="bg-[#FAFAF6] rounded-xl p-5 mb-6 space-y-2">
         <div className="flex justify-between text-sm text-[#2C1810]/60">
           <span>{personas} personas × {dias} días × 80€</span>
@@ -87,7 +82,10 @@ export default function AlquilerCliente() {
         </div>
       </div>
 
-      {/* Buttons */}
+      {error && (
+        <p className="text-red-600 text-sm text-center mb-4">{error}</p>
+      )}
+
       <div className="flex flex-col sm:flex-row gap-3">
         <button
           onClick={() => handleReservar("mitad")}
@@ -103,7 +101,7 @@ export default function AlquilerCliente() {
           className="flex-1 flex items-center justify-center gap-2 px-6 py-3.5 rounded-full border border-[#4A6741] text-[#4A6741] bg-transparent text-sm font-medium hover:bg-[#4A6741] hover:text-[#F0EAD6] transition-colors disabled:opacity-60"
         >
           {loading === "total" && <Loader2 size={16} className="animate-spin" />}
-          Reservar importe completo — {totalCompleto}€
+          Importe completo — {totalCompleto}€
         </button>
       </div>
     </div>
