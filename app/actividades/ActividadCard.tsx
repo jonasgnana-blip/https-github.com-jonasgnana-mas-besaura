@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Loader2 } from "lucide-react";
+import { Loader2, ChevronRight } from "lucide-react";
 import SingleDatePicker from "@/app/components/SingleDatePicker";
 import type { DateRange } from "@/app/actions/reservas";
 
@@ -58,6 +58,7 @@ export function BotonActividad({ label, nombre, precio, descripcion }: BotonProp
 /* ── ComidaCaseraReserva ─────────────────────────────────────────────────────── */
 
 export function ComidaCaseraReserva() {
+  const [open, setOpen] = useState(false);
   const [cantidad, setCantidad] = useState(1);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -92,35 +93,45 @@ export function ComidaCaseraReserva() {
 
   return (
     <div className="flex flex-col gap-3">
-      <div className="flex items-center gap-3">
-        <button
-          onClick={() => setCantidad((c) => Math.max(1, c - 1))}
-          className="w-9 h-9 rounded-full border border-[#E8DCC8] bg-[#FAFAF6] text-[#2C1810] text-lg font-medium flex items-center justify-center hover:bg-[#E8DCC8] transition-colors"
-        >
-          −
-        </button>
-        <span className="text-2xl font-medium text-[#2C1810] w-10 text-center">{cantidad}</span>
-        <button
-          onClick={() => setCantidad((c) => c + 1)}
-          className="w-9 h-9 rounded-full border border-[#E8DCC8] bg-[#FAFAF6] text-[#2C1810] text-lg font-medium flex items-center justify-center hover:bg-[#E8DCC8] transition-colors"
-        >
-          +
-        </button>
-        <span className="text-sm text-[#2C1810]/60">
-          {cantidad} × 15€ = <span className="font-medium text-[#4A6741]">{total}€</span>
-        </span>
-      </div>
-      <div className="flex items-center gap-4">
-        <button
-          onClick={handleReservar}
-          disabled={loading}
-          className="flex items-center gap-2 px-6 py-2.5 rounded-full bg-[#4A6741] text-[#F0EAD6] text-sm font-medium hover:bg-[#3A5432] transition-colors disabled:opacity-60"
-        >
-          {loading && <Loader2 size={14} className="animate-spin" />}
-          Reservar Comida Casera
-        </button>
-      </div>
-      {error && <p className="text-red-600 text-xs">{error}</p>}
+      <button
+        onClick={() => setOpen((v) => !v)}
+        className="flex items-center gap-2 px-5 py-2.5 rounded-full border border-[#4A6741] text-[#4A6741] text-sm font-medium hover:bg-[#4A6741] hover:text-[#F0EAD6] transition-colors"
+      >
+        {open ? "Cerrar" : "Comida Casera — 15€"}
+        <ChevronRight size={14} className={`transition-transform ${open ? "rotate-90" : ""}`} />
+      </button>
+
+      {open && (
+        <div className="flex flex-col gap-3 border border-[#E8DCC8] rounded-2xl p-4 bg-[#FAFAF6]">
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => setCantidad((c) => Math.max(1, c - 1))}
+              className="w-9 h-9 rounded-full border border-[#E8DCC8] bg-white text-[#2C1810] text-lg font-medium flex items-center justify-center hover:bg-[#E8DCC8] transition-colors"
+            >
+              −
+            </button>
+            <span className="text-2xl font-medium text-[#2C1810] w-10 text-center">{cantidad}</span>
+            <button
+              onClick={() => setCantidad((c) => c + 1)}
+              className="w-9 h-9 rounded-full border border-[#E8DCC8] bg-white text-[#2C1810] text-lg font-medium flex items-center justify-center hover:bg-[#E8DCC8] transition-colors"
+            >
+              +
+            </button>
+            <span className="text-sm text-[#2C1810]/60">
+              {cantidad} × 15€ = <span className="font-medium text-[#4A6741]">{total}€</span>
+            </span>
+          </div>
+          <button
+            onClick={handleReservar}
+            disabled={loading}
+            className="flex items-center justify-center gap-2 px-6 py-2.5 rounded-full bg-[#4A6741] text-[#F0EAD6] text-sm font-medium hover:bg-[#3A5432] transition-colors disabled:opacity-60"
+          >
+            {loading && <Loader2 size={14} className="animate-spin" />}
+            Reservar Comida Casera — {total}€
+          </button>
+          {error && <p className="text-red-600 text-xs">{error}</p>}
+        </div>
+      )}
     </div>
   );
 }
@@ -140,6 +151,7 @@ export function ActividadConFecha({
   descripcion,
   unavailableDates,
 }: ActividadConFechaProps) {
+  const [open, setOpen] = useState(false);
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const [personas, setPersonas] = useState(1);
   const [guestNombre, setGuestNombre] = useState("");
@@ -184,79 +196,91 @@ export function ActividadConFecha({
   }
 
   return (
-    <form onSubmit={handleSubmit} className="flex flex-col gap-5">
-      {/* Date picker */}
-      <SingleDatePicker
-        unavailableDates={unavailableDates}
-        selected={selectedDate}
-        onSelect={setSelectedDate}
-        label="Selecciona una fecha"
-      />
-
-      {/* Persons counter */}
-      <div className="flex flex-col gap-2">
-        <label className="text-sm font-medium text-[#2C1810]">Personas</label>
-        <div className="flex items-center gap-3">
-          <button
-            type="button"
-            onClick={() => setPersonas((p) => Math.max(1, p - 1))}
-            className="w-9 h-9 rounded-full border border-[#E8DCC8] bg-[#FAFAF6] text-[#2C1810] text-lg font-medium flex items-center justify-center hover:bg-[#E8DCC8] transition-colors"
-          >
-            −
-          </button>
-          <span className="text-2xl font-medium text-[#2C1810] w-10 text-center">{personas}</span>
-          <button
-            type="button"
-            onClick={() => setPersonas((p) => p + 1)}
-            className="w-9 h-9 rounded-full border border-[#E8DCC8] bg-[#FAFAF6] text-[#2C1810] text-lg font-medium flex items-center justify-center hover:bg-[#E8DCC8] transition-colors"
-          >
-            +
-          </button>
-          <span className="text-sm text-[#2C1810]/60">
-            {personas} × {precio}€ = <span className="font-medium text-[#4A6741]">{total}€</span>
-          </span>
-        </div>
-      </div>
-
-      {/* Guest form */}
-      <div className="flex flex-col gap-3">
-        <input
-          type="text"
-          placeholder="Nombre completo"
-          value={guestNombre}
-          onChange={(e) => setGuestNombre(e.target.value)}
-          required
-          className="px-4 py-2.5 rounded-xl border border-[#E8DCC8] bg-[#FAFAF6] text-[#2C1810] text-sm placeholder:text-[#2C1810]/40 focus:outline-none focus:border-[#4A6741] transition-colors"
-        />
-        <input
-          type="email"
-          placeholder="Correo electrónico"
-          value={guestEmail}
-          onChange={(e) => setGuestEmail(e.target.value)}
-          required
-          className="px-4 py-2.5 rounded-xl border border-[#E8DCC8] bg-[#FAFAF6] text-[#2C1810] text-sm placeholder:text-[#2C1810]/40 focus:outline-none focus:border-[#4A6741] transition-colors"
-        />
-        <input
-          type="tel"
-          placeholder="Teléfono"
-          value={guestTelefono}
-          onChange={(e) => setGuestTelefono(e.target.value)}
-          required
-          className="px-4 py-2.5 rounded-xl border border-[#E8DCC8] bg-[#FAFAF6] text-[#2C1810] text-sm placeholder:text-[#2C1810]/40 focus:outline-none focus:border-[#4A6741] transition-colors"
-        />
-      </div>
-
-      {error && <p className="text-red-600 text-xs">{error}</p>}
-
+    <div className="flex flex-col gap-3">
       <button
-        type="submit"
-        disabled={loading || !selectedDate}
-        className="flex items-center justify-center gap-2 px-6 py-2.5 rounded-full bg-[#4A6741] text-[#F0EAD6] text-sm font-medium hover:bg-[#3A5432] transition-colors disabled:opacity-60"
+        onClick={() => setOpen((v) => !v)}
+        className="flex items-center gap-2 px-5 py-2.5 rounded-full bg-[#4A6741] text-[#F0EAD6] text-sm font-medium hover:bg-[#3A5432] transition-colors"
       >
-        {loading && <Loader2 size={14} className="animate-spin" />}
-        Reservar — {total}€
+        {open ? "Cerrar" : `Reservar — ${precio}€/persona`}
+        <ChevronRight size={14} className={`transition-transform ${open ? "rotate-90" : ""}`} />
       </button>
-    </form>
+
+      {open && (
+        <form onSubmit={handleSubmit} className="flex flex-col gap-5 border border-[#E8DCC8] rounded-2xl p-5 bg-[#FAFAF6]">
+          {/* Date picker */}
+          <SingleDatePicker
+            unavailableDates={unavailableDates}
+            selected={selectedDate}
+            onSelect={setSelectedDate}
+            label="Selecciona una fecha"
+          />
+
+          {/* Persons counter */}
+          <div className="flex flex-col gap-2">
+            <label className="text-sm font-medium text-[#2C1810]">Personas</label>
+            <div className="flex items-center gap-3">
+              <button
+                type="button"
+                onClick={() => setPersonas((p) => Math.max(1, p - 1))}
+                className="w-9 h-9 rounded-full border border-[#E8DCC8] bg-white text-[#2C1810] text-lg font-medium flex items-center justify-center hover:bg-[#E8DCC8] transition-colors"
+              >
+                −
+              </button>
+              <span className="text-2xl font-medium text-[#2C1810] w-10 text-center">{personas}</span>
+              <button
+                type="button"
+                onClick={() => setPersonas((p) => p + 1)}
+                className="w-9 h-9 rounded-full border border-[#E8DCC8] bg-white text-[#2C1810] text-lg font-medium flex items-center justify-center hover:bg-[#E8DCC8] transition-colors"
+              >
+                +
+              </button>
+              <span className="text-sm text-[#2C1810]/60">
+                {personas} × {precio}€ = <span className="font-medium text-[#4A6741]">{total}€</span>
+              </span>
+            </div>
+          </div>
+
+          {/* Guest form */}
+          <div className="flex flex-col gap-3">
+            <input
+              type="text"
+              placeholder="Nombre completo"
+              value={guestNombre}
+              onChange={(e) => setGuestNombre(e.target.value)}
+              required
+              className="px-4 py-2.5 rounded-xl border border-[#E8DCC8] bg-white text-[#2C1810] text-sm placeholder:text-[#2C1810]/40 focus:outline-none focus:border-[#4A6741] transition-colors"
+            />
+            <input
+              type="email"
+              placeholder="Correo electrónico"
+              value={guestEmail}
+              onChange={(e) => setGuestEmail(e.target.value)}
+              required
+              className="px-4 py-2.5 rounded-xl border border-[#E8DCC8] bg-white text-[#2C1810] text-sm placeholder:text-[#2C1810]/40 focus:outline-none focus:border-[#4A6741] transition-colors"
+            />
+            <input
+              type="tel"
+              placeholder="Teléfono"
+              value={guestTelefono}
+              onChange={(e) => setGuestTelefono(e.target.value)}
+              required
+              className="px-4 py-2.5 rounded-xl border border-[#E8DCC8] bg-white text-[#2C1810] text-sm placeholder:text-[#2C1810]/40 focus:outline-none focus:border-[#4A6741] transition-colors"
+            />
+          </div>
+
+          {error && <p className="text-red-600 text-xs">{error}</p>}
+
+          <button
+            type="submit"
+            disabled={loading || !selectedDate}
+            className="flex items-center justify-center gap-2 px-6 py-2.5 rounded-full bg-[#4A6741] text-[#F0EAD6] text-sm font-medium hover:bg-[#3A5432] transition-colors disabled:opacity-60"
+          >
+            {loading && <Loader2 size={14} className="animate-spin" />}
+            Confirmar reserva — {total}€
+          </button>
+        </form>
+      )}
+    </div>
   );
 }
 
@@ -267,6 +291,7 @@ type CabanyaProps = {
 };
 
 export function CabanyaActividadReserva({ unavailableDates: _unavailableDates }: CabanyaProps = {}) {
+  const [open, setOpen] = useState(false);
   const [personas, setPersonas] = useState(1);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -296,36 +321,45 @@ export function CabanyaActividadReserva({ unavailableDates: _unavailableDates }:
 
   return (
     <div className="flex flex-col gap-3">
-      <div className="flex items-center gap-3">
-        <button
-          onClick={() => setPersonas((p) => Math.max(1, p - 1))}
-          className="w-9 h-9 rounded-full border border-[#E8DCC8] bg-[#FAFAF6] text-[#2C1810] text-lg font-medium flex items-center justify-center hover:bg-[#E8DCC8] transition-colors"
-        >
-          −
-        </button>
-        <span className="text-2xl font-medium text-[#2C1810] w-10 text-center">{personas}</span>
-        <button
-          onClick={() => setPersonas((p) => p + 1)}
-          className="w-9 h-9 rounded-full border border-[#E8DCC8] bg-[#FAFAF6] text-[#2C1810] text-lg font-medium flex items-center justify-center hover:bg-[#E8DCC8] transition-colors"
-        >
-          +
-        </button>
-        <span className="text-sm text-[#2C1810]/60">personas</span>
-      </div>
-      <div className="flex items-center gap-4">
-        <span className="text-base font-medium text-[#2C1810]">
-          Total: <span className="text-[#4A6741]">{total}€</span>
-        </span>
-        <button
-          onClick={handleReservar}
-          disabled={loading}
-          className="flex items-center gap-2 px-6 py-2.5 rounded-full bg-[#4A6741] text-[#F0EAD6] text-sm font-medium hover:bg-[#3A5432] transition-colors disabled:opacity-60"
-        >
-          {loading && <Loader2 size={14} className="animate-spin" />}
-          Reservar Sala
-        </button>
-      </div>
-      {error && <p className="text-red-600 text-xs">{error}</p>}
+      <button
+        onClick={() => setOpen((v) => !v)}
+        className="flex items-center gap-2 px-5 py-2.5 rounded-full bg-[#4A6741] text-[#F0EAD6] text-sm font-medium hover:bg-[#3A5432] transition-colors"
+      >
+        {open ? "Cerrar" : "Reservar La Cabanya — 10€/persona"}
+        <ChevronRight size={14} className={`transition-transform ${open ? "rotate-90" : ""}`} />
+      </button>
+
+      {open && (
+        <div className="flex flex-col gap-3 border border-[#E8DCC8] rounded-2xl p-4 bg-[#FAFAF6]">
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => setPersonas((p) => Math.max(1, p - 1))}
+              className="w-9 h-9 rounded-full border border-[#E8DCC8] bg-white text-[#2C1810] text-lg font-medium flex items-center justify-center hover:bg-[#E8DCC8] transition-colors"
+            >
+              −
+            </button>
+            <span className="text-2xl font-medium text-[#2C1810] w-10 text-center">{personas}</span>
+            <button
+              onClick={() => setPersonas((p) => p + 1)}
+              className="w-9 h-9 rounded-full border border-[#E8DCC8] bg-white text-[#2C1810] text-lg font-medium flex items-center justify-center hover:bg-[#E8DCC8] transition-colors"
+            >
+              +
+            </button>
+            <span className="text-sm text-[#2C1810]/60">
+              {personas} personas · <span className="font-medium text-[#4A6741]">{total}€</span>
+            </span>
+          </div>
+          <button
+            onClick={handleReservar}
+            disabled={loading}
+            className="flex items-center justify-center gap-2 px-6 py-2.5 rounded-full bg-[#4A6741] text-[#F0EAD6] text-sm font-medium hover:bg-[#3A5432] transition-colors disabled:opacity-60"
+          >
+            {loading && <Loader2 size={14} className="animate-spin" />}
+            Reservar Sala — {total}€
+          </button>
+          {error && <p className="text-red-600 text-xs">{error}</p>}
+        </div>
+      )}
     </div>
   );
 }

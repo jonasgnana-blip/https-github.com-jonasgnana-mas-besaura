@@ -483,6 +483,7 @@ function Field({
 // ── Section A: La Cabanya ──────────────────────────────────────────────────────
 
 function CabanySalaSection({ datesCabanya }: { datesCabanya: DateRange[] }) {
+  const [open, setOpen] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [personas, setPersonas] = useState(10);
   const [nombre, setNombre] = useState("");
@@ -534,7 +535,7 @@ function CabanySalaSection({ datesCabanya }: { datesCabanya: DateRange[] }) {
 
   return (
     <div className="bg-[#FAFAF6] rounded-2xl border border-[#E8DCC8] overflow-hidden mb-6">
-      {/* Header */}
+      {/* Header — always visible */}
       <div className="bg-[#2C1810] px-8 py-6">
         <p className="text-[#C4A882] text-xs tracking-[0.2em] uppercase font-medium mb-1">
           Alquiler de espacio
@@ -550,69 +551,81 @@ function CabanySalaSection({ datesCabanya }: { datesCabanya: DateRange[] }) {
         </p>
       </div>
 
-      <div className="p-8 space-y-7">
-        {/* Description */}
-        <p className="text-[#2C1810]/70 text-sm leading-relaxed">
+      {/* Description + CTA — always visible */}
+      <div className="px-8 pt-6 pb-4">
+        <p className="text-[#2C1810]/70 text-sm leading-relaxed mb-6">
           350 m² de sala con suelo de microcemento mirando al valle. Con baño, cocina eléctrica,
           platos y utensilios. Para eventos, actividades, comidas familiares... Hasta 100 personas.
         </p>
-
-        {/* Date picker */}
-        <div>
-          <p className="text-xs font-medium text-[#2C1810]/50 uppercase tracking-wide mb-3">
-            Fecha del evento
-          </p>
-          <SingleDatePicker
-            selected={selectedDate}
-            unavailableRanges={datesCabanya}
-            onChange={setSelectedDate}
-          />
-        </div>
-
-        {/* Personas counter */}
-        <div>
-          <p className="text-xs font-medium text-[#2C1810]/50 uppercase tracking-wide mb-3">
-            Número de personas
-          </p>
-          <Counter value={personas} min={1} max={100} onChange={setPersonas} />
-        </div>
-
-        {/* Price summary */}
-        <div className="bg-[#F0EAD6] rounded-xl p-5 space-y-1.5">
-          <div className="flex justify-between text-sm text-[#2C1810]/60">
-            <span>{personas} personas × 10€</span>
-            <span className="font-semibold text-[#2C1810] text-base">{total}€</span>
-          </div>
-          {selectedDate && (
-            <div className="text-xs text-[#2C1810]/50">
-              {selectedDate.toLocaleDateString("es-ES", { weekday: "long", day: "numeric", month: "long", year: "numeric" })}
-            </div>
-          )}
-        </div>
-
-        {/* Guest form */}
-        <div className="space-y-4">
-          <p className="text-xs font-medium text-[#2C1810]/50 uppercase tracking-wide">
-            Datos de contacto
-          </p>
-          <Field label="Nombre" value={nombre} onChange={setNombre} placeholder="Tu nombre" required />
-          <Field label="Email" type="email" value={email} onChange={setEmail} placeholder="tu@email.com" required />
-          <Field label="Teléfono" type="tel" value={telefono} onChange={setTelefono} placeholder="+34 000 000 000" />
-        </div>
-
-        {error && (
-          <p className="text-red-600 text-sm text-center">{error}</p>
-        )}
-
         <button
-          onClick={handleReservar}
-          disabled={loading}
-          className="w-full flex items-center justify-center gap-2 px-6 py-4 rounded-full bg-[#4A6741] text-[#F0EAD6] text-sm font-medium hover:bg-[#3A5432] transition-colors disabled:opacity-60"
+          onClick={() => setOpen((v) => !v)}
+          className="flex items-center gap-2 px-7 py-3.5 rounded-full bg-[#4A6741] text-[#F0EAD6] text-sm font-medium hover:bg-[#3A5432] transition-colors"
         >
-          {loading && <Loader2 size={16} className="animate-spin" />}
-          Reservar La Cabanya — {total}€
+          {open ? "Cerrar" : "Consultar disponibilidad"}
+          <ChevronRight size={15} className={`transition-transform ${open ? "rotate-90" : ""}`} />
         </button>
       </div>
+
+      {/* Booking panel — only when open */}
+      {open && (
+        <div className="px-8 pb-8 space-y-7 border-t border-[#E8DCC8] pt-6 mt-2">
+          {/* Date picker */}
+          <div>
+            <p className="text-xs font-medium text-[#2C1810]/50 uppercase tracking-wide mb-3">
+              Fecha del evento
+            </p>
+            <SingleDatePicker
+              selected={selectedDate}
+              unavailableRanges={datesCabanya}
+              onChange={setSelectedDate}
+            />
+          </div>
+
+          {/* Personas counter */}
+          <div>
+            <p className="text-xs font-medium text-[#2C1810]/50 uppercase tracking-wide mb-3">
+              Número de personas
+            </p>
+            <Counter value={personas} min={1} max={100} onChange={setPersonas} />
+          </div>
+
+          {/* Price summary */}
+          <div className="bg-[#F0EAD6] rounded-xl p-5 space-y-1.5">
+            <div className="flex justify-between text-sm text-[#2C1810]/60">
+              <span>{personas} personas × 10€</span>
+              <span className="font-semibold text-[#2C1810] text-base">{total}€</span>
+            </div>
+            {selectedDate && (
+              <div className="text-xs text-[#2C1810]/50">
+                {selectedDate.toLocaleDateString("es-ES", { weekday: "long", day: "numeric", month: "long", year: "numeric" })}
+              </div>
+            )}
+          </div>
+
+          {/* Guest form */}
+          <div className="space-y-4">
+            <p className="text-xs font-medium text-[#2C1810]/50 uppercase tracking-wide">
+              Datos de contacto
+            </p>
+            <Field label="Nombre" value={nombre} onChange={setNombre} placeholder="Tu nombre" required />
+            <Field label="Email" type="email" value={email} onChange={setEmail} placeholder="tu@email.com" required />
+            <Field label="Teléfono" type="tel" value={telefono} onChange={setTelefono} placeholder="+34 000 000 000" />
+          </div>
+
+          {error && (
+            <p className="text-red-600 text-sm text-center">{error}</p>
+          )}
+
+          <button
+            onClick={handleReservar}
+            disabled={loading}
+            className="w-full flex items-center justify-center gap-2 px-6 py-4 rounded-full bg-[#4A6741] text-[#F0EAD6] text-sm font-medium hover:bg-[#3A5432] transition-colors disabled:opacity-60"
+          >
+            {loading && <Loader2 size={16} className="animate-spin" />}
+            Reservar La Cabanya — {total}€
+          </button>
+        </div>
+      )}
     </div>
   );
 }
@@ -620,6 +633,7 @@ function CabanySalaSection({ datesCabanya }: { datesCabanya: DateRange[] }) {
 // ── Section B: Casa Retiros ────────────────────────────────────────────────────
 
 function CasaRetirosSection({ datesCasa }: { datesCasa: DateRange[] }) {
+  const [open, setOpen] = useState(false);
   const [checkIn, setCheckIn] = useState<Date | null>(null);
   const [checkOut, setCheckOut] = useState<Date | null>(null);
   const [personas, setPersonas] = useState(1);
@@ -683,7 +697,7 @@ function CasaRetirosSection({ datesCasa }: { datesCasa: DateRange[] }) {
 
   return (
     <div className="bg-[#FAFAF6] rounded-2xl border border-[#E8DCC8] overflow-hidden">
-      {/* Header */}
+      {/* Header — always visible */}
       <div className="bg-[#4A6741] px-8 py-6">
         <p className="text-[#F0EAD6]/60 text-xs tracking-[0.2em] uppercase font-medium mb-1">
           Casa completa
@@ -699,79 +713,97 @@ function CasaRetirosSection({ datesCasa }: { datesCasa: DateRange[] }) {
         </p>
       </div>
 
-      <div className="p-8 space-y-7">
-        {/* Date range picker */}
-        <div>
-          <p className="text-xs font-medium text-[#2C1810]/50 uppercase tracking-wide mb-3">
-            Fechas de entrada y salida
-          </p>
-          <DateRangePicker
-            checkIn={checkIn}
-            checkOut={checkOut}
-            unavailableRanges={datesCasa}
-            onChange={handleRangeChange}
-          />
-        </div>
-
-        {/* Personas counter */}
-        <div>
-          <p className="text-xs font-medium text-[#2C1810]/50 uppercase tracking-wide mb-3">
-            Número de personas
-          </p>
-          <Counter value={personas} min={1} max={12} onChange={setPersonas} />
-        </div>
-
-        {/* Price summary */}
-        <div className="bg-[#F0EAD6] rounded-xl p-5 space-y-2">
-          <div className="flex justify-between text-sm text-[#2C1810]/60">
-            <span>
-              {personas} personas × {dias > 0 ? dias : "—"} días × 80€
-            </span>
-            <span className="font-semibold text-[#2C1810] text-base">
-              {dias > 0 ? `${totalCompleto}€` : "—"}
-            </span>
-          </div>
-          {dias > 0 && (
-            <div className="flex justify-between text-sm text-[#2C1810]/60">
-              <span>50% para reservar</span>
-              <span className="font-medium text-[#4A6741]">{totalMitad}€</span>
-            </div>
-          )}
-        </div>
-
-        {/* Guest form */}
-        <div className="space-y-4">
-          <p className="text-xs font-medium text-[#2C1810]/50 uppercase tracking-wide">
-            Datos de contacto
-          </p>
-          <Field label="Nombre" value={nombre} onChange={setNombre} placeholder="Tu nombre" required />
-          <Field label="Email" type="email" value={email} onChange={setEmail} placeholder="tu@email.com" required />
-          <Field label="Teléfono" type="tel" value={telefono} onChange={setTelefono} placeholder="+34 000 000 000" />
-        </div>
-
-        {error && (
-          <p className="text-red-600 text-sm text-center">{error}</p>
-        )}
-
-        <div className="flex flex-col sm:flex-row gap-3">
-          <button
-            onClick={() => handleReservar("mitad")}
-            disabled={loading !== null || dias === 0}
-            className="flex-1 flex items-center justify-center gap-2 px-6 py-3.5 rounded-full bg-[#4A6741] text-[#F0EAD6] text-sm font-medium hover:bg-[#3A5432] transition-colors disabled:opacity-60"
-          >
-            {loading === "mitad" && <Loader2 size={16} className="animate-spin" />}
-            Reservar con el 50%{dias > 0 ? ` — ${totalMitad}€` : ""}
-          </button>
-          <button
-            onClick={() => handleReservar("total")}
-            disabled={loading !== null || dias === 0}
-            className="flex-1 flex items-center justify-center gap-2 px-6 py-3.5 rounded-full border border-[#4A6741] text-[#4A6741] bg-transparent text-sm font-medium hover:bg-[#4A6741] hover:text-[#F0EAD6] transition-colors disabled:opacity-60"
-          >
-            {loading === "total" && <Loader2 size={16} className="animate-spin" />}
-            Importe completo{dias > 0 ? ` — ${totalCompleto}€` : ""}
-          </button>
-        </div>
+      {/* Description + CTA — always visible */}
+      <div className="px-8 pt-6 pb-4">
+        <p className="text-[#2C1810]/70 text-sm leading-relaxed mb-6">
+          La masía completa para grupos y retiros. Hasta 12 personas. Incluye todas las habitaciones,
+          salones, cocina y jardín. Precio basado en personas y días de estancia.
+        </p>
+        <button
+          onClick={() => setOpen((v) => !v)}
+          className="flex items-center gap-2 px-7 py-3.5 rounded-full bg-[#4A6741] text-[#F0EAD6] text-sm font-medium hover:bg-[#3A5432] transition-colors"
+        >
+          {open ? "Cerrar" : "Consultar disponibilidad"}
+          <ChevronRight size={15} className={`transition-transform ${open ? "rotate-90" : ""}`} />
+        </button>
       </div>
+
+      {/* Booking panel — only when open */}
+      {open && (
+        <div className="px-8 pb-8 space-y-7 border-t border-[#E8DCC8] pt-6 mt-2">
+          {/* Date range picker */}
+          <div>
+            <p className="text-xs font-medium text-[#2C1810]/50 uppercase tracking-wide mb-3">
+              Fechas de entrada y salida
+            </p>
+            <DateRangePicker
+              checkIn={checkIn}
+              checkOut={checkOut}
+              unavailableRanges={datesCasa}
+              onChange={handleRangeChange}
+            />
+          </div>
+
+          {/* Personas counter */}
+          <div>
+            <p className="text-xs font-medium text-[#2C1810]/50 uppercase tracking-wide mb-3">
+              Número de personas
+            </p>
+            <Counter value={personas} min={1} max={12} onChange={setPersonas} />
+          </div>
+
+          {/* Price summary */}
+          <div className="bg-[#F0EAD6] rounded-xl p-5 space-y-2">
+            <div className="flex justify-between text-sm text-[#2C1810]/60">
+              <span>
+                {personas} personas × {dias > 0 ? dias : "—"} días × 80€
+              </span>
+              <span className="font-semibold text-[#2C1810] text-base">
+                {dias > 0 ? `${totalCompleto}€` : "—"}
+              </span>
+            </div>
+            {dias > 0 && (
+              <div className="flex justify-between text-sm text-[#2C1810]/60">
+                <span>50% para reservar</span>
+                <span className="font-medium text-[#4A6741]">{totalMitad}€</span>
+              </div>
+            )}
+          </div>
+
+          {/* Guest form */}
+          <div className="space-y-4">
+            <p className="text-xs font-medium text-[#2C1810]/50 uppercase tracking-wide">
+              Datos de contacto
+            </p>
+            <Field label="Nombre" value={nombre} onChange={setNombre} placeholder="Tu nombre" required />
+            <Field label="Email" type="email" value={email} onChange={setEmail} placeholder="tu@email.com" required />
+            <Field label="Teléfono" type="tel" value={telefono} onChange={setTelefono} placeholder="+34 000 000 000" />
+          </div>
+
+          {error && (
+            <p className="text-red-600 text-sm text-center">{error}</p>
+          )}
+
+          <div className="flex flex-col sm:flex-row gap-3">
+            <button
+              onClick={() => handleReservar("mitad")}
+              disabled={loading !== null || dias === 0}
+              className="flex-1 flex items-center justify-center gap-2 px-6 py-3.5 rounded-full bg-[#4A6741] text-[#F0EAD6] text-sm font-medium hover:bg-[#3A5432] transition-colors disabled:opacity-60"
+            >
+              {loading === "mitad" && <Loader2 size={16} className="animate-spin" />}
+              Reservar con el 50%{dias > 0 ? ` — ${totalMitad}€` : ""}
+            </button>
+            <button
+              onClick={() => handleReservar("total")}
+              disabled={loading !== null || dias === 0}
+              className="flex-1 flex items-center justify-center gap-2 px-6 py-3.5 rounded-full border border-[#4A6741] text-[#4A6741] bg-transparent text-sm font-medium hover:bg-[#4A6741] hover:text-[#F0EAD6] transition-colors disabled:opacity-60"
+            >
+              {loading === "total" && <Loader2 size={16} className="animate-spin" />}
+              Importe completo{dias > 0 ? ` — ${totalCompleto}€` : ""}
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

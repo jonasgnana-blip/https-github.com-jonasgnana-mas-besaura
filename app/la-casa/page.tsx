@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Bed, Users, Flame, ChevronRight } from "lucide-react";
+import { Bed, Users, Flame } from "lucide-react";
 import NavBar from "@/app/components/NavBar";
 import ImageFader from "@/app/components/ImageFader";
 
@@ -183,47 +183,6 @@ export default function LaCasa() {
                 </p>
               </div>
             ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ─── LA CABANYA ─── */}
-      <section className="py-0 px-6 pb-24">
-        <div className="max-w-5xl mx-auto">
-          <div className="relative rounded-3xl overflow-hidden h-[480px]">
-            <img
-              src="/images/hero1.jpg"
-              alt="La Cabanya — sala exterior de Mas Besaura"
-              className="absolute inset-0 w-full h-full object-cover object-center"
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-[#1a0f05]/85 via-[#1a0f05]/30 to-transparent" />
-            <div className="absolute bottom-0 left-0 right-0 p-10">
-              <div className="flex items-end justify-between gap-6 flex-wrap">
-                <div>
-                  <span className="text-[#C4A882] text-xs tracking-[0.25em] uppercase font-medium block mb-2">
-                    Sala Exterior
-                  </span>
-                  <h2
-                    className="text-4xl md:text-5xl text-[#F0EAD6] mb-3"
-                    style={{ fontFamily: "var(--font-playfair), Georgia, serif" }}
-                  >
-                    La Cabanya
-                  </h2>
-                  <p className="text-[#E8DCC8]/80 text-base leading-relaxed max-w-xl">
-                    Antiguo granero de <strong className="text-[#F0EAD6]">350 m²</strong> restaurado con arco de piedra y ladrillo.
-                    Espacio abierto al paisaje, ideal para retiros, talleres grupales, ceremonias y celebraciones.
-                    Capacidad para más de 30 personas.
-                  </p>
-                </div>
-                <Link
-                  href="/alquiler"
-                  className="shrink-0 flex items-center gap-2 px-7 py-3.5 bg-[#C4A882] text-[#2C1810] rounded-full font-semibold hover:bg-[#F0EAD6] transition-colors"
-                >
-                  Alquilar La Cabanya
-                  <ChevronRight size={16} />
-                </Link>
-              </div>
-            </div>
           </div>
         </div>
       </section>
