@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
 import Stripe from "stripe";
-import { prisma } from "@/lib/prisma";
 
 export const runtime = "nodejs";
 
@@ -143,6 +142,7 @@ async function handleHabitacion(body: HabitacionBody) {
 
   // If a reserva_id was passed, persist the stripe session id
   if (body.reserva_id) {
+    const { prisma } = await import("@/lib/prisma");
     await prisma.reserva.update({
       where: { id: body.reserva_id },
       data: { stripe_session_id: session.id },
@@ -242,6 +242,7 @@ async function handleAlquiler(body: AlquilerBody) {
 // ── Legacy handler (original reserva_id flow) ─────────────────────────────────
 
 async function handleLegacyReserva(reserva_id: string) {
+  const { prisma } = await import("@/lib/prisma");
   const reserva = await prisma.reserva.findUnique({
     where: { id: reserva_id },
     include: {
