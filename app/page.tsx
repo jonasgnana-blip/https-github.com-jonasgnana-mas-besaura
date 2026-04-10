@@ -40,10 +40,10 @@ export default function Home() {
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link
-              href="/reservar"
+              href="/alojamiento"
               className="px-8 py-3.5 bg-[#F0EAD6] text-[#2C1810] rounded-full font-medium hover:bg-white transition-colors"
             >
-              Ver disponibilidad
+              Ver alojamiento
             </Link>
             <Link
               href="/la-casa"
@@ -196,27 +196,58 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ─── BOOKING CTA ─── */}
+      {/* ─── ACTIVIDADES CTA ─── */}
+      <section className="relative overflow-hidden h-[520px] flex items-center justify-center">
+        <img
+          src="/images/hero5.jpg"
+          alt="Actividades en Mas Besaura"
+          className="absolute inset-0 w-full h-full object-cover"
+        />
+        <div className="absolute inset-0 bg-[#2C1810]/55" />
+        <div className="relative z-10 text-center px-6 max-w-2xl">
+          <p className="text-[#C4A882] text-sm tracking-[0.25em] uppercase font-medium mb-4">
+            Experiencias
+          </p>
+          <h2
+            className="text-4xl md:text-6xl text-[#F0EAD6] mb-6 leading-tight"
+            style={{ fontFamily: "var(--font-playfair), Georgia, serif" }}
+          >
+            Actividades &amp; Talleres
+          </h2>
+          <p className="text-[#E8DCC8]/80 text-lg mb-10 leading-relaxed">
+            Rutas familiares, constelaciones, inmersiones terapéuticas y mucho más.
+            Diseñadas para reconectar con la naturaleza y contigo mismo.
+          </p>
+          <Link
+            href="/actividades"
+            className="inline-block px-10 py-4 bg-[#F0EAD6] text-[#2C1810] rounded-full font-semibold text-lg hover:bg-white transition-colors"
+          >
+            Ver actividades
+          </Link>
+        </div>
+      </section>
+
+      {/* ─── ALQUILER CTA ─── */}
       <section className="py-24 px-6 bg-[#2A3F24]">
         <div className="max-w-3xl mx-auto text-center">
           <p className="text-[#C4A882] text-sm tracking-[0.2em] uppercase font-medium mb-4">
-            Reserva tu estancia
+            Para grupos y profesionales
           </p>
           <h2
             className="text-4xl md:text-5xl text-[#F0EAD6] mb-6 leading-tight"
             style={{ fontFamily: "var(--font-playfair), Georgia, serif" }}
           >
-            ¿Cuándo quieres venir?
+            Alquila La Cabanya
           </h2>
           <p className="text-[#E8DCC8]/70 text-lg mb-10 leading-relaxed">
-            Alquila la casa completa o solo la sala La Cabanya.
-            Selecciona tus fechas y confirma en minutos.
+            350 m² de sala granero con vistas al valle. Ideal para retiros,
+            eventos, formaciones y encuentros de hasta 100 personas.
           </p>
           <Link
-            href="/reservar"
+            href="/alquiler"
             className="inline-block px-10 py-4 bg-[#C4A882] text-[#2C1810] rounded-full font-semibold text-lg hover:bg-[#F0EAD6] transition-colors"
           >
-            Comprobar disponibilidad
+            Ver condiciones de alquiler
           </Link>
         </div>
       </section>
