@@ -4,6 +4,7 @@ import { useState, useTransition } from "react";
 import {
   adminUpdateHabitacion,
   adminUpdateComplemento,
+  adminUpsertSistemaConfig,
 } from "@/app/actions/admin";
 import { Save, Loader2, CalendarCheck, CalendarX } from "lucide-react";
 
@@ -29,16 +30,30 @@ export default function ConfigClient({
   complementos: initialComps,
   gcalConnected,
   gcalStatus,
+  fbPixelIdInicial,
 }: {
   habitaciones: Habitacion[];
   complementos: Complemento[];
   gcalConnected: boolean;
   gcalStatus?: string;
+  fbPixelIdInicial?: string;
 }) {
   const [habs, setHabs] = useState(initialHabs);
   const [comps, setComps] = useState(initialComps);
   const [saved, setSaved] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
+
+  // Facebook Pixel
+  const [pixelId, setPixelId] = useState(fbPixelIdInicial ?? "");
+  const [pixelSaved, setPixelSaved] = useState(false);
+
+  function savePixelId() {
+    startTransition(async () => {
+      await adminUpsertSistemaConfig("fb_pixel_id", pixelId.trim());
+      setPixelSaved(true);
+      setTimeout(() => setPixelSaved(false), 2500);
+    });
+  }
 
   function saveHab(id: string) {
     const h = habs.find((x) => x.id === id)!;
@@ -139,6 +154,53 @@ export default function ConfigClient({
           >
             {gcalConnected ? "Reconectar" : "Conectar con Google"}
           </a>
+        </div>
+      </section>
+
+      {/* ── Facebook Pixel ── */}
+      <section className="mb-10">
+        <h2
+          className="text-xl text-[#2C1810] mb-5"
+          style={{ fontFamily: "var(--font-playfair), Georgia, serif" }}
+        >
+          Facebook Pixel
+        </h2>
+
+        <div className="bg-white rounded-2xl border border-[#E8DCC8] p-6">
+          <div className="mb-4">
+            <label className="block text-xs font-medium text-[#2C1810]/50 uppercase tracking-wide mb-1.5">
+              Pixel ID
+            </label>
+            <input
+              type="text"
+              value={pixelId}
+              onChange={(e) => setPixelId(e.target.value)}
+              placeholder="Ej: 1234567890123456"
+              className="w-full max-w-sm px-3 py-2.5 rounded-xl border border-[#E8DCC8] bg-[#FAFAF6] text-[#2C1810] text-sm focus:outline-none focus:ring-2 focus:ring-[#4A6741]/30"
+            />
+          </div>
+
+          <p className="text-xs text-[#2C1810]/40 mb-4 max-w-lg">
+            Una vez guardado, añade{" "}
+            <code className="bg-[#F0EAD6] px-1 py-0.5 rounded text-[#2C1810]/70">
+              NEXT_PUBLIC_FB_PIXEL_ID=[tu_pixel_id]
+            </code>{" "}
+            en las variables de entorno de Vercel para activar el pixel en producción.
+          </p>
+
+          <button
+            onClick={savePixelId}
+            disabled={isPending}
+            className="flex items-center gap-2 px-5 py-2 rounded-full bg-[#4A6741] text-[#F0EAD6] text-sm font-medium hover:bg-[#3A5432] transition-colors disabled:opacity-50"
+          >
+            {isPending ? (
+              <Loader2 size={14} className="animate-spin" />
+            ) : pixelSaved ? (
+              "✓ Guardado"
+            ) : (
+              <><Save size={14} /> Guardar Pixel ID</>
+            )}
+          </button>
         </div>
       </section>
 

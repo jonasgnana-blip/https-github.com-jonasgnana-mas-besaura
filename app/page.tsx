@@ -12,38 +12,12 @@ import {
   HeartHandshake,
 } from "lucide-react";
 import HeroSlider from "./components/HeroSlider";
+import NavBar from "./components/NavBar";
 
 export default function Home() {
   return (
     <div className="min-h-screen">
-      {/* ─── HEADER ─── */}
-      <header className="fixed top-0 left-0 right-0 z-50 bg-[#FAFAF6]/90 backdrop-blur-sm border-b border-[#E8DCC8]">
-        <div className="max-w-6xl mx-auto px-6 flex items-center justify-between h-16">
-          <span
-            className="text-xl tracking-wide text-[#2C1810]"
-            style={{ fontFamily: "var(--font-playfair), Georgia, serif" }}
-          >
-            Mas Besaura
-          </span>
-          <nav className="hidden md:flex items-center gap-8 text-sm text-[#4A6741] font-medium tracking-wide">
-            <a href="#proposito" className="hover:text-[#2C1810] transition-colors">
-              La Casa
-            </a>
-            <a href="#actividades" className="hover:text-[#2C1810] transition-colors">
-              Actividades
-            </a>
-            <a href="#contacto" className="hover:text-[#2C1810] transition-colors">
-              Contacto
-            </a>
-            <Link
-              href="/reservar"
-              className="px-5 py-2 bg-[#4A6741] text-[#F0EAD6] rounded-full hover:bg-[#3A5432] transition-colors text-sm"
-            >
-              Reservar
-            </Link>
-          </nav>
-        </div>
-      </header>
+      <NavBar />
 
       {/* ─── HERO ─── */}
       <section className="relative h-screen flex flex-col items-center justify-center overflow-hidden">
@@ -279,6 +253,17 @@ export default function Home() {
               <li className="flex items-center gap-2">
                 <MapPin size={14} className="text-[#C4A882]" />
                 Vidrà, Girona · Cataluña
+              </li>
+              <li className="mt-4">
+                <a
+                  href="https://maps.app.goo.gl/R5jGm9yANyER96e68"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 px-4 py-2 bg-[#C4A882] text-[#2C1810] rounded-full text-xs font-semibold hover:bg-[#F0EAD6] transition-colors"
+                >
+                  <MapPin size={12} />
+                  Cómo llegar
+                </a>
               </li>
             </ul>
           </div>

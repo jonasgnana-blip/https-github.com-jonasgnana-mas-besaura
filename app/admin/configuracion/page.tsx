@@ -1,6 +1,7 @@
 import {
   adminGetHabitaciones,
   adminGetComplementos,
+  adminGetSistemaConfig,
 } from "@/app/actions/admin";
 import { getStoredRefreshToken } from "@/lib/googleCalendar";
 import ConfigClient from "./ConfigClient";
@@ -13,10 +14,11 @@ export default async function AdminConfigPage({
   searchParams: Promise<{ gcal?: string; msg?: string }>;
 }) {
   const params = await searchParams;
-  const [habitaciones, complementos, refreshToken] = await Promise.all([
+  const [habitaciones, complementos, refreshToken, pixelConfig] = await Promise.all([
     adminGetHabitaciones(),
     adminGetComplementos(),
     getStoredRefreshToken(),
+    adminGetSistemaConfig("fb_pixel_id"),
   ]);
 
   return (
@@ -38,6 +40,7 @@ export default async function AdminConfigPage({
       }))}
       gcalConnected={!!refreshToken}
       gcalStatus={params.gcal}
+      fbPixelIdInicial={pixelConfig?.valor ?? ""}
     />
   );
 }

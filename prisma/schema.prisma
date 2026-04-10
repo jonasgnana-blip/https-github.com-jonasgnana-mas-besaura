@@ -104,3 +104,52 @@ enum TipoCobro {
   PAGO_UNICO
   POR_NOCHE
 }
+
+model Actividad {
+  id           String    @id @default(cuid())
+  titulo       String
+  descripcion  String
+  imagen_url   String?
+  facilitador  String?
+  precio_base  Decimal   @db.Decimal(10, 2)
+  precio_extra Decimal?  @db.Decimal(10, 2)
+  max_personas Int?
+  duracion     String?
+  activa       Boolean   @default(true)
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  sesiones     SesionActividad[]
+  @@map("actividades")
+}
+
+model SesionActividad {
+  id           String    @id @default(cuid())
+  actividad_id String
+  fecha        DateTime
+  hora         String?
+  plazas_max   Int?
+  activa       Boolean   @default(true)
+  createdAt    DateTime  @default(now())
+  actividad    Actividad @relation(fields: [actividad_id], references: [id], onDelete: Cascade)
+  reservas     ReservaActividad[]
+  @@map("sesiones_actividades")
+}
+
+model ReservaActividad {
+  id                String           @id @default(cuid())
+  sesion_id         String?
+  actividad_id      String
+  nombre_cliente    String
+  email_cliente     String
+  telefono_cliente  String
+  num_adultos       Int              @default(1)
+  num_ninos         Int              @default(0)
+  precio_total      Decimal          @db.Decimal(10, 2)
+  estado            EstadoReserva    @default(PENDIENTE_PAGO)
+  stripe_session_id String?          @unique
+  notas             String?
+  createdAt         DateTime         @default(now())
+  updatedAt         DateTime         @updatedAt
+  sesion            SesionActividad? @relation(fields: [sesion_id], references: [id])
+  @@map("reservas_actividades")
+}

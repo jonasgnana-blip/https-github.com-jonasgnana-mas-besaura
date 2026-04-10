@@ -146,3 +146,93 @@ export async function adminUpdateComplemento(
   await requireAdmin();
   return prisma.complemento.update({ where: { id }, data });
 }
+
+// ── Actividades ───────────────────────────────────────────────────────────────
+
+export async function adminGetActividades() {
+  await requireAdmin();
+  return prisma.actividad.findMany({
+    orderBy: { createdAt: "desc" },
+    include: { sesiones: { orderBy: { fecha: "asc" }, take: 5 } },
+  });
+}
+
+export async function adminCreateActividad(data: {
+  titulo: string;
+  descripcion: string;
+  facilitador?: string;
+  precio_base: number;
+  precio_extra?: number;
+  max_personas?: number;
+  duracion?: string;
+  imagen_url?: string;
+}) {
+  await requireAdmin();
+  return prisma.actividad.create({ data });
+}
+
+export async function adminUpdateActividad(id: string, data: Partial<{
+  titulo: string;
+  descripcion: string;
+  facilitador: string;
+  precio_base: number;
+  precio_extra: number;
+  max_personas: number;
+  duracion: string;
+  imagen_url: string;
+  activa: boolean;
+}>) {
+  await requireAdmin();
+  return prisma.actividad.update({ where: { id }, data });
+}
+
+export async function adminDeleteActividad(id: string) {
+  await requireAdmin();
+  return prisma.actividad.delete({ where: { id } });
+}
+
+export async function adminGetSesiones(actividadId: string) {
+  await requireAdmin();
+  return prisma.sesionActividad.findMany({
+    where: { actividad_id: actividadId },
+    orderBy: { fecha: "asc" },
+  });
+}
+
+export async function adminCreateSesion(data: {
+  actividad_id: string;
+  fecha: string;
+  hora?: string;
+  plazas_max?: number;
+}) {
+  await requireAdmin();
+  return prisma.sesionActividad.create({
+    data: {
+      actividad_id: data.actividad_id,
+      fecha: new Date(data.fecha),
+      hora: data.hora,
+      plazas_max: data.plazas_max,
+    },
+  });
+}
+
+export async function adminDeleteSesion(id: string) {
+  await requireAdmin();
+  return prisma.sesionActividad.delete({ where: { id } });
+}
+
+// ── Sistema Config ─────────────────────────────────────────────────────────────
+
+export async function adminGetSistemaConfig(clave: string) {
+  await requireAdmin();
+  return prisma.sistemaConfig.findUnique({ where: { clave } });
+}
+
+export async function adminUpsertSistemaConfig(clave: string, valor: string) {
+  await requireAdmin();
+  return prisma.sistemaConfig.upsert({
+    where: { clave },
+    update: { valor },
+    create: { clave, valor },
+  });
+}
