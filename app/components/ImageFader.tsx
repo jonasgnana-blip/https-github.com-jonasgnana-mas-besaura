@@ -4,14 +4,19 @@ import { useEffect, useState } from "react";
 
 const IMAGES = [
   "/images/masia-snow.jpg",
+  "/images/bano.jpg",
   "/images/hero3.jpg",
+  "/images/comida-1.jpg",
   "/images/hero2.jpg",
   "/images/arch-sunset.jpg",
+  "/images/comida-2.jpg",
   "/images/hero7.jpg",
+  "/images/decoracion.jpg",
   "/images/arch-moon.jpg",
+  "/images/comida-3.jpg",
   "/images/hero5.jpg",
   "/images/hero8.jpg",
-];
+].filter(Boolean);
 
 interface ImageFaderProps {
   className?: string;
