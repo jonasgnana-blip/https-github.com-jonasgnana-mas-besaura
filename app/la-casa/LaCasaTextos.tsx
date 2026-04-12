@@ -254,12 +254,6 @@ export function LaCasaEspacios({
                 }}
               />
             </div>
-            <div className="flex items-center gap-2 mb-2">
-              {espacio.icon}
-              <span className="text-xs text-[#2C1810]/50 uppercase tracking-wide">
-                {espacio.subtitulo}
-              </span>
-            </div>
             <h3
               className="text-xl text-[#2C1810] mb-2"
               style={{ fontFamily: "var(--font-playfair), Georgia, serif" }}
