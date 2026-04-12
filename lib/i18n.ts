@@ -11,6 +11,7 @@ const translations = {
     nav_alojamiento: "Alojamiento",
     nav_actividades: "Actividades",
     nav_alquiler: "Alquiler",
+    nav_estancia: "Estancia",
     nav_reservar: "Reservar",
 
     // ── Home — Hero ─────────────────────────────────────────────────────────
@@ -186,7 +187,7 @@ const translations = {
     // ── La Casa page ────────────────────────────────────────────────────────
     lacasa_title: "La Casa",
     lacasa_intro_label: "Espacio & Naturaleza",
-    lacasa_intro: "La masía puede alojarse hasta 14 personas — 12 participantes más 2 facilitadores. Dispone de tres habitaciones, sala interior, salón comedor y la gran sala exterior La Cabanya. Rodeada de hayedos, ríos salvajes y cascadas, es un refugio para el descanso y la transformación.",
+    lacasa_intro: "En Mas Besaura pueden alojarse hasta 14 personas (+ opción acampada) — 12 participantes más 2 facilitadores. Dispone de tres habitaciones, sala interior, salón comedor y la gran sala exterior La Cabanya. Rodeada de hayedos, ríos salvajes y cascadas, es un refugio para el descanso y la transformación. Pregunta por la opción de voluntariado.",
     lacasa_rooms_label: "Habitaciones",
     lacasa_rooms_title: "Tres diosas que custodian tu descanso",
     lacasa_espacios_label: "Espacios Comunes",
@@ -246,6 +247,7 @@ const translations = {
     nav_alojamiento: "Allotjament",
     nav_actividades: "Activitats",
     nav_alquiler: "Lloguer",
+    nav_estancia: "Estada",
     nav_reservar: "Reservar",
 
     // ── Home — Hero ─────────────────────────────────────────────────────────
@@ -421,7 +423,7 @@ const translations = {
     // ── La Casa page ────────────────────────────────────────────────────────
     lacasa_title: "La Casa",
     lacasa_intro_label: "Espai & Natura",
-    lacasa_intro: "La masia pot allotjar fins a 14 persones — 12 participants més 2 facilitadors. Disposa de tres habitacions, sala interior, sala menjador i la gran sala exterior La Cabanya. Envoltada de fagedes, rius salvatges i cascades, és un refugi per al descans i la transformació.",
+    lacasa_intro: "A Mas Besaura es poden allotjar fins a 14 persones (+ opció acampada) — 12 participants més 2 facilitadors. Disposa de tres habitacions, sala interior, sala menjador i la gran sala exterior La Cabanya. Envoltada de fagedes, rius salvatges i cascades, és un refugi per al descans i la transformació. Pregunta per l'opció de voluntariat.",
     lacasa_rooms_label: "Habitacions",
     lacasa_rooms_title: "Tres deesses que custodien el teu descans",
     lacasa_espacios_label: "Espais Comuns",

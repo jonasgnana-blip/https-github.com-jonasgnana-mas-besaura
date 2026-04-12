@@ -132,6 +132,8 @@ export default function ConfigClient({
   espaciosInicial,
   cabanyaInicial,
   sliderInicial,
+  estanciaTextoEsInicial,
+  estanciaTextoCaInicial,
 }: {
   habitaciones: Habitacion[];
   complementos: Complemento[];
@@ -141,6 +143,8 @@ export default function ConfigClient({
   espaciosInicial: EspaciosCfg;
   cabanyaInicial: CabanyaCfg;
   sliderInicial: SliderCfg;
+  estanciaTextoEsInicial: string;
+  estanciaTextoCaInicial: string;
 }) {
   const [isPending, startTransition] = useTransition();
 
@@ -151,6 +155,8 @@ export default function ConfigClient({
   const [cabanya, setCabanya]   = useState<CabanyaCfg>(cabanyaInicial);
   const [slider,  setSlider]    = useState<SliderCfg>(sliderInicial);
   const [pixelId, setPixelId]   = useState(fbPixelIdInicial ?? "");
+  const [estanciaEs, setEstanciaEs] = useState(estanciaTextoEsInicial);
+  const [estanciaCa, setEstanciaCa] = useState(estanciaTextoCaInicial);
 
   // ── Save flags ─────────────────────────────────────────────────────────────
   const [savedHab,      setSavedHab]      = useState<string | null>(null);
@@ -159,6 +165,7 @@ export default function ConfigClient({
   const [savedCabanya,  setSavedCabanya]  = useState(false);
   const [savedSlider,   setSavedSlider]   = useState(false);
   const [savedPixel,    setSavedPixel]    = useState(false);
+  const [savedEstancia, setSavedEstancia] = useState(false);
 
   // ── Save helpers ───────────────────────────────────────────────────────────
 
@@ -232,6 +239,16 @@ export default function ConfigClient({
     startTransition(async () => {
       await adminUpsertSistemaConfig("fb_pixel_id", pixelId.trim());
       flag(setSavedPixel);
+    });
+  }
+
+  function saveEstancia() {
+    startTransition(async () => {
+      await Promise.all([
+        adminUpsertSistemaConfig("estancia_texto_es", estanciaEs),
+        adminUpsertSistemaConfig("estancia_texto_ca", estanciaCa),
+      ]);
+      flag(setSavedEstancia);
     });
   }
 
@@ -446,7 +463,35 @@ export default function ConfigClient({
         </div>
       </Section>
 
-      {/* ── 7. FACEBOOK PIXEL ── */}
+      {/* ── 7. ESTANCIA ── */}
+      <Section title="Estancia" subtitle="Texto de sugerencias y condiciones de la página /estancia." defaultOpen={false}>
+        <div className="bg-white rounded-2xl border border-[#E8DCC8] p-6 space-y-5">
+          <p className="text-xs text-[#2C1810]/40">
+            Usa <code className="bg-[#F0EAD6] px-1 py-0.5 rounded">**Título**</code> para cabeceras y <code className="bg-[#F0EAD6] px-1 py-0.5 rounded">- elemento</code> para listas.
+          </p>
+          <FieldRow label="Texto en castellano (ES)">
+            <textarea
+              rows={18}
+              value={estanciaEs}
+              onChange={e => setEstanciaEs(e.target.value)}
+              className={INPUT + " resize-y font-mono text-xs leading-relaxed"}
+              spellCheck={false}
+            />
+          </FieldRow>
+          <FieldRow label="Texto en català (CA)">
+            <textarea
+              rows={18}
+              value={estanciaCa}
+              onChange={e => setEstanciaCa(e.target.value)}
+              className={INPUT + " resize-y font-mono text-xs leading-relaxed"}
+              spellCheck={false}
+            />
+          </FieldRow>
+          <SaveBtn onClick={saveEstancia} saving={isPending} saved={savedEstancia} label="Guardar textos Estancia" />
+        </div>
+      </Section>
+
+      {/* ── 8. FACEBOOK PIXEL ── */}
       <Section title="Facebook Pixel" defaultOpen={false}>
         <div className="bg-white rounded-2xl border border-[#E8DCC8] p-6">
           <FieldRow label="Pixel ID">

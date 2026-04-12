@@ -16,6 +16,7 @@ export default function NavBar() {
     { label: tr.nav_alojamiento, href: "/alojamiento" },
     { label: tr.nav_actividades, href: "/actividades" },
     { label: tr.nav_alquiler, href: "/alquiler" },
+    { label: tr.nav_estancia, href: "/estancia" },
   ];
 
   return (

@@ -285,6 +285,7 @@ export async function adminUpsertSistemaConfig(clave: string, valor: string) {
   });
   // Revalidate all pages that read SistemaConfig
   revalidatePath("/la-casa");
+  revalidatePath("/estancia");
   revalidatePath("/");
   return result;
 }

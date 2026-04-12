@@ -28,6 +28,7 @@ export default async function AdminConfigPage({
             "espacio_salon_nombre","espacio_habs_nombre","espacio_sala_nombre",
             "cabanya_foto_1","cabanya_foto_2",
             "slider_foto_1","slider_foto_2","slider_foto_3","slider_foto_4","slider_foto_5",
+            "estancia_texto_es","estancia_texto_ca",
           ],
         },
       },
@@ -78,6 +79,8 @@ export default async function AdminConfigPage({
         foto4: cfg["slider_foto_4"] ?? "",
         foto5: cfg["slider_foto_5"] ?? "",
       }}
+      estanciaTextoEsInicial={cfg["estancia_texto_es"] ?? ""}
+      estanciaTextoCaInicial={cfg["estancia_texto_ca"] ?? ""}
     />
   );
 }
