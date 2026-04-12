@@ -40,6 +40,12 @@ type CabanyaBody = {
   tipo: "cabanya";
   precio: number;
   personas: number;
+  dias?: number;
+  fecha_entrada?: string;
+  fecha_salida?: string;
+  nombre_cliente?: string;
+  email_cliente?: string;
+  telefono_cliente?: string;
 };
 
 type AlquilerBody = {
@@ -185,6 +191,12 @@ async function handleActividad(body: ActividadBody) {
 }
 
 async function handleCabanya(body: CabanyaBody) {
+  const dias = body.dias ?? 1;
+  const fechas = body.fecha_entrada && body.fecha_salida
+    ? ` · ${fmtDate(body.fecha_entrada)} → ${fmtDate(body.fecha_salida)}`
+    : body.fecha_entrada ? ` · ${fmtDate(body.fecha_entrada)}` : "";
+  const desc = `${body.personas} persona${body.personas !== 1 ? "s" : ""} · ${dias} día${dias !== 1 ? "s" : ""}${fechas}`;
+
   const session = await getStripe().checkout.sessions.create({
     mode: "payment",
     locale: "es",
@@ -195,8 +207,8 @@ async function handleCabanya(body: CabanyaBody) {
           currency: "eur",
           unit_amount: Math.round(body.precio * 100),
           product_data: {
-            name: "Alquiler de cabaña",
-            description: `${body.personas} persona${body.personas !== 1 ? "s" : ""}`,
+            name: "Reserva La Cabanya — Mas Besaura",
+            description: desc,
           },
         },
       },
@@ -204,7 +216,13 @@ async function handleCabanya(body: CabanyaBody) {
     metadata: {
       tipo: "cabanya",
       personas: String(body.personas),
+      dias: String(dias),
+      fecha_entrada: body.fecha_entrada ?? "",
+      fecha_salida: body.fecha_salida ?? "",
+      nombre_cliente: body.nombre_cliente ?? "",
+      email_cliente: body.email_cliente ?? "",
     },
+    customer_email: body.email_cliente || undefined,
     success_url: SUCCESS_URL,
     cancel_url: CANCEL_URL,
   });

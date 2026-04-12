@@ -1,10 +1,77 @@
 "use client";
 
 import Link from "next/link";
-import { Bed, Users, Flame, Calendar, ChevronLeft, ChevronRight } from "lucide-react";
+import { Bed, Users, Flame, ChevronLeft, ChevronRight, Loader2 } from "lucide-react";
 import { useLanguage } from "@/lib/LanguageContext";
 import { getT } from "@/lib/i18n";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import type { DateRange } from "@/app/actions/reservas";
+
+// ── Shared date helpers ──────────────────────────────────────────────────────
+const MONTHS_ES = ["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"];
+const MONTHS_CA = ["Gener","Febrer","Març","Abril","Maig","Juny","Juliol","Agost","Setembre","Octubre","Novembre","Desembre"];
+const DAYS_ES = ["Lu","Ma","Mi","Ju","Vi","Sá","Do"];
+const DAYS_CA = ["Dl","Dt","Dc","Dj","Dv","Ds","Dg"];
+
+function fmtDate(d: Date) {
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
+}
+function isPastDay(d: Date) { const t=new Date(); t.setHours(0,0,0,0); return d<t; }
+function sameDay(a:Date,b:Date){ return a.getFullYear()===b.getFullYear()&&a.getMonth()===b.getMonth()&&a.getDate()===b.getDate(); }
+function isBetween(d:Date,s:Date,e:Date){ return d>s&&d<e; }
+function nightsBetween(a:Date,b:Date){ return Math.round((b.getTime()-a.getTime())/86400000); }
+function isUnavail(date:Date,ranges:DateRange[]){ const ds=fmtDate(date); return ranges.some(r=>ds>=r.entrada&&ds<r.salida); }
+
+// ── Mini calendar month grid ─────────────────────────────────────────────────
+function CalMes({ year, month, checkIn, checkOut, hovered, unavail, onDay, onHover, monthNames, dayNames }:{
+  year:number; month:number; checkIn:Date|null; checkOut:Date|null; hovered:Date|null;
+  unavail:DateRange[]; onDay:(d:Date)=>void; onHover:(d:Date|null)=>void;
+  monthNames:string[]; dayNames:string[];
+}) {
+  const first = new Date(year,month,1);
+  const offset = (first.getDay()+6)%7;
+  const dim = new Date(year,month+1,0).getDate();
+  const cells:(Date|null)[] = [];
+  for(let i=0;i<offset;i++) cells.push(null);
+  for(let d=1;d<=dim;d++) cells.push(new Date(year,month,d));
+
+  const rangeEnd = checkOut ?? hovered;
+  return (
+    <div className="select-none">
+      <div className="text-center text-sm font-medium text-[#2C1810] mb-3">{monthNames[month]} {year}</div>
+      <div className="grid grid-cols-7 mb-1">
+        {dayNames.map(d=><div key={d} className="text-center text-[10px] text-[#2C1810]/40 font-medium py-1">{d}</div>)}
+      </div>
+      <div className="grid grid-cols-7">
+        {cells.map((date,i)=>{
+          if(!date) return <div key={`e${i}`}/>;
+          const ds=fmtDate(date);
+          const past=isPastDay(date), unav=isUnavail(date,unavail), disabled=past||unav;
+          const isIn=checkIn&&sameDay(date,checkIn);
+          const isOut=checkOut&&sameDay(date,checkOut);
+          const inRange=checkIn&&rangeEnd&&!sameDay(checkIn,date)&&!sameDay(rangeEnd,date)&&isBetween(date,checkIn<rangeEnd?checkIn:rangeEnd,checkIn<rangeEnd?rangeEnd:checkIn);
+          const isHov=hovered&&!checkOut&&checkIn&&sameDay(date,hovered)&&!sameDay(date,checkIn);
+          let bg="", txt=disabled?"text-[#2C1810]/25":"text-[#2C1810]", rnd="rounded-full";
+          if(isIn||isOut){bg="bg-[#4A6741]";txt="text-[#F0EAD6]";}
+          else if(isHov&&!disabled){bg="bg-[#4A6741]/50";txt="text-[#FAFAF6]";}
+          else if(inRange){bg="bg-[#4A6741]/15";rnd="rounded-none";}
+          return (
+            <div key={ds} className={`relative flex items-center justify-center ${inRange?bg:""} ${inRange?rnd:""}`}>
+              <button disabled={disabled} onClick={()=>!disabled&&onDay(date)} onMouseEnter={()=>!disabled&&onHover(date)} onMouseLeave={()=>onHover(null)}
+                className={`w-8 h-8 text-xs font-medium flex items-center justify-center transition-all
+                  ${isIn||isOut||isHov?bg+" "+rnd:""}
+                  ${!isIn&&!isOut&&!isHov&&!inRange?(disabled?"":"hover:bg-[#4A6741]/10 rounded-full"):""}
+                  ${txt} ${disabled?"cursor-not-allowed":"cursor-pointer"}
+                  ${unav&&!past?"line-through opacity-40":""}
+                `}
+              >{date.getDate()}</button>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
 
 export function LaCasaIntro() {
   const { lang } = useLanguage();
@@ -202,158 +269,245 @@ export function LaCasaEspacios() {
   );
 }
 
-export function LaCasaCalendario() {
+const CABANYA_FOTOS = [
+  { src: "/images/cabanya-grupo.jpg", alt: "La Cabanya — espacio exterior" },
+  { src: "/images/cabanya-luna.jpg",  alt: "La Cabanya — noche de luna" },
+  { src: "/images/hero2.jpg",         alt: "La Cabanya — jardín" },
+];
+
+export function LaCasaCalendario({ unavailDates = [] }: { unavailDates?: DateRange[] }) {
   const { lang } = useLanguage();
-  const today = new Date();
-  const [year, setYear] = useState(today.getFullYear());
-  const [month, setMonth] = useState(today.getMonth());
+  const locale = lang === "ca" ? "ca-ES" : "es-ES";
+  const monthNames = lang === "ca" ? MONTHS_CA : MONTHS_ES;
+  const dayNames   = lang === "ca" ? DAYS_CA   : DAYS_ES;
 
-  const MONTHS_ES = ["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"];
-  const MONTHS_CA = ["Gener","Febrer","Març","Abril","Maig","Juny","Juliol","Agost","Setembre","Octubre","Novembre","Desembre"];
-  const DAYS_ES = ["Lu","Ma","Mi","Ju","Vi","Sá","Do"];
-  const DAYS_CA = ["Dl","Dt","Dc","Dj","Dv","Ds","Dg"];
+  // Photo slider
+  const [slide, setSlide] = useState(0);
+  useEffect(() => {
+    const t = setInterval(() => setSlide(s => (s + 1) % CABANYA_FOTOS.length), 4000);
+    return () => clearInterval(t);
+  }, []);
 
-  const months = lang === "ca" ? MONTHS_CA : MONTHS_ES;
-  const days = lang === "ca" ? DAYS_CA : DAYS_ES;
+  // Calendar open/close
+  const [open, setOpen] = useState(false);
 
-  function prevMonth() {
-    if (month === 0) { setMonth(11); setYear(y => y - 1); }
-    else setMonth(m => m - 1);
+  // Calendar navigation
+  const now = new Date();
+  const [viewMonth, setViewMonth] = useState(now.getMonth());
+  const [viewYear,  setViewYear]  = useState(now.getFullYear());
+  const [hovered,   setHovered]   = useState<Date|null>(null);
+  const nextM = viewMonth === 11 ? 0  : viewMonth + 1;
+  const nextY = viewMonth === 11 ? viewYear + 1 : viewYear;
+
+  // Selection
+  const [checkIn,  setCheckIn]  = useState<Date|null>(null);
+  const [checkOut, setCheckOut] = useState<Date|null>(null);
+  const [personas, setPersonas] = useState(10);
+  const [nombre,   setNombre]   = useState("");
+  const [email,    setEmail]    = useState("");
+  const [tel,      setTel]      = useState("");
+  const [loading,  setLoading]  = useState(false);
+  const [error,    setError]    = useState("");
+
+  const dias  = checkIn && checkOut ? nightsBetween(checkIn, checkOut) : 0;
+  const total = personas * 10 * Math.max(dias, 1);
+
+  function handleDay(date: Date) {
+    if (!checkIn || (checkIn && checkOut)) {
+      setCheckIn(date); setCheckOut(null);
+    } else {
+      if (sameDay(date, checkIn)) { setCheckIn(null); setCheckOut(null); return; }
+      const [s, e] = date > checkIn ? [checkIn, date] : [date, checkIn];
+      // Check no unavailable day in range
+      let conflict = false;
+      for (let i = 0; i < nightsBetween(s, e); i++) {
+        const d = new Date(s); d.setDate(d.getDate() + i);
+        if (isUnavail(d, unavailDates)) { conflict = true; break; }
+      }
+      if (conflict) { setCheckIn(date); setCheckOut(null); }
+      else { setCheckIn(s); setCheckOut(e); }
+    }
   }
-  function nextMonth() {
-    if (month === 11) { setMonth(0); setYear(y => y + 1); }
-    else setMonth(m => m + 1);
+
+  function prevMo() { if(viewMonth===0){setViewMonth(11);setViewYear(y=>y-1);}else setViewMonth(m=>m-1); }
+  function nextMo() { if(viewMonth===11){setViewMonth(0);setViewYear(y=>y+1);}else setViewMonth(m=>m+1); }
+
+  async function handleReservar() {
+    if (!checkIn) { setError(lang==="ca"?"Selecciona una data d'entrada":"Selecciona una fecha de entrada"); return; }
+    if (!nombre.trim() || !email.trim()) { setError(lang==="ca"?"Nom i email requerits":"Nombre y email requeridos"); return; }
+    setLoading(true); setError("");
+    try {
+      const res = await fetch("/api/checkout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          tipo: "cabanya",
+          precio: total,
+          personas,
+          dias: Math.max(dias, 1),
+          fecha_entrada: fmtDate(checkIn),
+          fecha_salida: checkOut ? fmtDate(checkOut) : fmtDate(checkIn),
+          nombre_cliente: nombre.trim(),
+          email_cliente: email.trim(),
+          telefono_cliente: tel.trim(),
+        }),
+      });
+      const data = await res.json();
+      if (data.url) window.location.href = data.url;
+      else { setError(data.error ?? "Error al iniciar el pago"); setLoading(false); }
+    } catch { setError("Error de red"); setLoading(false); }
   }
-
-  // Build calendar grid
-  const firstDay = new Date(year, month, 1).getDay();
-  // Adjust: week starts Monday (0=Mon)
-  const startOffset = (firstDay === 0 ? 6 : firstDay - 1);
-  const daysInMonth = new Date(year, month + 1, 0).getDate();
-  const cells: (number | null)[] = [
-    ...Array(startOffset).fill(null),
-    ...Array.from({ length: daysInMonth }, (_, i) => i + 1),
-  ];
-  // Pad to complete last row
-  while (cells.length % 7 !== 0) cells.push(null);
-
-  const isPast = (d: number) => {
-    const date = new Date(year, month, d);
-    const t = new Date(); t.setHours(0,0,0,0);
-    return date < t;
-  };
 
   return (
     <section className="py-16 px-6 bg-[#F0EAD6]">
-      <div className="max-w-4xl mx-auto">
-        <div className="text-center mb-10">
-          <p className="text-[#4A6741] text-sm tracking-[0.2em] uppercase font-medium mb-3">
-            {lang === "ca" ? "Disponibilitat" : "Disponibilidad"}
-          </p>
-          <h2
-            className="text-3xl md:text-4xl text-[#2C1810] mb-3"
-            style={{ fontFamily: "var(--font-playfair), Georgia, serif" }}
-          >
-            {lang === "ca" ? "Reserva la teva estada" : "Reserva tu estancia"}
-          </h2>
-          <p className="text-[#2C1810]/60 text-sm">
-            {lang === "ca"
-              ? "Consulta disponibilitat i reserva en línia"
-              : "Consulta disponibilidad y reserva en línea"}
-          </p>
+      <div className="max-w-5xl mx-auto">
+
+        {/* ── Photo slider + header ── */}
+        <div className="relative rounded-2xl overflow-hidden mb-10 h-64 md:h-80">
+          {CABANYA_FOTOS.map((f, i) => (
+            <img key={f.src} src={f.src} alt={f.alt}
+              className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-1000 ${i === slide ? "opacity-100" : "opacity-0"}`}
+              onError={e => { (e.target as HTMLImageElement).src = "/images/hero2.jpg"; }}
+            />
+          ))}
+          <div className="absolute inset-0 bg-gradient-to-t from-[#2C1810]/70 via-transparent to-transparent" />
+          {/* Dots */}
+          <div className="absolute bottom-4 left-0 right-0 flex justify-center gap-2">
+            {CABANYA_FOTOS.map((_,i) => (
+              <button key={i} onClick={() => setSlide(i)}
+                className={`w-2 h-2 rounded-full transition-all ${i===slide?"bg-[#F0EAD6] scale-125":"bg-[#F0EAD6]/50"}`}
+              />
+            ))}
+          </div>
+          <div className="absolute bottom-8 left-6 right-6">
+            <p className="text-[#C4A882] text-xs tracking-[0.2em] uppercase font-medium mb-1">
+              {lang === "ca" ? "Espai exterior 350 m²" : "Espacio exterior 350 m²"}
+            </p>
+            <h2 className="text-2xl md:text-3xl text-[#F0EAD6]"
+              style={{ fontFamily: "var(--font-playfair), Georgia, serif" }}>
+              La Cabanya
+            </h2>
+          </div>
         </div>
 
-        <div className="grid md:grid-cols-2 gap-10 items-start">
-          {/* Calendar */}
-          <div className="bg-white rounded-2xl shadow-sm p-6">
-            {/* Header */}
-            <div className="flex items-center justify-between mb-5">
-              <button
-                onClick={prevMonth}
-                className="p-2 rounded-full hover:bg-[#F0EAD6] transition-colors text-[#2C1810]/60"
-              >
-                <ChevronLeft size={18} />
-              </button>
-              <span
-                className="text-[#2C1810] font-medium"
-                style={{ fontFamily: "var(--font-playfair), Georgia, serif" }}
-              >
-                {months[month]} {year}
-              </span>
-              <button
-                onClick={nextMonth}
-                className="p-2 rounded-full hover:bg-[#F0EAD6] transition-colors text-[#2C1810]/60"
-              >
-                <ChevronRight size={18} />
-              </button>
-            </div>
-
-            {/* Day headers */}
-            <div className="grid grid-cols-7 mb-2">
-              {days.map(d => (
-                <div key={d} className="text-center text-xs text-[#2C1810]/40 font-medium py-1">
-                  {d}
-                </div>
-              ))}
-            </div>
-
-            {/* Days grid */}
-            <div className="grid grid-cols-7 gap-0.5">
-              {cells.map((cell, i) => (
-                <div
-                  key={i}
-                  className={`
-                    aspect-square flex items-center justify-center rounded-full text-sm
-                    ${cell === null ? "" : isPast(cell)
-                      ? "text-[#2C1810]/25 cursor-not-allowed"
-                      : "text-[#2C1810] hover:bg-[#4A6741] hover:text-white cursor-pointer transition-colors"
-                    }
-                    ${cell === today.getDate() && month === today.getMonth() && year === today.getFullYear()
-                      ? "ring-2 ring-[#4A6741] font-semibold"
-                      : ""
-                    }
-                  `}
-                >
-                  {cell}
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Price & CTA */}
-          <div className="flex flex-col justify-center gap-6">
-            <div className="bg-white rounded-2xl shadow-sm p-6">
-              <div className="flex items-center gap-3 mb-4">
-                <Calendar size={20} className="text-[#4A6741]" />
-                <span className="text-[#2C1810]/60 text-sm uppercase tracking-wide font-medium">
-                  {lang === "ca" ? "Preu per persona" : "Precio por persona"}
-                </span>
-              </div>
-              <div
-                className="text-5xl text-[#2C1810] font-bold mb-1"
-                style={{ fontFamily: "var(--font-playfair), Georgia, serif" }}
-              >
+        {/* ── Booking card ── */}
+        <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
+          {/* Price bar */}
+          <div className="bg-[#2A3F24] px-8 py-5 flex items-center justify-between">
+            <div>
+              <p className="text-[#C4A882] text-xs tracking-[0.2em] uppercase font-medium mb-0.5">
+                {lang === "ca" ? "Preu base" : "Precio base"}
+              </p>
+              <span className="text-3xl font-bold text-[#F0EAD6]"
+                style={{ fontFamily: "var(--font-playfair), Georgia, serif" }}>
                 10€
-              </div>
-              <p className="text-[#2C1810]/50 text-sm">
-                {lang === "ca" ? "/ persona · nit" : "/ persona · noche"}
-              </p>
+              </span>
+              <span className="text-[#E8DCC8]/60 text-sm ml-2">
+                / {lang === "ca" ? "persona · dia" : "persona · día"}
+              </span>
             </div>
-
-            <div className="bg-[#2A3F24] rounded-2xl p-6 text-white">
-              <p className="text-[#E8DCC8]/80 text-sm mb-4 leading-relaxed">
-                {lang === "ca"
-                  ? "Inclou accés als espais comuns, jardins i terrassa. Esmorzar i mitja pensió disponibles."
-                  : "Incluye acceso a espacios comunes, jardines y terraza. Desayuno y media pensión disponibles."}
-              </p>
-              <Link
-                href="/alojamiento"
-                className="block text-center px-6 py-3 bg-[#C4A882] text-[#2C1810] rounded-full font-semibold hover:bg-[#F0EAD6] transition-colors text-sm"
-              >
-                {lang === "ca" ? "Reservar ara" : "Reservar ahora"}
-              </Link>
-            </div>
+            <button onClick={() => setOpen(v => !v)}
+              className="flex items-center gap-2 px-6 py-3 rounded-full bg-[#C4A882] text-[#2C1810] text-sm font-semibold hover:bg-[#F0EAD6] transition-colors">
+              {open
+                ? (lang === "ca" ? "Tancar" : "Cerrar")
+                : (lang === "ca" ? "Reservar" : "Reservar")}
+              <ChevronRight size={14} className={`transition-transform ${open ? "rotate-90" : ""}`} />
+            </button>
           </div>
+
+          {/* Booking panel */}
+          {open && (
+            <div className="px-6 md:px-8 pb-8 pt-6 space-y-7">
+
+              {/* Calendar */}
+              <div>
+                <p className="text-xs font-medium text-[#2C1810]/50 uppercase tracking-wide mb-3">
+                  {lang === "ca" ? "Selecciona les dates" : "Selecciona las fechas"}
+                </p>
+                <div className="border border-[#E8DCC8] rounded-2xl p-4 bg-[#FAFAF6]">
+                  <div className="flex items-center justify-between mb-4">
+                    <button onClick={prevMo} className="w-8 h-8 rounded-full flex items-center justify-center hover:bg-[#E8DCC8] transition-colors text-[#2C1810]">
+                      <ChevronLeft size={16} />
+                    </button>
+                    <div className="flex-1" />
+                    <button onClick={nextMo} className="w-8 h-8 rounded-full flex items-center justify-center hover:bg-[#E8DCC8] transition-colors text-[#2C1810]">
+                      <ChevronRight size={16} />
+                    </button>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <CalMes year={viewYear} month={viewMonth} checkIn={checkIn} checkOut={checkOut}
+                      hovered={hovered} unavail={unavailDates} onDay={handleDay} onHover={setHovered}
+                      monthNames={monthNames} dayNames={dayNames} />
+                    <CalMes year={nextY} month={nextM} checkIn={checkIn} checkOut={checkOut}
+                      hovered={hovered} unavail={unavailDates} onDay={handleDay} onHover={setHovered}
+                      monthNames={monthNames} dayNames={dayNames} />
+                  </div>
+                  <div className="mt-4 pt-3 border-t border-[#E8DCC8] text-xs text-[#2C1810]/60">
+                    {!checkIn && (lang === "ca" ? "Selecciona la data d'entrada" : "Selecciona fecha de entrada")}
+                    {checkIn && !checkOut && (lang === "ca" ? "Ara selecciona la data de sortida" : "Ahora selecciona fecha de salida")}
+                    {checkIn && checkOut && (
+                      <span className="text-[#4A6741] font-medium">
+                        {dias} {dias !== 1 ? (lang === "ca" ? "dies" : "días") : (lang === "ca" ? "dia" : "día")} · {" "}
+                        {checkIn.toLocaleDateString(locale, { day: "numeric", month: "short" })} → {checkOut.toLocaleDateString(locale, { day: "numeric", month: "short" })}
+                      </span>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* Personas */}
+              <div>
+                <p className="text-xs font-medium text-[#2C1810]/50 uppercase tracking-wide mb-3">
+                  {lang === "ca" ? "Nombre de persones" : "Número de personas"}
+                </p>
+                <div className="flex items-center gap-3">
+                  <button onClick={() => setPersonas(p => Math.max(1, p - 1))} disabled={personas <= 1}
+                    className="w-9 h-9 rounded-full border border-[#E8DCC8] bg-[#FAFAF6] flex items-center justify-center text-lg font-medium hover:bg-[#E8DCC8] transition-colors disabled:opacity-40">−</button>
+                  <span className="w-10 text-center text-[#2C1810] font-medium text-base tabular-nums">{personas}</span>
+                  <button onClick={() => setPersonas(p => Math.min(200, p + 1))} disabled={personas >= 200}
+                    className="w-9 h-9 rounded-full border border-[#E8DCC8] bg-[#FAFAF6] flex items-center justify-center text-lg font-medium hover:bg-[#E8DCC8] transition-colors disabled:opacity-40">+</button>
+                </div>
+              </div>
+
+              {/* Price summary */}
+              <div className="bg-[#F0EAD6] rounded-xl p-5 space-y-1.5">
+                <div className="flex justify-between text-sm text-[#2C1810]/60">
+                  <span>{personas} {lang === "ca" ? "persones" : "personas"} × {Math.max(dias, 1)} {dias > 1 ? (lang === "ca" ? "dies" : "días") : (lang === "ca" ? "dia" : "día")} × 10€</span>
+                </div>
+                <div className="flex justify-between items-baseline">
+                  <span className="text-sm text-[#2C1810]/60">{lang === "ca" ? "Total" : "Total"}</span>
+                  <span className="text-2xl font-bold text-[#2C1810]"
+                    style={{ fontFamily: "var(--font-playfair), Georgia, serif" }}>{total}€</span>
+                </div>
+              </div>
+
+              {/* Contact form */}
+              <div className="space-y-3">
+                <p className="text-xs font-medium text-[#2C1810]/50 uppercase tracking-wide">
+                  {lang === "ca" ? "Les teves dades" : "Tus datos"}
+                </p>
+                {[
+                  { label: lang === "ca" ? "Nom" : "Nombre", val: nombre, set: setNombre, type: "text", ph: lang === "ca" ? "El teu nom" : "Tu nombre" },
+                  { label: "Email", val: email, set: setEmail, type: "email", ph: "tu@email.com" },
+                  { label: lang === "ca" ? "Telèfon" : "Teléfono", val: tel, set: setTel, type: "tel", ph: "+34 600 000 000" },
+                ].map(f => (
+                  <div key={f.label}>
+                    <label className="block text-xs font-medium text-[#2C1810]/50 uppercase tracking-wide mb-1">{f.label}</label>
+                    <input type={f.type} value={f.val} onChange={e => f.set(e.target.value)} placeholder={f.ph}
+                      className="w-full px-4 py-3 rounded-xl border border-[#E8DCC8] bg-[#FAFAF6] text-[#2C1810] text-sm focus:outline-none focus:ring-2 focus:ring-[#4A6741]/30 placeholder:text-[#2C1810]/30" />
+                  </div>
+                ))}
+              </div>
+
+              {error && <p className="text-red-600 text-sm text-center">{error}</p>}
+
+              <button onClick={handleReservar} disabled={loading}
+                className="w-full flex items-center justify-center gap-2 px-6 py-4 rounded-full bg-[#4A6741] text-[#F0EAD6] text-sm font-semibold hover:bg-[#3A5432] transition-colors disabled:opacity-60">
+                {loading && <Loader2 size={16} className="animate-spin" />}
+                {lang === "ca" ? "Reservar ara" : "Reservar ahora"} — {total}€
+              </button>
+            </div>
+          )}
         </div>
       </div>
     </section>

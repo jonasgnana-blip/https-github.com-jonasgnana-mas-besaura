@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import { getUnavailableDates } from "@/app/actions/reservas";
 import NavBar from "@/app/components/NavBar";
 import ImageFader from "@/app/components/ImageFader";
 import {
@@ -13,11 +14,13 @@ import {
 export const revalidate = 0; // always fresh — admin changes show immediately
 
 export default async function LaCasa() {
-  // Fetch habitaciones from DB so admin image updates appear here
-  const habitaciones = await prisma.habitacion.findMany({
-    orderBy: { nombre: "asc" },
-    select: { id: true, nombre: true, descripcion: true, capacidad: true, imagenes: true },
-  });
+  const [habitaciones, unavailDates] = await Promise.all([
+    prisma.habitacion.findMany({
+      orderBy: { nombre: "asc" },
+      select: { id: true, nombre: true, descripcion: true, capacidad: true, imagenes: true },
+    }),
+    getUnavailableDates("la-cabanya"),
+  ]);
 
   return (
     <div className="min-h-screen bg-[#FAFAF6]">
@@ -56,7 +59,7 @@ export default async function LaCasa() {
       </section>
 
       {/* ─── CALENDARIO / RESERVAS ─── */}
-      <LaCasaCalendario />
+      <LaCasaCalendario unavailDates={unavailDates} />
 
       {/* ─── CTA ALOJAMIENTO ─── */}
       <LaCasaCTA />
