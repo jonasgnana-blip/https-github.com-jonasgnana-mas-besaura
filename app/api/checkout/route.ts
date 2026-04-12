@@ -67,6 +67,22 @@ type CheckoutBody =
   | AlquilerBody
   | LegacyBody;
 
+// ── Input validation helpers ──────────────────────────────────────────────────
+
+function isValidPrice(p: unknown): p is number {
+  return typeof p === "number" && isFinite(p) && p > 0 && p <= 50_000;
+}
+function isValidPersonas(p: unknown): p is number {
+  return typeof p === "number" && Number.isInteger(p) && p >= 1 && p <= 100;
+}
+function isValidDias(d: unknown): d is number {
+  return typeof d === "number" && Number.isInteger(d) && d >= 1 && d <= 365;
+}
+function sanitizeStr(s: unknown, maxLen = 200): string {
+  if (typeof s !== "string") return "";
+  return s.replace(/[<>]/g, "").slice(0, maxLen);
+}
+
 export async function POST(req: NextRequest) {
   try {
     const body: CheckoutBody = await req.json();
@@ -84,6 +100,23 @@ export async function POST(req: NextRequest) {
     }
 
     // ── Typed checkout ─────────────────────────────────────────────────────
+    // Validate common fields before delegating
+    if ("precio" in body && !isValidPrice(body.precio)) {
+      return NextResponse.json({ error: "Precio inválido" }, { status: 400 });
+    }
+    if ("personas" in body && !isValidPersonas(body.personas)) {
+      return NextResponse.json({ error: "Número de personas inválido" }, { status: 400 });
+    }
+    if ("dias" in body && body.dias != null && !isValidDias(body.dias)) {
+      return NextResponse.json({ error: "Número de días inválido" }, { status: 400 });
+    }
+    if ("noches" in body && body.noches != null && !isValidDias(body.noches)) {
+      return NextResponse.json({ error: "Número de noches inválido" }, { status: 400 });
+    }
+    if ("nombre" in body) (body as HabitacionBody).nombre = sanitizeStr(body.nombre);
+    if ("descripcion" in body && body.descripcion)
+      (body as ActividadBody).descripcion = sanitizeStr(body.descripcion, 500);
+
     switch (body.tipo) {
       case "habitacion":
         return handleHabitacion(body);

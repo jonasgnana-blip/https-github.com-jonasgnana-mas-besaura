@@ -1,5 +1,6 @@
 import { adminGetStats } from "@/app/actions/admin";
 import { TrendingUp, Calendar, Clock, Euro } from "lucide-react";
+import BackupButton from "./BackupButton";
 
 export const dynamic = "force-dynamic";
 
@@ -43,16 +44,19 @@ export default async function AdminDashboard() {
 
   return (
     <div className="p-8">
-      <div className="mb-8">
-        <h1
-          className="text-3xl text-[#2C1810]"
-          style={{ fontFamily: "var(--font-playfair), Georgia, serif" }}
-        >
-          Dashboard
-        </h1>
-        <p className="text-sm text-[#2C1810]/50 mt-1">
-          Bienvenido al panel de administración de Mas Besaura.
-        </p>
+      <div className="mb-8 flex items-start justify-between gap-4 flex-wrap">
+        <div>
+          <h1
+            className="text-3xl text-[#2C1810]"
+            style={{ fontFamily: "var(--font-playfair), Georgia, serif" }}
+          >
+            Dashboard
+          </h1>
+          <p className="text-sm text-[#2C1810]/50 mt-1">
+            Bienvenido al panel de administración de Mas Besaura.
+          </p>
+        </div>
+        <BackupButton />
       </div>
 
       {/* Stat cards */}
