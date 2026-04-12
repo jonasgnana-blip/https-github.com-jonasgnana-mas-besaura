@@ -12,8 +12,8 @@ const CSP = [
   "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
   // Fonts
   "font-src 'self' https://fonts.gstatic.com",
-  // Fetch / XHR: self + Stripe API + FB + Supabase storage
-  "connect-src 'self' https://api.stripe.com https://www.facebook.com https://*.supabase.co https://*.supabase.in",
+  // Fetch / XHR: self + Stripe + FB + Supabase + Vercel Blob (upload target)
+  "connect-src 'self' https://api.stripe.com https://www.facebook.com https://*.supabase.co https://*.supabase.in https://blob.vercel-storage.com https://*.blob.vercel-storage.com",
   // No plugins
   "object-src 'none'",
   // Limit <base> tag hijacking
