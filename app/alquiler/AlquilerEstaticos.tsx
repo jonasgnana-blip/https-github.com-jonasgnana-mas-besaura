@@ -1,6 +1,6 @@
 "use client";
 
-import { Check } from "lucide-react";
+import { Check, Clock, Users, PawPrint, Volume2, Sparkles, CalendarX } from "lucide-react";
 import { useLanguage } from "@/lib/LanguageContext";
 import { getT } from "@/lib/i18n";
 
@@ -164,6 +164,115 @@ export function AlquilerPoliticaSection() {
               {i + 1}
             </span>
             <p className="text-[#2C1810]/75 text-sm leading-relaxed">{item}</p>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+export function AlquilerCondicionesSection() {
+  const { lang } = useLanguage();
+  const isCA = lang === "ca";
+
+  const condiciones = isCA
+    ? [
+        {
+          icon: <Clock size={18} className="text-[#4A6741]" />,
+          titulo: "Entrada i sortida",
+          desc: "Entrada a partir de les 16:00h · Sortida fins les 12:00h",
+        },
+        {
+          icon: <CalendarX size={18} className="text-[#4A6741]" />,
+          titulo: "Estada mínima",
+          desc: "2 nits en caps de setmana · 3 nits en temporada alta",
+        },
+        {
+          icon: <Users size={18} className="text-[#4A6741]" />,
+          titulo: "Capacitat",
+          desc: "Fins a 12 persones en habitacions · Zona de càmping disponible",
+        },
+        {
+          icon: <PawPrint size={18} className="text-[#4A6741]" />,
+          titulo: "Mascotes",
+          desc: "Consultar prèviament · Acceptades amb condicions",
+        },
+        {
+          icon: <Volume2 size={18} className="text-[#4A6741]" />,
+          titulo: "Silenci",
+          desc: "Respectar el silenci a partir de les 23:00h",
+        },
+        {
+          icon: <Sparkles size={18} className="text-[#4A6741]" />,
+          titulo: "Neteja",
+          desc: "Neteja final inclosa al preu · Deixar la casa en ordre",
+        },
+      ]
+    : [
+        {
+          icon: <Clock size={18} className="text-[#4A6741]" />,
+          titulo: "Entrada y salida",
+          desc: "Entrada a partir de las 16:00h · Salida antes de las 12:00h",
+        },
+        {
+          icon: <CalendarX size={18} className="text-[#4A6741]" />,
+          titulo: "Estancia mínima",
+          desc: "2 noches en fines de semana · 3 noches en temporada alta",
+        },
+        {
+          icon: <Users size={18} className="text-[#4A6741]" />,
+          titulo: "Capacidad",
+          desc: "Hasta 12 personas en habitaciones · Zona de camping disponible",
+        },
+        {
+          icon: <PawPrint size={18} className="text-[#4A6741]" />,
+          titulo: "Mascotas",
+          desc: "Consultar previamente · Aceptadas con condiciones",
+        },
+        {
+          icon: <Volume2 size={18} className="text-[#4A6741]" />,
+          titulo: "Silencio",
+          desc: "Respetar el silencio a partir de las 23:00h",
+        },
+        {
+          icon: <Sparkles size={18} className="text-[#4A6741]" />,
+          titulo: "Limpieza",
+          desc: "Limpieza final incluida en el precio · Dejar la casa en orden",
+        },
+      ];
+
+  return (
+    <div className="max-w-5xl mx-auto">
+      <div className="text-center mb-12">
+        <p className="text-[#4A6741] text-sm tracking-[0.2em] uppercase font-medium mb-3">
+          {isCA ? "Normes de la casa" : "Normas de la casa"}
+        </p>
+        <h2
+          className="text-3xl md:text-4xl text-[#2C1810]"
+          style={{ fontFamily: "var(--font-playfair), Georgia, serif" }}
+        >
+          {isCA ? "Condicions d'estada" : "Condiciones de estancia"}
+        </h2>
+      </div>
+
+      <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-5">
+        {condiciones.map((c) => (
+          <div
+            key={c.titulo}
+            className="bg-white rounded-2xl p-6 flex gap-4 border border-[#E8DCC8]/60 shadow-sm"
+          >
+            <div className="w-9 h-9 rounded-full bg-[#4A6741]/10 flex items-center justify-center shrink-0 mt-0.5">
+              {c.icon}
+            </div>
+            <div>
+              <h3
+                className="text-sm font-semibold text-[#2C1810] mb-1"
+                style={{ fontFamily: "var(--font-playfair), Georgia, serif" }}
+              >
+                {c.titulo}
+              </h3>
+              <p className="text-[#2C1810]/60 text-xs leading-relaxed">{c.desc}</p>
+            </div>
           </div>
         ))}
       </div>

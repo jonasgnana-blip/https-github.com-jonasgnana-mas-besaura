@@ -7,9 +7,23 @@ import { prisma } from "@/lib/prisma";
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
-  title: "Alojamiento",
+  title: "Alojamiento — Habitaciones con Encanto",
   description:
-    "Tres habitaciones únicas entre bosques y ríos en Mas Besaura, Vidrà (Girona). Alojamiento con desayuno o media pensión. La Cabanya: sala de 350 m² para grupos.",
+    "Tres habitaciones únicas entre bosques y ríos en Mas Besaura, Vidrà (Girona). Alojamiento con desayuno o media pensión. La Cabanya: sala exterior de 350 m² para grupos y retiros.",
+  keywords: [
+    "alojamiento rural Girona", "habitaciones casa rural", "Mas Besaura habitaciones",
+    "alojamiento Vidrà", "hospedaje Ripollès", "La Cabanya alquiler",
+  ],
+  alternates: { canonical: "https://masbesaura.com/alojamiento" },
+  openGraph: {
+    title: "Alojamiento — Mas Besaura, Vidrà",
+    description:
+      "Tres habitaciones únicas en plena naturaleza. Desayuno o media pensión incluidos. La Cabanya: 350 m² para grupos.",
+    url: "https://masbesaura.com/alojamiento",
+    images: [
+      { url: "https://masbesaura.com/images/hero3.jpg", width: 1200, height: 630, alt: "Habitaciones Mas Besaura" },
+    ],
+  },
 };
 
 export default async function AlojamientoPage() {

@@ -1,5 +1,22 @@
+import type { Metadata } from "next";
 import { prisma } from "@/lib/prisma";
 import { getUnavailableDates } from "@/app/actions/reservas";
+
+export const metadata: Metadata = {
+  title: "La Casa",
+  description:
+    "Descubre Mas Besaura: tres habitaciones únicas, espacios comunes acogedores y La Cabanya — una sala exterior de 350 m² con arco de piedra entre bosques y ríos en Vidrà, Girona.",
+  alternates: { canonical: "https://masbesaura.com/la-casa" },
+  openGraph: {
+    title: "La Casa — Mas Besaura, Vidrà",
+    description:
+      "Tres habitaciones con encanto, sala interior, cocina y La Cabanya al aire libre. Tu espacio de retiro en el Ripollès.",
+    url: "https://masbesaura.com/la-casa",
+    images: [
+      { url: "https://masbesaura.com/images/hero1.jpg", width: 1200, height: 630, alt: "La Casa — Mas Besaura" },
+    ],
+  },
+};
 import NavBar from "@/app/components/NavBar";
 import ImageFader from "@/app/components/ImageFader";
 import {

@@ -9,9 +9,24 @@ import ActividadesFooter from "./ActividadesFooter";
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
-  title: "Actividades",
+  title: "Actividades — Experiencias en la Naturaleza",
   description:
-    "Experiencias en la naturaleza y el alma. Rutas familiares, BTT con brunch, constelaciones familiares, inmersión terapéutica y alquiler de La Cabanya en Mas Besaura, Vidrà.",
+    "Experiencias en la naturaleza y el alma. Rutas familiares, BTT con brunch, constelaciones familiares, inmersión terapéutica y alquiler de La Cabanya en Mas Besaura, Vidrà (Girona).",
+  keywords: [
+    "actividades naturaleza Girona", "constelaciones familiares Girona", "BTT Ripollès",
+    "rutas senderismo familia", "inmersión terapéutica", "La Cabanya alquiler Vidrà",
+    "retiros terapéuticos Cataluña", "actividades bienestar Girona",
+  ],
+  alternates: { canonical: "https://masbesaura.com/actividades" },
+  openGraph: {
+    title: "Actividades — Mas Besaura, Vidrà",
+    description:
+      "Rutas, BTT, constelaciones familiares e inmersión terapéutica en plena naturaleza del Ripollès. Reserva tu experiencia.",
+    url: "https://masbesaura.com/actividades",
+    images: [
+      { url: "https://masbesaura.com/images/hero4.jpg", width: 1200, height: 630, alt: "Actividades Mas Besaura" },
+    ],
+  },
 };
 
 export default async function ActividadesPage() {

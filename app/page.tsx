@@ -1,5 +1,26 @@
+import type { Metadata } from "next";
 import HeroSlider from "./components/HeroSlider";
 import NavBar from "./components/NavBar";
+
+export const metadata: Metadata = {
+  title: "Mas Besaura — Casa Rural · Actividades · Retiros en Vidrà, Girona",
+  description:
+    "Casa rural en La Vila de Buscarons, Vidrà (Girona). Alojamiento con encanto entre bosques y ríos del Ripollès. Actividades terapéuticas, retiros espirituales y alquiler de la casa para grupos.",
+  keywords: [
+    "casa rural Vidrà", "retiros Girona", "actividades naturaleza Cataluña",
+    "Mas Besaura", "alojamiento rural Ripollès", "constelaciones familiares",
+  ],
+  alternates: { canonical: "https://masbesaura.com" },
+  openGraph: {
+    title: "Mas Besaura — Casa Rural en Vidrà, Girona",
+    description:
+      "Alojamiento, actividades terapéuticas y retiros entre ríos y bosques del Ripollès. Tu refugio natural en el Pirineo catalán.",
+    url: "https://masbesaura.com",
+    images: [
+      { url: "https://masbesaura.com/images/hero1.jpg", width: 1200, height: 630, alt: "Mas Besaura — Casa Rural en Vidrà" },
+    ],
+  },
+};
 import {
   HomeHeroTextos,
   HomeHeroScroll,

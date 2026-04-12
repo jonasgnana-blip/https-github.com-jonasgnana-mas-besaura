@@ -5,6 +5,7 @@ import {
   AlquilerHeroTextos,
   AlquilerDescripcion,
   AlquilerIncluyeSection,
+  AlquilerCondicionesSection,
   AlquilerPoliticaSection,
   AlquilerReservaHeader,
   AlquilerFooterTextos,
@@ -15,9 +16,24 @@ import { Phone, MapPin } from "lucide-react";
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
-  title: "Alquiler Casa para Retiros",
+  title: "Alquiler Casa para Retiros y Grupos",
   description:
-    "Alquila Mas Besaura para tus retiros y actividades profesionales. 3 habitaciones, pensión completa, La Cabanya (350 m²). 80€/persona/día. Vidrà, Girona.",
+    "Alquila Mas Besaura para retiros, talleres y actividades profesionales. 3 habitaciones (12 plazas), pensión completa y La Cabanya (350 m²). Desde 80€/persona/día. Vidrà, Girona.",
+  keywords: [
+    "alquiler casa retiros Girona", "alquiler casa grupos Cataluña", "retiro empresarial Girona",
+    "La Cabanya Mas Besaura", "espacio retiro naturaleza", "alquiler finca retiros",
+    "casa rural grupos Ripollès", "taller bienestar Girona",
+  ],
+  alternates: { canonical: "https://masbesaura.com/alquiler" },
+  openGraph: {
+    title: "Alquiler Casa para Retiros — Mas Besaura",
+    description:
+      "Tu espacio íntegro para crear juntos. 12 plazas, pensión completa, La Cabanya (350 m²). 80€/persona/día en Vidrà, Girona.",
+    url: "https://masbesaura.com/alquiler",
+    images: [
+      { url: "https://masbesaura.com/images/hero2.jpg", width: 1200, height: 630, alt: "Alquiler Casa Retiros — Mas Besaura" },
+    ],
+  },
 };
 
 export default async function AlquilerPage() {
@@ -55,8 +71,13 @@ export default async function AlquilerPage() {
         <AlquilerIncluyeSection />
       </section>
 
-      {/* ─── POLÍTICA DE CANCELACIÓN ─── */}
+      {/* ─── CONDICIONES DE ESTANCIA ─── */}
       <section className="py-16 px-6 bg-[#FAFAF6]">
+        <AlquilerCondicionesSection />
+      </section>
+
+      {/* ─── POLÍTICA DE CANCELACIÓN ─── */}
+      <section className="py-16 px-6 bg-[#F0EAD6]">
         <AlquilerPoliticaSection />
       </section>
 
