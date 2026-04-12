@@ -16,6 +16,8 @@ const IMAGES = [
   "/images/comida-3.jpg",
   "/images/hero5.jpg",
   "/images/hero8.jpg",
+  "/images/cabanya-grupo.jpg",
+  "/images/cabanya-luna.jpg",
 ].filter(Boolean);
 
 interface ImageFaderProps {

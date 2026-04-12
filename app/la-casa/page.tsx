@@ -1,18 +1,13 @@
 import NavBar from "@/app/components/NavBar";
 import ImageFader from "@/app/components/ImageFader";
-import LaCasaGallery from "./LaCasaGallery";
 import {
   LaCasaIntro,
   LaCasaHabitaciones,
   LaCasaEspacios,
+  LaCasaCalendario,
   LaCasaCTA,
   LaCasaFooter,
 } from "./LaCasaTextos";
-
-const CABANYA_FOTOS = [
-  { src: "/images/cabanya-grupo.jpg", alt: "La Cabanya — grupo de retiro" },
-  { src: "/images/cabanya-luna.jpg", alt: "La Cabanya — atardecer con luna" },
-];
 
 export default function LaCasa() {
   return (
@@ -48,11 +43,11 @@ export default function LaCasa() {
       <section className="py-16 px-6">
         <div className="max-w-5xl mx-auto">
           <LaCasaEspacios />
-
-          {/* ─── CABANYA GALLERY ─── */}
-          <LaCasaGallery fotos={CABANYA_FOTOS} />
         </div>
       </section>
+
+      {/* ─── CALENDARIO / RESERVAS ─── */}
+      <LaCasaCalendario />
 
       {/* ─── CTA ALOJAMIENTO ─── */}
       <LaCasaCTA />

@@ -24,14 +24,16 @@ export default function ImageUpload({
       const fd = new FormData();
       fd.append("file", file);
       const res = await fetch("/api/admin/upload", { method: "POST", body: fd });
-      const data = await res.json();
+      const text = await res.text();
+      let data: { url?: string; error?: string } = {};
+      try { data = JSON.parse(text); } catch { data = { error: `HTTP ${res.status}: ${text.slice(0, 200)}` }; }
       if (data.url) {
         onUpload(data.url);
       } else {
         setError(data.error ?? "Error al subir");
       }
-    } catch {
-      setError("Error de conexión");
+    } catch (err) {
+      setError("Error de red: " + (err instanceof Error ? err.message : String(err)));
     } finally {
       setUploading(false);
       if (inputRef.current) inputRef.current.value = "";

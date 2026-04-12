@@ -3,6 +3,9 @@ import { cookies } from "next/headers";
 import { verifySessionToken, SESSION_COOKIE } from "@/lib/adminAuth";
 import { put } from "@vercel/blob";
 
+// Allow up to 8MB uploads
+export const maxDuration = 30;
+
 export async function POST(req: NextRequest) {
   // Auth check
   const store = await cookies();
