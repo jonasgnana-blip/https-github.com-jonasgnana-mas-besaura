@@ -71,13 +71,8 @@ export default async function AlquilerPage() {
         <AlquilerIncluyeSection />
       </section>
 
-      {/* ─── POLÍTICA DE CANCELACIÓN ─── */}
-      <section className="py-16 px-6 bg-[#FAFAF6]">
-        <AlquilerPoliticaSection />
-      </section>
-
       {/* ─── CALCULADORA + RESERVA ─── */}
-      <section className="py-16 px-6 bg-[#F0EAD6]">
+      <section className="py-16 px-6 bg-[#FAFAF6]">
         <div className="max-w-3xl mx-auto">
           <AlquilerReservaHeader />
           <AlquilerCliente datesCabanya={datesCabanya} datesCasa={datesCasa} />
@@ -85,8 +80,13 @@ export default async function AlquilerPage() {
       </section>
 
       {/* ─── CONDICIONES DE ESTANCIA ─── */}
-      <section className="py-16 px-6 bg-[#FAFAF6]">
+      <section className="py-16 px-6 bg-[#F0EAD6]">
         <AlquilerCondicionesSection />
+      </section>
+
+      {/* ─── POLÍTICA DE CANCELACIÓN ─── */}
+      <section className="py-16 px-6 bg-[#FAFAF6]">
+        <AlquilerPoliticaSection />
       </section>
 
       {/* ─── FOOTER ─── */}
