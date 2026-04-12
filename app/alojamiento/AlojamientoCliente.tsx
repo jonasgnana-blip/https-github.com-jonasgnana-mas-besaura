@@ -1051,11 +1051,13 @@ export default function AlojamientoCliente({
     hecate: datesHecate,
   };
 
-  const HABITACIONES: HabitacionData[] = HABITACIONES_BASE.map((base, idx) => {
-    // Match by name fragment (artemisa → "Artemisa") or by position
-    const db = habitacionesDB.find(h =>
-      h.nombre?.toLowerCase().includes(base.id.toLowerCase())
-    ) ?? habitacionesDB[idx];
+  const HABITACIONES: HabitacionData[] = HABITACIONES_BASE.map((base) => {
+    // Match by name fragment only — "hecate" matches "Hécate" via normalize
+    const baseNorm = base.id.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+    const db = habitacionesDB.find(h => {
+      const hNorm = (h.nombre ?? "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+      return hNorm.includes(baseNorm);
+    });
     return {
       ...base,
       nombre:      db?.nombre      || base.nombre,
