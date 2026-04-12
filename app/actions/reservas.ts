@@ -161,3 +161,26 @@ export async function createReserva(
 
   return { ok: true, reserva_id: reserva.id, precio_total };
 }
+
+// ── getBlockedDatesActividad ──────────────────────────────────────────────────
+// Devuelve las fechas bloqueadas de una actividad (sesiones con activa: false)
+// en formato DateRange (un solo día: entrada = fecha, salida = fecha+1)
+
+export async function getBlockedDatesActividad(
+  actividad_id: string
+): Promise<DateRange[]> {
+  const sesiones = await prisma.sesionActividad.findMany({
+    where: { actividad_id, activa: false },
+    select: { fecha: true },
+  });
+
+  return sesiones.map((s) => {
+    const d = new Date(s.fecha);
+    const entrada = d.toISOString().split("T")[0];
+    // Advance one day so isUnavailable range check (>= entrada && < salida) covers the day
+    const next = new Date(d);
+    next.setDate(next.getDate() + 1);
+    const salida = next.toISOString().split("T")[0];
+    return { entrada, salida };
+  });
+}

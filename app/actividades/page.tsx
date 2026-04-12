@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import NavBar from "@/app/components/NavBar";
-import { BotonActividad, CabanyaActividadReserva, ComidaCaseraReserva, ActividadConFecha } from "./ActividadCard";
-import { getUnavailableDates } from "@/app/actions/reservas";
+import { ActividadReserva, ComidaCaseraReserva } from "./ActividadCard";
+import { getUnavailableDates, getBlockedDatesActividad } from "@/app/actions/reservas";
+import type { DateRange } from "@/app/actions/reservas";
 import { prisma } from "@/lib/prisma";
 import ActividadesHero from "./ActividadesHero";
 import ActividadesFooter from "./ActividadesFooter";
@@ -30,12 +31,24 @@ export const metadata: Metadata = {
 };
 
 export default async function ActividadesPage() {
-  const unavailableDatesCabanya = await getUnavailableDates("la-cabanya");
-
   const actividades = await prisma.actividad.findMany({
     where: { activa: true },
     orderBy: { orden: "asc" },
   });
+
+  // Fetch unavailable dates for every activity in parallel
+  const unavailableDatesCabanya = await getUnavailableDates("la-cabanya");
+
+  const blockedDatesMap: Record<string, DateRange[]> = {};
+  await Promise.all(
+    actividades.map(async (act) => {
+      if (act.tipo_reserva === "cabanya") {
+        blockedDatesMap[act.id] = unavailableDatesCabanya;
+      } else {
+        blockedDatesMap[act.id] = await getBlockedDatesActividad(act.id);
+      }
+    })
+  );
 
   return (
     <div className="min-h-screen bg-[#FAFAF6]">
@@ -58,46 +71,37 @@ export default async function ActividadesPage() {
       <section className="py-20 px-6">
         <div className="max-w-6xl mx-auto space-y-16">
           {actividades.map((act, idx) => {
-            const isEven = idx % 2 === 0; // even = image left, odd = image right
+            const isEven = idx % 2 === 0;
+            const unavailableDates = blockedDatesMap[act.id] ?? [];
+            const precio = Number(act.precio_base);
 
+            // Unified booking block — same calendar system for every type
             const BookingBlock = () => {
-              if (act.tipo_reserva === "cabanya") {
-                return <CabanyaActividadReserva unavailableDates={unavailableDatesCabanya} />;
-              }
-              if (act.tipo_reserva === "con_fecha") {
-                return (
-                  <ActividadConFecha
-                    nombre={act.titulo}
-                    precio={Number(act.precio_base)}
-                    descripcion={act.descripcion}
-                    unavailableDates={[]}
-                  />
-                );
-              }
               if (act.tipo_reserva === "comida") {
+                // Main activity + optional comida casera addon
                 return (
-                  <div className="flex flex-wrap gap-3 items-start">
-                    <BotonActividad
-                      label={`${Number(act.precio_base)}€ Actividad`}
+                  <div className="flex flex-col gap-3">
+                    <ActividadReserva
                       nombre={act.titulo}
-                      precio={Number(act.precio_base)}
+                      precio={precio}
+                      descripcion={act.descripcion}
+                      unavailableDates={unavailableDates}
+                      tipoPago="actividad"
+                      btnLabel={`${precio}€ — Actividad`}
                     />
                     <ComidaCaseraReserva />
                   </div>
                 );
               }
-              // default: "simple"
+
               return (
-                <>
-                  <BotonActividad
-                    label={`${Number(act.precio_base)}€ Reservar`}
-                    nombre={act.titulo}
-                    precio={Number(act.precio_base)}
-                  />
-                  <p className="text-[#2C1810]/50 text-xs mt-3">
-                    Contacta con nosotros para fechas
-                  </p>
-                </>
+                <ActividadReserva
+                  nombre={act.titulo}
+                  precio={precio}
+                  descripcion={act.descripcion}
+                  unavailableDates={unavailableDates}
+                  tipoPago={act.tipo_reserva === "cabanya" ? "cabanya" : "actividad"}
+                />
               );
             };
 

@@ -1,164 +1,56 @@
 "use client";
 
 import { useState } from "react";
-import { Loader2, ChevronRight } from "lucide-react";
+import { Loader2, ChevronRight, CalendarDays } from "lucide-react";
 import SingleDatePicker from "@/app/components/SingleDatePicker";
 import type { DateRange } from "@/app/actions/reservas";
 import { useLanguage } from "@/lib/LanguageContext";
 import { getT } from "@/lib/i18n";
 
-/* ── BotonActividad ──────────────────────────────────────────────────────────── */
+// ── Shared helpers ─────────────────────────────────────────────────────────────
 
-type BotonProps = {
-  label: string;
+function formatDateES(iso: string) {
+  const [y, m, d] = iso.split("-").map(Number);
+  const date = new Date(y, m - 1, d);
+  return date.toLocaleDateString("es-ES", {
+    weekday: "short",
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  });
+}
+
+// ── ActividadReserva (unified for ALL activity types) ─────────────────────────
+
+type ActividadReservaProps = {
+  /** Activity name shown in Stripe checkout */
   nombre: string;
+  /** Price per person / per unit */
   precio: number;
+  /** Short description passed to Stripe */
   descripcion?: string;
+  /** Dates to block in the calendar */
+  unavailableDates?: DateRange[];
+  /**
+   * cabanya  → sends { tipo:"cabanya", ... }
+   * actividad → sends { tipo:"actividad", ... }
+   */
+  tipoPago?: "actividad" | "cabanya";
+  /** Label for the open button, e.g. "Reservar — 45€/persona" */
+  btnLabel?: string;
 };
 
-export function BotonActividad({ label, nombre, precio, descripcion }: BotonProps) {
-  const { lang } = useLanguage();
-  const tr = getT(lang);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
-
-  async function handleClick() {
-    setLoading(true);
-    setError("");
-    try {
-      const res = await fetch("/api/checkout", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ tipo: "actividad", nombre, precio, descripcion, cantidad: 1 }),
-      });
-      const data = await res.json();
-      if (data.url) {
-        window.location.href = data.url;
-      } else {
-        setError(data.error ?? "Error al iniciar el pago");
-        setLoading(false);
-      }
-    } catch {
-      setError(tr.act_card_error_conexion);
-      setLoading(false);
-    }
-  }
-
-  return (
-    <div className="flex flex-col gap-1">
-      <button
-        onClick={handleClick}
-        disabled={loading}
-        className="flex items-center justify-center gap-2 px-5 py-2.5 rounded-full bg-[#4A6741] text-[#F0EAD6] text-sm font-medium hover:bg-[#3A5432] transition-colors disabled:opacity-60"
-      >
-        {loading && <Loader2 size={14} className="animate-spin" />}
-        {label}
-      </button>
-      {error && <p className="text-red-600 text-xs text-center mt-1">{error}</p>}
-    </div>
-  );
-}
-
-/* ── ComidaCaseraReserva ─────────────────────────────────────────────────────── */
-
-export function ComidaCaseraReserva() {
-  const { lang } = useLanguage();
-  const tr = getT(lang);
-  const [open, setOpen] = useState(false);
-  const [cantidad, setCantidad] = useState(1);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
-  const total = cantidad * 15;
-
-  async function handleReservar() {
-    setLoading(true);
-    setError("");
-    try {
-      const res = await fetch("/api/checkout", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          tipo: "actividad",
-          nombre: "Comida Casera",
-          precio: total,
-          cantidad,
-        }),
-      });
-      const data = await res.json();
-      if (data.url) {
-        window.location.href = data.url;
-      } else {
-        setError(data.error ?? "Error al iniciar el pago");
-        setLoading(false);
-      }
-    } catch {
-      setError(tr.act_card_error_conexion);
-      setLoading(false);
-    }
-  }
-
-  return (
-    <div className="flex flex-col gap-3">
-      <button
-        onClick={() => setOpen((v) => !v)}
-        className="flex items-center gap-2 px-5 py-2.5 rounded-full border border-[#4A6741] text-[#4A6741] text-sm font-medium hover:bg-[#4A6741] hover:text-[#F0EAD6] transition-colors"
-      >
-        {open ? tr.act_card_cerrar : tr.act_card_comida}
-        <ChevronRight size={14} className={`transition-transform ${open ? "rotate-90" : ""}`} />
-      </button>
-
-      {open && (
-        <div className="flex flex-col gap-3 border border-[#E8DCC8] rounded-2xl p-4 bg-[#FAFAF6]">
-          <div className="flex items-center gap-3">
-            <button
-              onClick={() => setCantidad((c) => Math.max(1, c - 1))}
-              className="w-9 h-9 rounded-full border border-[#E8DCC8] bg-white text-[#2C1810] text-lg font-medium flex items-center justify-center hover:bg-[#E8DCC8] transition-colors"
-            >
-              −
-            </button>
-            <span className="text-2xl font-medium text-[#2C1810] w-10 text-center">{cantidad}</span>
-            <button
-              onClick={() => setCantidad((c) => c + 1)}
-              className="w-9 h-9 rounded-full border border-[#E8DCC8] bg-white text-[#2C1810] text-lg font-medium flex items-center justify-center hover:bg-[#E8DCC8] transition-colors"
-            >
-              +
-            </button>
-            <span className="text-sm text-[#2C1810]/60">
-              {cantidad} × 15€ = <span className="font-medium text-[#4A6741]">{total}€</span>
-            </span>
-          </div>
-          <button
-            onClick={handleReservar}
-            disabled={loading}
-            className="flex items-center justify-center gap-2 px-6 py-2.5 rounded-full bg-[#4A6741] text-[#F0EAD6] text-sm font-medium hover:bg-[#3A5432] transition-colors disabled:opacity-60"
-          >
-            {loading && <Loader2 size={14} className="animate-spin" />}
-            {tr.act_card_comida_btn} — {total}€
-          </button>
-          {error && <p className="text-red-600 text-xs">{error}</p>}
-        </div>
-      )}
-    </div>
-  );
-}
-
-/* ── ActividadConFecha ───────────────────────────────────────────────────────── */
-
-type ActividadConFechaProps = {
-  nombre: string;
-  precio: number;
-  descripcion: string;
-  unavailableDates: DateRange[];
-};
-
-export function ActividadConFecha({
+export function ActividadReserva({
   nombre,
   precio,
-  descripcion,
-  unavailableDates,
-}: ActividadConFechaProps) {
+  descripcion = "",
+  unavailableDates = [],
+  tipoPago = "actividad",
+  btnLabel,
+}: ActividadReservaProps) {
   const { lang } = useLanguage();
   const tr = getT(lang);
+
   const [open, setOpen] = useState(false);
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const [personas, setPersonas] = useState(1);
@@ -170,6 +62,11 @@ export function ActividadConFecha({
 
   const total = precio * personas;
 
+  const defaultLabel =
+    tipoPago === "cabanya"
+      ? tr.act_card_cabanya_btn
+      : `${tr.act_card_reservar} — ${precio}€/${tr.act_card_persona}`;
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!selectedDate) {
@@ -179,16 +76,30 @@ export function ActividadConFecha({
     setLoading(true);
     setError("");
     try {
+      const payload =
+        tipoPago === "cabanya"
+          ? {
+              tipo: "cabanya",
+              precio: total,
+              personas,
+              dias: 1,
+              fecha_entrada: selectedDate,
+              nombre_cliente: guestNombre,
+              email_cliente: guestEmail,
+              telefono_cliente: guestTelefono,
+            }
+          : {
+              tipo: "actividad",
+              nombre,
+              precio: total,
+              descripcion,
+              cantidad: personas,
+            };
+
       const res = await fetch("/api/checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          tipo: "actividad",
-          nombre,
-          precio: total,
-          descripcion,
-          cantidad: personas,
-        }),
+        body: JSON.stringify(payload),
       });
       const data = await res.json();
       if (data.url) {
@@ -205,17 +116,32 @@ export function ActividadConFecha({
 
   return (
     <div className="flex flex-col gap-3">
+      {/* Toggle button */}
       <button
         onClick={() => setOpen((v) => !v)}
-        className="flex items-center gap-2 px-5 py-2.5 rounded-full bg-[#4A6741] text-[#F0EAD6] text-sm font-medium hover:bg-[#3A5432] transition-colors"
+        className="flex items-center gap-2 px-5 py-2.5 rounded-full bg-[#4A6741] text-[#F0EAD6] text-sm font-medium hover:bg-[#3A5432] transition-colors self-start"
       >
-        {open ? tr.act_card_cerrar : `${tr.act_card_reservar} — ${precio}€/${tr.act_card_persona}`}
-        <ChevronRight size={14} className={`transition-transform ${open ? "rotate-90" : ""}`} />
+        {open ? (
+          tr.act_card_cerrar
+        ) : (
+          <>
+            <CalendarDays size={14} />
+            {btnLabel ?? defaultLabel}
+          </>
+        )}
+        <ChevronRight
+          size={14}
+          className={`transition-transform ${open ? "rotate-90" : ""}`}
+        />
       </button>
 
+      {/* Booking form */}
       {open && (
-        <form onSubmit={handleSubmit} className="flex flex-col gap-5 border border-[#E8DCC8] rounded-2xl p-5 bg-[#FAFAF6]">
-          {/* Date picker */}
+        <form
+          onSubmit={handleSubmit}
+          className="flex flex-col gap-5 border border-[#E8DCC8] rounded-2xl p-5 bg-[#FAFAF6]"
+        >
+          {/* ── Calendar ── */}
           <SingleDatePicker
             unavailableDates={unavailableDates}
             selected={selectedDate}
@@ -223,9 +149,21 @@ export function ActividadConFecha({
             label={tr.act_card_fecha_label}
           />
 
-          {/* Persons counter */}
+          {/* Selected date badge */}
+          {selectedDate && (
+            <div className="flex items-center gap-2 bg-[#4A6741]/8 rounded-xl px-3 py-2">
+              <CalendarDays size={13} className="text-[#4A6741] shrink-0" />
+              <span className="text-xs text-[#4A6741] font-medium">
+                {formatDateES(selectedDate)}
+              </span>
+            </div>
+          )}
+
+          {/* ── Persons counter ── */}
           <div className="flex flex-col gap-2">
-            <label className="text-sm font-medium text-[#2C1810]">{tr.act_card_personas_label}</label>
+            <label className="text-sm font-medium text-[#2C1810]">
+              {tr.act_card_personas_label}
+            </label>
             <div className="flex items-center gap-3">
               <button
                 type="button"
@@ -234,7 +172,9 @@ export function ActividadConFecha({
               >
                 −
               </button>
-              <span className="text-2xl font-medium text-[#2C1810] w-10 text-center">{personas}</span>
+              <span className="text-2xl font-medium text-[#2C1810] w-10 text-center">
+                {personas}
+              </span>
               <button
                 type="button"
                 onClick={() => setPersonas((p) => p + 1)}
@@ -243,12 +183,13 @@ export function ActividadConFecha({
                 +
               </button>
               <span className="text-sm text-[#2C1810]/60">
-                {personas} × {precio}€ = <span className="font-medium text-[#4A6741]">{total}€</span>
+                {personas} × {precio}€ ={" "}
+                <span className="font-medium text-[#4A6741]">{total}€</span>
               </span>
             </div>
           </div>
 
-          {/* Guest form */}
+          {/* ── Contact fields ── */}
           <div className="flex flex-col gap-3">
             <input
               type="text"
@@ -278,6 +219,7 @@ export function ActividadConFecha({
 
           {error && <p className="text-red-600 text-xs">{error}</p>}
 
+          {/* ── Submit ── */}
           <button
             type="submit"
             disabled={loading || !selectedDate}
@@ -292,84 +234,65 @@ export function ActividadConFecha({
   );
 }
 
-/* ── CabanyaActividadReserva ─────────────────────────────────────────────────── */
+// ── Legacy re-exports kept for backward compat (used nowhere else, but safe) ──
 
-type CabanyaProps = {
+export function BotonActividad({
+  label,
+  nombre,
+  precio,
+  descripcion,
+}: {
+  label: string;
+  nombre: string;
+  precio: number;
+  descripcion?: string;
+}) {
+  return (
+    <ActividadReserva
+      nombre={nombre}
+      precio={precio}
+      descripcion={descripcion}
+      btnLabel={label}
+    />
+  );
+}
+
+export function ActividadConFecha(props: {
+  nombre: string;
+  precio: number;
+  descripcion: string;
+  unavailableDates: DateRange[];
+}) {
+  return <ActividadReserva {...props} tipoPago="actividad" />;
+}
+
+export function CabanyaActividadReserva({
+  unavailableDates = [],
+}: {
   unavailableDates?: DateRange[];
-};
-
-export function CabanyaActividadReserva({ unavailableDates: _unavailableDates }: CabanyaProps = {}) {
+}) {
   const { lang } = useLanguage();
   const tr = getT(lang);
-  const [open, setOpen] = useState(false);
-  const [personas, setPersonas] = useState(1);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
-  const total = personas * 10;
-
-  async function handleReservar() {
-    setLoading(true);
-    setError("");
-    try {
-      const res = await fetch("/api/checkout", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ tipo: "cabanya", precio: total, personas }),
-      });
-      const data = await res.json();
-      if (data.url) {
-        window.location.href = data.url;
-      } else {
-        setError(data.error ?? "Error al iniciar el pago");
-        setLoading(false);
-      }
-    } catch {
-      setError(tr.act_card_error_conexion);
-      setLoading(false);
-    }
-  }
-
   return (
-    <div className="flex flex-col gap-3">
-      <button
-        onClick={() => setOpen((v) => !v)}
-        className="flex items-center gap-2 px-5 py-2.5 rounded-full bg-[#4A6741] text-[#F0EAD6] text-sm font-medium hover:bg-[#3A5432] transition-colors"
-      >
-        {open ? tr.act_card_cerrar : tr.act_card_cabanya_btn}
-        <ChevronRight size={14} className={`transition-transform ${open ? "rotate-90" : ""}`} />
-      </button>
+    <ActividadReserva
+      nombre="La Cabanya — Mas Besaura"
+      precio={10}
+      unavailableDates={unavailableDates}
+      tipoPago="cabanya"
+      btnLabel={tr.act_card_cabanya_btn}
+    />
+  );
+}
 
-      {open && (
-        <div className="flex flex-col gap-3 border border-[#E8DCC8] rounded-2xl p-4 bg-[#FAFAF6]">
-          <div className="flex items-center gap-3">
-            <button
-              onClick={() => setPersonas((p) => Math.max(1, p - 1))}
-              className="w-9 h-9 rounded-full border border-[#E8DCC8] bg-white text-[#2C1810] text-lg font-medium flex items-center justify-center hover:bg-[#E8DCC8] transition-colors"
-            >
-              −
-            </button>
-            <span className="text-2xl font-medium text-[#2C1810] w-10 text-center">{personas}</span>
-            <button
-              onClick={() => setPersonas((p) => p + 1)}
-              className="w-9 h-9 rounded-full border border-[#E8DCC8] bg-white text-[#2C1810] text-lg font-medium flex items-center justify-center hover:bg-[#E8DCC8] transition-colors"
-            >
-              +
-            </button>
-            <span className="text-sm text-[#2C1810]/60">
-              {personas} {tr.act_card_personas_txt} · <span className="font-medium text-[#4A6741]">{total}€</span>
-            </span>
-          </div>
-          <button
-            onClick={handleReservar}
-            disabled={loading}
-            className="flex items-center justify-center gap-2 px-6 py-2.5 rounded-full bg-[#4A6741] text-[#F0EAD6] text-sm font-medium hover:bg-[#3A5432] transition-colors disabled:opacity-60"
-          >
-            {loading && <Loader2 size={14} className="animate-spin" />}
-            {tr.act_card_cabanya_sala} — {total}€
-          </button>
-          {error && <p className="text-red-600 text-xs">{error}</p>}
-        </div>
-      )}
-    </div>
+export function ComidaCaseraReserva() {
+  const { lang } = useLanguage();
+  const tr = getT(lang);
+  return (
+    <ActividadReserva
+      nombre="Comida Casera — Mas Besaura"
+      precio={15}
+      tipoPago="actividad"
+      btnLabel={tr.act_card_comida}
+    />
   );
 }
