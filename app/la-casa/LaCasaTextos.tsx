@@ -305,9 +305,8 @@ export function LaCasaCalendario({ unavailDates = [], foto1, foto2 }: { unavailD
   const nextM = viewMonth === 11 ? 0  : viewMonth + 1;
   const nextY = viewMonth === 11 ? viewYear + 1 : viewYear;
 
-  // Selection
-  const [checkIn,  setCheckIn]  = useState<Date|null>(null);
-  const [checkOut, setCheckOut] = useState<Date|null>(null);
+  // Selection — single day only
+  const [selectedDay, setSelectedDay] = useState<Date|null>(null);
   const [personas, setPersonas] = useState(10);
   const [nombre,   setNombre]   = useState("");
   const [email,    setEmail]    = useState("");
@@ -315,23 +314,13 @@ export function LaCasaCalendario({ unavailDates = [], foto1, foto2 }: { unavailD
   const [loading,  setLoading]  = useState(false);
   const [error,    setError]    = useState("");
 
-  const dias  = checkIn && checkOut ? nightsBetween(checkIn, checkOut) : 0;
-  const total = personas * 10 * Math.max(dias, 1);
+  const total = personas * 10;
 
   function handleDay(date: Date) {
-    if (!checkIn || (checkIn && checkOut)) {
-      setCheckIn(date); setCheckOut(null);
+    if (selectedDay && sameDay(date, selectedDay)) {
+      setSelectedDay(null); // deselect
     } else {
-      if (sameDay(date, checkIn)) { setCheckIn(null); setCheckOut(null); return; }
-      const [s, e] = date > checkIn ? [checkIn, date] : [date, checkIn];
-      // Check no unavailable day in range
-      let conflict = false;
-      for (let i = 0; i < nightsBetween(s, e); i++) {
-        const d = new Date(s); d.setDate(d.getDate() + i);
-        if (isUnavail(d, unavailDates)) { conflict = true; break; }
-      }
-      if (conflict) { setCheckIn(date); setCheckOut(null); }
-      else { setCheckIn(s); setCheckOut(e); }
+      setSelectedDay(date);
     }
   }
 
@@ -339,7 +328,7 @@ export function LaCasaCalendario({ unavailDates = [], foto1, foto2 }: { unavailD
   function nextMo() { if(viewMonth===11){setViewMonth(0);setViewYear(y=>y+1);}else setViewMonth(m=>m+1); }
 
   async function handleReservar() {
-    if (!checkIn) { setError(lang==="ca"?"Selecciona una data d'entrada":"Selecciona una fecha de entrada"); return; }
+    if (!selectedDay) { setError(lang==="ca"?"Selecciona un dia":"Selecciona un día"); return; }
     if (!nombre.trim() || !email.trim()) { setError(lang==="ca"?"Nom i email requerits":"Nombre y email requeridos"); return; }
     setLoading(true); setError("");
     try {
@@ -350,9 +339,9 @@ export function LaCasaCalendario({ unavailDates = [], foto1, foto2 }: { unavailD
           tipo: "cabanya",
           precio: total,
           personas,
-          dias: Math.max(dias, 1),
-          fecha_entrada: fmtDate(checkIn),
-          fecha_salida: checkOut ? fmtDate(checkOut) : fmtDate(checkIn),
+          dias: 1,
+          fecha_entrada: fmtDate(selectedDay),
+          fecha_salida: fmtDate(selectedDay),
           nombre_cliente: nombre.trim(),
           email_cliente: email.trim(),
           telefono_cliente: tel.trim(),
@@ -441,20 +430,18 @@ export function LaCasaCalendario({ unavailDates = [], foto1, foto2 }: { unavailD
                     </button>
                   </div>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <CalMes year={viewYear} month={viewMonth} checkIn={checkIn} checkOut={checkOut}
-                      hovered={hovered} unavail={unavailDates} onDay={handleDay} onHover={setHovered}
+                    <CalMes year={viewYear} month={viewMonth} checkIn={selectedDay} checkOut={null}
+                      hovered={null} unavail={unavailDates} onDay={handleDay} onHover={() => {}}
                       monthNames={monthNames} dayNames={dayNames} />
-                    <CalMes year={nextY} month={nextM} checkIn={checkIn} checkOut={checkOut}
-                      hovered={hovered} unavail={unavailDates} onDay={handleDay} onHover={setHovered}
+                    <CalMes year={nextY} month={nextM} checkIn={selectedDay} checkOut={null}
+                      hovered={null} unavail={unavailDates} onDay={handleDay} onHover={() => {}}
                       monthNames={monthNames} dayNames={dayNames} />
                   </div>
                   <div className="mt-4 pt-3 border-t border-[#E8DCC8] text-xs text-[#2C1810]/60">
-                    {!checkIn && (lang === "ca" ? "Selecciona la data d'entrada" : "Selecciona fecha de entrada")}
-                    {checkIn && !checkOut && (lang === "ca" ? "Ara selecciona la data de sortida" : "Ahora selecciona fecha de salida")}
-                    {checkIn && checkOut && (
+                    {!selectedDay && (lang === "ca" ? "Selecciona el dia" : "Selecciona el día")}
+                    {selectedDay && (
                       <span className="text-[#4A6741] font-medium">
-                        {dias} {dias !== 1 ? (lang === "ca" ? "dies" : "días") : (lang === "ca" ? "dia" : "día")} · {" "}
-                        {checkIn.toLocaleDateString(locale, { day: "numeric", month: "short" })} → {checkOut.toLocaleDateString(locale, { day: "numeric", month: "short" })}
+                        {selectedDay.toLocaleDateString(locale, { weekday: "long", day: "numeric", month: "long" })}
                       </span>
                     )}
                   </div>
@@ -478,10 +465,10 @@ export function LaCasaCalendario({ unavailDates = [], foto1, foto2 }: { unavailD
               {/* Price summary */}
               <div className="bg-[#F0EAD6] rounded-xl p-5 space-y-1.5">
                 <div className="flex justify-between text-sm text-[#2C1810]/60">
-                  <span>{personas} {lang === "ca" ? "persones" : "personas"} × {Math.max(dias, 1)} {dias > 1 ? (lang === "ca" ? "dies" : "días") : (lang === "ca" ? "dia" : "día")} × 10€</span>
+                  <span>{personas} {lang === "ca" ? "persones" : "personas"} × 1 {lang === "ca" ? "dia" : "día"} × 10€</span>
                 </div>
                 <div className="flex justify-between items-baseline">
-                  <span className="text-sm text-[#2C1810]/60">{lang === "ca" ? "Total" : "Total"}</span>
+                  <span className="text-sm text-[#2C1810]/60">Total</span>
                   <span className="text-2xl font-bold text-[#2C1810]"
                     style={{ fontFamily: "var(--font-playfair), Georgia, serif" }}>{total}€</span>
                 </div>
