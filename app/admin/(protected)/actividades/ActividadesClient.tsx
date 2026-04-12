@@ -39,6 +39,10 @@ type Actividad = {
   duracion: string | null;
   imagen_url: string | null;
   activa: boolean;
+  tipo_reserva: string;
+  categoria: string | null;
+  precio_texto: string | null;
+  orden: number;
   createdAt: string;
   sesiones: Sesion[];
 };
@@ -51,6 +55,13 @@ function fmt(iso: string) {
   });
 }
 
+const TIPO_OPTIONS = [
+  { value: "simple", label: "Botón simple (sin fecha)" },
+  { value: "con_fecha", label: "Con fecha y calendario" },
+  { value: "comida", label: "Comida Casera (contador)" },
+  { value: "cabanya", label: "Alquiler Cabanya" },
+];
+
 const EMPTY_FORM = {
   titulo: "",
   descripcion: "",
@@ -58,6 +69,10 @@ const EMPTY_FORM = {
   precio_base: "",
   duracion: "",
   imagen_url: "",
+  tipo_reserva: "simple",
+  categoria: "",
+  precio_texto: "",
+  orden: "",
 };
 
 const EMPTY_SESION = {
@@ -96,6 +111,10 @@ export default function ActividadesClient({
       precio_base: String(a.precio_base),
       duracion: a.duracion ?? "",
       imagen_url: a.imagen_url ?? "",
+      tipo_reserva: a.tipo_reserva,
+      categoria: a.categoria ?? "",
+      precio_texto: a.precio_texto ?? "",
+      orden: String(a.orden),
     });
     setShowModal(true);
   }
@@ -116,10 +135,14 @@ export default function ActividadesClient({
         precio_base: parseFloat(form.precio_base),
         duracion: form.duracion.trim() || undefined,
         imagen_url: form.imagen_url.trim() || undefined,
+        tipo_reserva: form.tipo_reserva,
+        categoria: form.categoria.trim() || undefined,
+        precio_texto: form.precio_texto.trim() || undefined,
+        orden: form.orden ? parseInt(form.orden) : undefined,
       };
 
       if (editTarget) {
-        const updated = await adminUpdateActividad(editTarget.id, payload);
+        await adminUpdateActividad(editTarget.id, payload);
         setActividades((prev) =>
           prev.map((a) =>
             a.id === editTarget.id
@@ -130,6 +153,9 @@ export default function ActividadesClient({
                   facilitador: payload.facilitador ?? null,
                   duracion: payload.duracion ?? null,
                   imagen_url: payload.imagen_url ?? null,
+                  categoria: payload.categoria ?? null,
+                  precio_texto: payload.precio_texto ?? null,
+                  orden: payload.orden ?? a.orden,
                 }
               : a
           )
@@ -148,6 +174,10 @@ export default function ActividadesClient({
             duracion: created.duracion ?? null,
             imagen_url: created.imagen_url ?? null,
             activa: created.activa,
+            tipo_reserva: created.tipo_reserva,
+            categoria: created.categoria ?? null,
+            precio_texto: created.precio_texto ?? null,
+            orden: created.orden,
             createdAt: created.createdAt.toISOString(),
             sesiones: [],
           },
@@ -460,7 +490,7 @@ export default function ActividadesClient({
               </button>
             </div>
 
-            <form onSubmit={handleSubmit} className="px-6 py-5 space-y-4">
+            <form onSubmit={handleSubmit} className="px-6 py-5 space-y-4 max-h-[70vh] overflow-y-auto">
               <Field
                 label="Título *"
                 value={form.titulo}
@@ -482,18 +512,54 @@ export default function ActividadesClient({
                 />
               </div>
               <Field
+                label="Categoría"
+                value={form.categoria}
+                onChange={(v) => setForm((f) => ({ ...f, categoria: v }))}
+                placeholder="ej. Familiar, Terapia Grupal…"
+              />
+              <Field
+                label="Texto de precio"
+                value={form.precio_texto}
+                onChange={(v) => setForm((f) => ({ ...f, precio_texto: v }))}
+                placeholder="ej. 35€/persona · 2h – 3h"
+              />
+              <div className="grid grid-cols-2 gap-3">
+                <Field
+                  label="Precio base (€) *"
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  value={form.precio_base}
+                  onChange={(v) => setForm((f) => ({ ...f, precio_base: v }))}
+                  required
+                />
+                <Field
+                  label="Orden"
+                  type="number"
+                  min="0"
+                  value={form.orden}
+                  onChange={(v) => setForm((f) => ({ ...f, orden: v }))}
+                  placeholder="0"
+                />
+              </div>
+              <div>
+                <label className="block text-xs text-[#2C1810]/60 mb-1.5">
+                  Tipo de reserva *
+                </label>
+                <select
+                  value={form.tipo_reserva}
+                  onChange={(e) => setForm((f) => ({ ...f, tipo_reserva: e.target.value }))}
+                  className="w-full border border-[#E8DCC8] rounded-xl px-3 py-2 text-sm text-[#2C1810] focus:outline-none focus:border-[#4A6741] bg-white"
+                >
+                  {TIPO_OPTIONS.map((o) => (
+                    <option key={o.value} value={o.value}>{o.label}</option>
+                  ))}
+                </select>
+              </div>
+              <Field
                 label="Facilitador"
                 value={form.facilitador}
                 onChange={(v) => setForm((f) => ({ ...f, facilitador: v }))}
-              />
-              <Field
-                label="Precio base (€) *"
-                type="number"
-                min="0"
-                step="0.01"
-                value={form.precio_base}
-                onChange={(v) => setForm((f) => ({ ...f, precio_base: v }))}
-                required
               />
               <Field
                 label="Duración"
@@ -502,10 +568,10 @@ export default function ActividadesClient({
                 placeholder="ej. 2 horas"
               />
               <Field
-                label="URL de imagen"
+                label="Imagen (ruta /images/... o URL)"
                 value={form.imagen_url}
                 onChange={(v) => setForm((f) => ({ ...f, imagen_url: v }))}
-                placeholder="https://..."
+                placeholder="/images/hero4.jpg"
               />
 
               <div className="flex gap-3 pt-2">

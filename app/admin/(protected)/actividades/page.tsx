@@ -24,6 +24,10 @@ type RawActividad = {
   duracion: string | null;
   imagen_url: string | null;
   activa: boolean;
+  tipo_reserva: string;
+  categoria: string | null;
+  precio_texto: string | null;
+  orden: number;
   createdAt: Date;
   sesiones: RawSesion[];
 };
@@ -43,6 +47,10 @@ export default async function ActividadesPage() {
     duracion: a.duracion ?? null,
     imagen_url: a.imagen_url ?? null,
     activa: a.activa,
+    tipo_reserva: a.tipo_reserva,
+    categoria: a.categoria ?? null,
+    precio_texto: a.precio_texto ?? null,
+    orden: a.orden,
     createdAt: a.createdAt.toISOString(),
     sesiones: a.sesiones.map((s: RawSesion) => ({
       id: s.id,

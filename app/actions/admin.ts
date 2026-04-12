@@ -166,6 +166,10 @@ export async function adminCreateActividad(data: {
   max_personas?: number;
   duracion?: string;
   imagen_url?: string;
+  tipo_reserva?: string;
+  categoria?: string;
+  precio_texto?: string;
+  orden?: number;
 }) {
   await requireAdmin();
   return prisma.actividad.create({ data });
@@ -181,6 +185,10 @@ export async function adminUpdateActividad(id: string, data: Partial<{
   duracion: string;
   imagen_url: string;
   activa: boolean;
+  tipo_reserva: string;
+  categoria: string;
+  precio_texto: string;
+  orden: number;
 }>) {
   await requireAdmin();
   return prisma.actividad.update({ where: { id }, data });

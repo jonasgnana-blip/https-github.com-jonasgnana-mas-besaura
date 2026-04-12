@@ -3,6 +3,7 @@ import NavBar from "@/app/components/NavBar";
 import { BotonActividad, CabanyaActividadReserva, ComidaCaseraReserva, ActividadConFecha } from "./ActividadCard";
 import { getUnavailableDates } from "@/app/actions/reservas";
 import { Phone, MapPin } from "lucide-react";
+import { prisma } from "@/lib/prisma";
 
 export const dynamic = "force-dynamic";
 
@@ -14,6 +15,11 @@ export const metadata: Metadata = {
 
 export default async function ActividadesPage() {
   const unavailableDatesCabanya = await getUnavailableDates("la-cabanya");
+
+  const actividades = await prisma.actividad.findMany({
+    where: { activa: true },
+    orderBy: { orden: "asc" },
+  });
 
   return (
     <div className="min-h-screen bg-[#FAFAF6]">
@@ -48,230 +54,112 @@ export default async function ActividadesPage() {
       {/* ─── ACTIVITIES GRID ─── */}
       <section className="py-20 px-6">
         <div className="max-w-6xl mx-auto space-y-16">
+          {actividades.map((act, idx) => {
+            const isEven = idx % 2 === 0; // even = image left, odd = image right
 
-          {/* 1. Activitat Familiar */}
-          <div className="grid md:grid-cols-2 gap-10 items-center">
-            <div className="aspect-[4/3] rounded-2xl overflow-hidden">
-              <img
-                src="/images/hero4.jpg"
-                alt="Ruta Orientació i Gimcana"
-                className="w-full h-full object-cover"
-              />
-            </div>
-            <div>
-              <p className="text-[#4A6741] text-xs tracking-[0.2em] uppercase font-medium mb-3">
-                Familiar
-              </p>
-              <h2
-                className="text-2xl md:text-3xl text-[#2C1810] mb-4"
-                style={{ fontFamily: "var(--font-playfair), Georgia, serif" }}
+            const BookingBlock = () => {
+              if (act.tipo_reserva === "cabanya") {
+                return <CabanyaActividadReserva unavailableDates={unavailableDatesCabanya} />;
+              }
+              if (act.tipo_reserva === "con_fecha") {
+                return (
+                  <ActividadConFecha
+                    nombre={act.titulo}
+                    precio={Number(act.precio_base)}
+                    descripcion={act.descripcion}
+                    unavailableDates={[]}
+                  />
+                );
+              }
+              if (act.tipo_reserva === "comida") {
+                return (
+                  <div className="flex flex-wrap gap-3 items-start">
+                    <BotonActividad
+                      label={`${Number(act.precio_base)}€ Actividad`}
+                      nombre={act.titulo}
+                      precio={Number(act.precio_base)}
+                    />
+                    <ComidaCaseraReserva />
+                  </div>
+                );
+              }
+              // default: "simple"
+              return (
+                <>
+                  <BotonActividad
+                    label={`${Number(act.precio_base)}€ Reservar`}
+                    nombre={act.titulo}
+                    precio={Number(act.precio_base)}
+                  />
+                  <p className="text-[#2C1810]/50 text-xs mt-3">
+                    Contacta con nosotros para fechas
+                  </p>
+                </>
+              );
+            };
+
+            const imageBlock = act.imagen_url ? (
+              <div
+                className={`aspect-[4/3] rounded-2xl overflow-hidden ${
+                  !isEven ? "order-1 md:order-2" : ""
+                }`}
               >
-                Activitat Familiar — Ruta Orientació i Gimcana
-              </h2>
-              <p className="text-[#2C1810]/70 leading-relaxed mb-4 text-sm">
-                Paseo por sendero, el bosque y el río. Visita a la cueva y un lugar secreto
-                donde bailan las hadas con los duendes. Una experiencia mágica para toda la
-                familia.
-              </p>
-              <p className="text-[#2C1810]/60 text-sm mb-6">
-                <span className="font-medium text-[#2C1810]">10€/adulto</span> · Niños menores de 16 años: gratis
-              </p>
-              <div className="flex flex-wrap gap-3 items-start">
-                <BotonActividad
-                  label="10€ Actividad"
-                  nombre="Ruta Orientació i Gimcana"
-                  precio={10}
+                <img
+                  src={act.imagen_url}
+                  alt={act.titulo}
+                  className="w-full h-full object-cover"
                 />
-                <ComidaCaseraReserva />
               </div>
-            </div>
-          </div>
+            ) : null;
 
-          <div className="border-t border-[#E8DCC8]" />
+            const contentBlock = (
+              <div className={!isEven ? "order-2 md:order-1" : ""}>
+                {act.categoria && (
+                  <p className="text-[#4A6741] text-xs tracking-[0.2em] uppercase font-medium mb-3">
+                    {act.categoria}
+                  </p>
+                )}
+                <h2
+                  className="text-2xl md:text-3xl text-[#2C1810] mb-4"
+                  style={{ fontFamily: "var(--font-playfair), Georgia, serif" }}
+                >
+                  {act.titulo}
+                </h2>
+                <p className="text-[#2C1810]/70 leading-relaxed mb-4 text-sm">
+                  {act.descripcion}
+                </p>
+                {act.precio_texto && (
+                  <p className="text-[#2C1810]/60 text-sm mb-6">
+                    <span className="font-medium text-[#2C1810]">
+                      {act.precio_texto}
+                    </span>
+                  </p>
+                )}
+                <BookingBlock />
+              </div>
+            );
 
-          {/* 2. BTT amb Brunch */}
-          <div className="grid md:grid-cols-2 gap-10 items-center">
-            <div className="order-2 md:order-1">
-              <p className="text-[#4A6741] text-xs tracking-[0.2em] uppercase font-medium mb-3">
-                Deporte & Gastronomia
-              </p>
-              <h2
-                className="text-2xl md:text-3xl text-[#2C1810] mb-4"
-                style={{ fontFamily: "var(--font-playfair), Georgia, serif" }}
-              >
-                Ruta BTT amb Brunch
-              </h2>
-              <p className="text-[#2C1810]/70 leading-relaxed mb-4 text-sm">
-                Diferentes rutas por la zona entre el Ripollès y la Garrotxa con desayuno de
-                tenedor incluido.
-              </p>
-              <p className="text-[#2C1810]/60 text-sm mb-6">
-                <span className="font-medium text-[#2C1810]">20€/persona</span>
-              </p>
-              <ActividadConFecha
-                nombre="Ruta BTT amb Brunch"
-                precio={20}
-                descripcion="Diferentes rutas por la zona entre el Ripollès y la Garrotxa con desayuno de tenedor incluido."
-                unavailableDates={[]}
-              />
-            </div>
-            <div className="aspect-[4/3] rounded-2xl overflow-hidden order-1 md:order-2">
-              <img
-                src="/images/hero5.jpg"
-                alt="Ruta BTT amb Brunch"
-                className="w-full h-full object-cover"
-              />
-            </div>
-          </div>
-
-          <div className="border-t border-[#E8DCC8]" />
-
-          {/* 3. Constel·lació Familiar */}
-          <div className="grid md:grid-cols-2 gap-10 items-center">
-            <div className="aspect-[4/3] rounded-2xl overflow-hidden">
-              <img
-                src="/images/hero6.jpg"
-                alt="Constel·lació Familiar"
-                className="w-full h-full object-cover"
-              />
-            </div>
-            <div>
-              <p className="text-[#4A6741] text-xs tracking-[0.2em] uppercase font-medium mb-3">
-                Terapia Grupal
-              </p>
-              <h2
-                className="text-2xl md:text-3xl text-[#2C1810] mb-4"
-                style={{ fontFamily: "var(--font-playfair), Georgia, serif" }}
-              >
-                Constel·lació Familiar
-              </h2>
-              <p className="text-[#2C1810]/70 leading-relaxed mb-4 text-sm">
-                Trabajo terapéutico en grupo, familia o equipo profesional, que combina
-                dinámicas grupales e indicaciones terapéuticas.
-              </p>
-              <p className="text-[#2C1810]/60 text-sm mb-6">
-                <span className="font-medium text-[#2C1810]">35€/persona</span> · 2h – 3h
-              </p>
-              <ActividadConFecha
-                nombre="Constel·lació Familiar"
-                precio={35}
-                descripcion="Trabajo terapéutico en grupo, familia o equipo profesional, que combina dinámicas grupales e indicaciones terapéuticas."
-                unavailableDates={[]}
-              />
-            </div>
-          </div>
-
-          <div className="border-t border-[#E8DCC8]" />
-
-          {/* 4. Immersió Terapèutica */}
-          <div className="grid md:grid-cols-2 gap-10 items-center">
-            <div className="order-2 md:order-1">
-              <p className="text-[#4A6741] text-xs tracking-[0.2em] uppercase font-medium mb-3">
-                Proceso Personal
-              </p>
-              <h2
-                className="text-2xl md:text-3xl text-[#2C1810] mb-4"
-                style={{ fontFamily: "var(--font-playfair), Georgia, serif" }}
-              >
-                Immersió Terapèutica
-              </h2>
-              <p className="text-[#2C1810]/70 leading-relaxed mb-4 text-sm">
-                7h de proceso personal y relacional que combinan terapia, constelaciones
-                familiares y dinámicas en la naturaleza.
-              </p>
-              <p className="text-[#2C1810]/60 text-sm mb-6">
-                <span className="font-medium text-[#2C1810]">369€</span> · 20€ extra por persona a partir de 5
-              </p>
-              <BotonActividad
-                label="369€ Reservar"
-                nombre="Immersió Terapèutica"
-                precio={369}
-              />
-              <p className="text-[#2C1810]/50 text-xs mt-3">
-                Contacta con nosotros para fechas
-              </p>
-            </div>
-            <div className="aspect-[4/3] rounded-2xl overflow-hidden order-1 md:order-2">
-              <img
-                src="/images/hero7.jpg"
-                alt="Immersió Terapèutica"
-                className="w-full h-full object-cover"
-              />
-            </div>
-          </div>
-
-          <div className="border-t border-[#E8DCC8]" />
-
-          {/* 5. Retiro: Sanar la Relació entre Homes i Dones */}
-          <div className="grid md:grid-cols-2 gap-10 items-center">
-            <div className="aspect-[4/3] rounded-2xl overflow-hidden">
-              <img
-                src="/images/hero9.jpg"
-                alt="Retiro Sanar la Relació entre Homes i Dones"
-                className="w-full h-full object-cover"
-              />
-            </div>
-            <div>
-              <p className="text-[#4A6741] text-xs tracking-[0.2em] uppercase font-medium mb-3">
-                Retiro Terapéutico
-              </p>
-              <h2
-                className="text-2xl md:text-3xl text-[#2C1810] mb-4"
-                style={{ fontFamily: "var(--font-playfair), Georgia, serif" }}
-              >
-                Retiro: Sanar la Relació entre Homes i Dones
-              </h2>
-              <p className="text-[#2C1810]/70 leading-relaxed mb-4 text-sm">
-                Un proceso de sanación colectiva que trabaja los vínculos, heridas y patrones
-                en la relación entre hombres y mujeres. Un espacio de encuentro, verdad y
-                transformación.
-              </p>
-              <p className="text-[#2C1810]/60 text-sm mb-6">
-                <span className="font-medium text-[#2C1810]">369€/persona</span>
-              </p>
-              <BotonActividad
-                label="369€ Reservar"
-                nombre="Retiro Sanar la Relació entre Homes i Dones"
-                precio={369}
-              />
-              <p className="text-[#2C1810]/50 text-xs mt-3">
-                Contacta con nosotros para próximas fechas · info@masbesaura.com
-              </p>
-            </div>
-          </div>
-
-          <div className="border-t border-[#E8DCC8]" />
-
-          {/* 6. Sala Cabanya — Alquiler */}
-          <div className="grid md:grid-cols-2 gap-10 items-center">
-            <div className="order-2 md:order-1">
-              <p className="text-[#4A6741] text-xs tracking-[0.2em] uppercase font-medium mb-3">
-                Alquiler Sala
-              </p>
-              <h2
-                className="text-2xl md:text-3xl text-[#2C1810] mb-4"
-                style={{ fontFamily: "var(--font-playfair), Georgia, serif" }}
-              >
-                Sala Cabanya — Alquiler por día
-              </h2>
-              <p className="text-[#2C1810]/70 leading-relaxed mb-4 text-sm">
-                350 m² de sala con suelo de microcemento. Para actividades profesionales,
-                comidas familiares, eventos... Unas 100 personas.
-              </p>
-              <p className="text-[#2C1810]/60 text-sm mb-6">
-                <span className="font-medium text-[#2C1810]">10€/persona/día</span>
-              </p>
-              <CabanyaActividadReserva unavailableDates={unavailableDatesCabanya} />
-            </div>
-            <div className="aspect-[4/3] rounded-2xl overflow-hidden order-1 md:order-2">
-              <img
-                src="/images/hero8.jpg"
-                alt="Sala Cabanya"
-                className="w-full h-full object-cover"
-              />
-            </div>
-          </div>
-
+            return (
+              <div key={act.id}>
+                <div className="grid md:grid-cols-2 gap-10 items-center">
+                  {isEven ? (
+                    <>
+                      {imageBlock}
+                      {contentBlock}
+                    </>
+                  ) : (
+                    <>
+                      {contentBlock}
+                      {imageBlock}
+                    </>
+                  )}
+                </div>
+                {idx < actividades.length - 1 && (
+                  <div className="border-t border-[#E8DCC8] mt-16" />
+                )}
+              </div>
+            );
+          })}
         </div>
       </section>
 
