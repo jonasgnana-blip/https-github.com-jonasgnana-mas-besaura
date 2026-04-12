@@ -11,18 +11,26 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "No autorizado" }, { status: 401 });
   }
 
+  // Resolve blob token (Vercel Blob store may inject under a prefixed name)
+  const blobToken =
+    process.env.BLOB_READ_WRITE_TOKEN ??
+    process.env.MASBESAURABLOB_READ_WRITE_TOKEN;
+
+  if (!blobToken) {
+    console.error("[upload] BLOB_READ_WRITE_TOKEN not set");
+    return NextResponse.json({ error: "Almacenamiento no configurado" }, { status: 500 });
+  }
+
   const formData = await req.formData();
   const file = formData.get("file") as File | null;
   if (!file) {
     return NextResponse.json({ error: "No se recibió ningún archivo" }, { status: 400 });
   }
 
-  // Validate type
   if (!file.type.startsWith("image/")) {
     return NextResponse.json({ error: "Solo se aceptan imágenes" }, { status: 400 });
   }
 
-  // Max 5MB
   if (file.size > 5 * 1024 * 1024) {
     return NextResponse.json({ error: "La imagen no puede superar 5MB" }, { status: 400 });
   }
@@ -31,11 +39,12 @@ export async function POST(req: NextRequest) {
     const blob = await put(
       `masbesaura/${Date.now()}-${file.name.replace(/[^a-zA-Z0-9._-]/g, "_")}`,
       file,
-      { access: "public" }
+      { access: "public", token: blobToken }
     );
     return NextResponse.json({ url: blob.url });
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
+    console.error("[upload] Blob error:", msg);
     return NextResponse.json({ error: msg }, { status: 500 });
   }
 }
