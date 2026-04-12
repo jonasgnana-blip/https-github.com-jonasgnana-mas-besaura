@@ -367,35 +367,20 @@ function DateRangePicker({
         </button>
       </div>
 
-      {/* Two months */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <CalendarMonth
-          year={viewYear}
-          month={viewMonth}
-          checkIn={checkIn}
-          checkOut={checkOut}
-          hovered={hovered}
-          unavailableRanges={unavailableRanges}
-          onDayClick={handleDayClick}
-          onDayHover={setHovered}
-          singleSelect={singleSelect}
-          monthNames={monthNames}
-          dayNames={dayNames}
-        />
-        <CalendarMonth
-          year={nextYear}
-          month={nextMonth}
-          checkIn={checkIn}
-          checkOut={checkOut}
-          hovered={hovered}
-          unavailableRanges={unavailableRanges}
-          onDayClick={handleDayClick}
-          onDayHover={setHovered}
-          singleSelect={singleSelect}
-          monthNames={monthNames}
-          dayNames={dayNames}
-        />
-      </div>
+      {/* Single month */}
+      <CalendarMonth
+        year={viewYear}
+        month={viewMonth}
+        checkIn={checkIn}
+        checkOut={checkOut}
+        hovered={hovered}
+        unavailableRanges={unavailableRanges}
+        onDayClick={handleDayClick}
+        onDayHover={setHovered}
+        singleSelect={singleSelect}
+        monthNames={monthNames}
+        dayNames={dayNames}
+      />
 
       {/* Legend */}
       {!singleSelect && (
