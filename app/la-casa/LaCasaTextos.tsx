@@ -22,30 +22,52 @@ export function LaCasaIntro() {
   );
 }
 
-export function LaCasaHabitaciones() {
+type HabDB = {
+  id: string;
+  nombre: string;
+  descripcion: string;
+  capacidad: number;
+  imagenes: string[];
+};
+
+// Fallback images keyed by room name fragments (for before any image is uploaded)
+const FALLBACK_IMAGES: Record<string, string> = {
+  artemisa: "/images/hab-artemisa.jpg",
+  selene: "/images/hab-selene.jpg",
+  hecate: "/images/hab-hecate.jpg",
+  hécate: "/images/hab-hecate.jpg",
+};
+
+function getFallback(nombre: string) {
+  const key = Object.keys(FALLBACK_IMAGES).find((k) =>
+    nombre.toLowerCase().includes(k)
+  );
+  return key ? FALLBACK_IMAGES[key] : "/images/hero3.jpg";
+}
+
+export function LaCasaHabitaciones({ habitaciones: habsDB = [] }: { habitaciones?: HabDB[] }) {
   const { lang } = useLanguage();
   const tx = getT(lang);
 
-  const habitaciones = [
-    {
-      nombre: tx.lacasa_artemisa_nombre,
-      descripcion: tx.lacasa_artemisa_desc_real,
-      capacidad: tx.lacasa_artemisa_cap_real,
-      imagen: "/images/hab-artemisa.jpg",
-    },
-    {
-      nombre: tx.lacasa_selene_nombre,
-      descripcion: tx.lacasa_selene_desc_real,
-      capacidad: tx.lacasa_selene_cap_real,
-      imagen: "/images/hab-selene.jpg",
-    },
-    {
-      nombre: tx.lacasa_hecate_nombre,
-      descripcion: tx.lacasa_hecate_desc_real,
-      capacidad: tx.lacasa_hecate_cap_real,
-      imagen: "/images/hab-hecate.jpg",
-    },
-  ];
+  // Translation map: match DB room name to i18n keys
+  const txMap: Record<string, { desc: string; cap: string }> = {
+    artemisa: { desc: tx.lacasa_artemisa_desc_real, cap: tx.lacasa_artemisa_cap_real },
+    selene:   { desc: tx.lacasa_selene_desc_real,   cap: tx.lacasa_selene_cap_real   },
+    hecate:   { desc: tx.lacasa_hecate_desc_real,   cap: tx.lacasa_hecate_cap_real   },
+    hécate:   { desc: tx.lacasa_hecate_desc_real,   cap: tx.lacasa_hecate_cap_real   },
+  };
+
+  const habitaciones = habsDB.map((h) => {
+    const key = Object.keys(txMap).find((k) => h.nombre.toLowerCase().includes(k));
+    return {
+      nombre: h.nombre,
+      // Use translated desc if available, else DB description
+      descripcion: key ? txMap[key].desc : h.descripcion,
+      capacidad: key ? txMap[key].cap : `${h.capacidad} pers.`,
+      // First image from DB, or fallback static path
+      imagen: h.imagenes?.[0] || getFallback(h.nombre),
+    };
+  });
 
   return (
     <section className="py-12 px-6 bg-[#F0EAD6]">

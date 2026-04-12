@@ -1,3 +1,4 @@
+import { prisma } from "@/lib/prisma";
 import NavBar from "@/app/components/NavBar";
 import ImageFader from "@/app/components/ImageFader";
 import {
@@ -9,7 +10,15 @@ import {
   LaCasaFooter,
 } from "./LaCasaTextos";
 
-export default function LaCasa() {
+export const revalidate = 0; // always fresh — admin changes show immediately
+
+export default async function LaCasa() {
+  // Fetch habitaciones from DB so admin image updates appear here
+  const habitaciones = await prisma.habitacion.findMany({
+    orderBy: { nombre: "asc" },
+    select: { id: true, nombre: true, descripcion: true, capacidad: true, imagenes: true },
+  });
+
   return (
     <div className="min-h-screen bg-[#FAFAF6]">
       <NavBar />
@@ -37,7 +46,7 @@ export default function LaCasa() {
       <LaCasaIntro />
 
       {/* ─── HABITACIONES ─── */}
-      <LaCasaHabitaciones />
+      <LaCasaHabitaciones habitaciones={habitaciones} />
 
       {/* ─── ESPACIOS COMUNES ─── */}
       <section className="py-16 px-6">

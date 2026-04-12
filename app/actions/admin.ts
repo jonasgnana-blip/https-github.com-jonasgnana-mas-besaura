@@ -4,6 +4,7 @@ import { cookies } from "next/headers";
 import { prisma } from "@/lib/prisma";
 import { verifySessionToken, SESSION_COOKIE } from "@/lib/adminAuth";
 import { EstadoReserva } from "@/app/generated/prisma/client";
+import { revalidatePath } from "next/cache";
 
 // ── Auth guard ────────────────────────────────────────────────────────────────
 
@@ -137,7 +138,11 @@ export async function adminUpdateHabitacion(
   }
 ) {
   await requireAdmin();
-  return prisma.habitacion.update({ where: { id }, data });
+  const result = await prisma.habitacion.update({ where: { id }, data });
+  revalidatePath("/la-casa");
+  revalidatePath("/alojamiento");
+  revalidatePath("/");
+  return result;
 }
 
 // ── Complementos ──────────────────────────────────────────────────────────────
@@ -180,7 +185,10 @@ export async function adminCreateActividad(data: {
   orden?: number;
 }) {
   await requireAdmin();
-  return prisma.actividad.create({ data });
+  const result = await prisma.actividad.create({ data });
+  revalidatePath("/actividades");
+  revalidatePath("/");
+  return result;
 }
 
 export async function adminUpdateActividad(id: string, data: Partial<{
@@ -199,12 +207,18 @@ export async function adminUpdateActividad(id: string, data: Partial<{
   orden: number;
 }>) {
   await requireAdmin();
-  return prisma.actividad.update({ where: { id }, data });
+  const result = await prisma.actividad.update({ where: { id }, data });
+  revalidatePath("/actividades");
+  revalidatePath("/");
+  return result;
 }
 
 export async function adminDeleteActividad(id: string) {
   await requireAdmin();
-  return prisma.actividad.delete({ where: { id } });
+  const result = await prisma.actividad.delete({ where: { id } });
+  revalidatePath("/actividades");
+  revalidatePath("/");
+  return result;
 }
 
 export async function adminGetSesiones(actividadId: string) {
