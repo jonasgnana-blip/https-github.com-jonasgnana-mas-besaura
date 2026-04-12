@@ -125,11 +125,12 @@ export function LaCasaHabitaciones({ habitaciones: habsDB = [] }: { habitaciones
   };
 
   const habitaciones = habsDB.map((h) => {
-    const key = Object.keys(txMap).find((k) => h.nombre.toLowerCase().includes(k));
+    const hNorm = h.nombre.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+    const key = Object.keys(txMap).find((k) => hNorm.includes(k.normalize("NFD").replace(/[\u0300-\u036f]/g, "")));
     return {
       nombre: h.nombre,
-      // Use translated desc if available, else DB description
-      descripcion: key ? txMap[key].desc : h.descripcion,
+      // DB description wins; fall back to i18n only if empty
+      descripcion: h.descripcion?.trim() || (key ? txMap[key].desc : ""),
       capacidad: key ? txMap[key].cap : `${h.capacidad} pers.`,
       // First image from DB, or fallback static path
       imagen: h.imagenes?.[0] || getFallback(h.nombre),

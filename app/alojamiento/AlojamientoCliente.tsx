@@ -1046,7 +1046,7 @@ export default function AlojamientoCliente({
     return {
       ...base,
       nombre:      db?.nombre      || base.nombre,
-      descripcion: db?.descripcion || base.descripcion,
+      descripcion: db?.descripcion?.trim() || base.descripcion,
       imagen:      (db?.imagen && db.imagen !== "") ? db.imagen : base.imagen,
       capacidad:   db?.capacidad   ?? base.capacidad,
       precioDesayuno:    db?.precio_desayuno    ?? 45,
