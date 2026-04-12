@@ -197,6 +197,7 @@ const translations = {
     lacasa_cta_desc2: "Alojamiento + media pensión — 60€/noche por persona",
     lacasa_cta_nota: "La pensión completa se ofrece únicamente en los Retiros organizados. Al mediodía puedes cocinarte en la casa o explorar los alrededores — muy aconsejable.",
     lacasa_cta_btn: "Consultar disponibilidad",
+    lacasa_cta_title2: "Ven a inspirarte y descansar",
 
     // ── Habitación names/descriptions (La Casa) ─────────────────────────────
     lacasa_artemisa_nombre: "Habitación Artemisa",
@@ -219,6 +220,24 @@ const translations = {
     lacasa_sala_estar_nombre: "Sala Estar · Cocina",
     lacasa_sala_estar_sub: "Zona privada",
     lacasa_sala_estar_desc: "Estancia con cocina completa, zona de lectura y acceso directo al jardín. Disponible para grupos que alquilan la casa completa.",
+
+    // ── Espacios comunes — card Habitaciones ────────────────────────────────
+    lacasa_esp_habs_nombre: "Habitaciones",
+    lacasa_esp_habs_sub: "Tres diosas",
+    lacasa_esp_habs_desc: "Tres habitaciones únicas de piedra y madera, cada una con su carácter: Artemisa, Selene y Hécate. Paredes de cal, suelos antiguos y luz que entra despacio.",
+
+    // ── Capacidades reales de habitaciones (La Casa page) ───────────────────
+    lacasa_artemisa_cap_real: "4 personas",
+    lacasa_selene_cap_real: "4 personas",
+    lacasa_hecate_cap_real: "4 personas",
+
+    // ── Descripciones reales de habitaciones (La Casa page) ─────────────────
+    lacasa_artemisa_desc_real: "Habitación con camas individuales y cama doble, suelo de madera original, paredes de piedra encalada y lámpara de esparto. Nombrada en honor a la diosa de la naturaleza y la luna.",
+    lacasa_selene_desc_real: "Habitación con altillo. Camas individuales abajo y arriba, suelo de madera antigua y ventana con contraventanas de madera. Selene, la luna llena, inspira este espacio luminoso.",
+    lacasa_hecate_desc_real: "Habitación amplia con múltiples camas individuales, estufa de pellets, paredes blancas y luz natural generosa. Hécate guarda los umbrales y los sueños.",
+
+    // ── Footer mínimo La Casa / Actividades ─────────────────────────────────
+    footer_rights_short: "Todos los derechos reservados.",
   },
 
   ca: {
@@ -413,6 +432,7 @@ const translations = {
     lacasa_cta_desc2: "Allotjament + mitja pensió — 60€/nit per persona",
     lacasa_cta_nota: "La pensió completa s'ofereix únicament als Retirs organitzats. Al migdia pots cuinar a la casa o explorar els voltants — molt recomanable.",
     lacasa_cta_btn: "Consultar disponibilitat",
+    lacasa_cta_title2: "Vine a inspirar-te i descansar",
 
     // ── Habitación names/descriptions (La Casa) ─────────────────────────────
     lacasa_artemisa_nombre: "Habitació Artemisa",
@@ -435,6 +455,24 @@ const translations = {
     lacasa_sala_estar_nombre: "Sala d'Estar · Cuina",
     lacasa_sala_estar_sub: "Zona privada",
     lacasa_sala_estar_desc: "Estança amb cuina completa, zona de lectura i accés directe al jardí. Disponible per a grups que llogen la casa completa.",
+
+    // ── Espacios comunes — card Habitaciones ────────────────────────────────
+    lacasa_esp_habs_nombre: "Habitacions",
+    lacasa_esp_habs_sub: "Tres deesses",
+    lacasa_esp_habs_desc: "Tres habitacions úniques de pedra i fusta, cadascuna amb el seu caràcter: Artemisa, Selene i Hècate. Parets de calç, terres antics i llum que entra a poc a poc.",
+
+    // ── Capacidades reales de habitaciones (La Casa page) ───────────────────
+    lacasa_artemisa_cap_real: "4 persones",
+    lacasa_selene_cap_real: "4 persones",
+    lacasa_hecate_cap_real: "4 persones",
+
+    // ── Descripciones reales de habitaciones (La Casa page) ─────────────────
+    lacasa_artemisa_desc_real: "Habitació amb llits individuals i llit doble, terra de fusta original, parets de pedra encalçades i llàntia d'espart. Anomenada en honor a la deessa de la natura i la lluna.",
+    lacasa_selene_desc_real: "Habitació amb altell. Llits individuals a baix i a dalt, terra de fusta antiga i finestra amb contrafinestretes de fusta. Selene, la lluna plena, inspira aquest espai lluminós.",
+    lacasa_hecate_desc_real: "Habitació àmplia amb múltiples llits individuals, estufa de pèl·lets, parets blanques i llum natural generosa. Hècate guarda els llindars i els somnis.",
+
+    // ── Footer mínimo La Casa / Actividades ─────────────────────────────────
+    footer_rights_short: "Tots els drets reservats.",
   },
 } as const;
 
