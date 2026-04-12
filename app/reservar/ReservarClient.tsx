@@ -336,6 +336,60 @@ export default function ReservarClient({
                 </div>
               </div>
 
+              {/* Condiciones */}
+              <div className="bg-white border border-[#E8DCC8] rounded-2xl p-6">
+                <h3
+                  className="text-lg text-[#2C1810] mb-4"
+                  style={{ fontFamily: "var(--font-playfair), Georgia, serif" }}
+                >
+                  Condiciones de reserva
+                </h3>
+                <div className="grid sm:grid-cols-2 gap-x-8 gap-y-4 text-sm text-[#2C1810]/75">
+                  <div className="flex gap-3">
+                    <span className="text-lg shrink-0">🕐</span>
+                    <div>
+                      <p className="font-medium text-[#2C1810] mb-0.5">Check-in / Check-out</p>
+                      <p>Llegada a partir de las 16:00 h · Salida antes de las 12:00 h</p>
+                    </div>
+                  </div>
+                  <div className="flex gap-3">
+                    <span className="text-lg shrink-0">📅</span>
+                    <div>
+                      <p className="font-medium text-[#2C1810] mb-0.5">Estancia mínima</p>
+                      <p>2 noches en fin de semana · 1 noche entre semana</p>
+                    </div>
+                  </div>
+                  <div className="flex gap-3">
+                    <span className="text-lg shrink-0">↩️</span>
+                    <div>
+                      <p className="font-medium text-[#2C1810] mb-0.5">Cancelación</p>
+                      <p>Reembolso completo hasta 14 días antes · 50% hasta 7 días · Sin reembolso después</p>
+                    </div>
+                  </div>
+                  <div className="flex gap-3">
+                    <span className="text-lg shrink-0">🐾</span>
+                    <div>
+                      <p className="font-medium text-[#2C1810] mb-0.5">Mascotas</p>
+                      <p>Admitidas bajo consulta previa</p>
+                    </div>
+                  </div>
+                  <div className="flex gap-3">
+                    <span className="text-lg shrink-0">🔇</span>
+                    <div>
+                      <p className="font-medium text-[#2C1810] mb-0.5">Silencio nocturno</p>
+                      <p>A partir de las 23:00 h en el exterior</p>
+                    </div>
+                  </div>
+                  <div className="flex gap-3">
+                    <span className="text-lg shrink-0">🧹</span>
+                    <div>
+                      <p className="font-medium text-[#2C1810] mb-0.5">Limpieza</p>
+                      <p>Limpieza final incluida · Se ruega dejar la casa ordenada</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
               {/* Calendario */}
               <div>
                 <h2
