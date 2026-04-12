@@ -90,9 +90,10 @@ export async function POST(req: NextRequest) {
   res.cookies.set(SESSION_COOKIE, token, {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
-    sameSite: "strict", // upgraded from "lax" — admin cookie
+    sameSite: "strict",
     maxAge: 12 * 60 * 60, // 12 h
-    path: "/admin",       // scoped to /admin only
+    // path "/" so the cookie is sent to both /admin/* AND /api/admin/*
+    path: "/",
   });
   return res;
 }

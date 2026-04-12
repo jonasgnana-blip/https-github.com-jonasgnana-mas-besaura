@@ -1,5 +1,5 @@
 import { adminGetStats } from "@/app/actions/admin";
-import { TrendingUp, Calendar, Clock, Euro } from "lucide-react";
+import { TrendingUp, Calendar, Clock, Euro, Download } from "lucide-react";
 import BackupButton from "./BackupButton";
 
 export const dynamic = "force-dynamic";
@@ -44,19 +44,16 @@ export default async function AdminDashboard() {
 
   return (
     <div className="p-8">
-      <div className="mb-8 flex items-start justify-between gap-4 flex-wrap">
-        <div>
-          <h1
-            className="text-3xl text-[#2C1810]"
-            style={{ fontFamily: "var(--font-playfair), Georgia, serif" }}
-          >
-            Dashboard
-          </h1>
-          <p className="text-sm text-[#2C1810]/50 mt-1">
-            Bienvenido al panel de administración de Mas Besaura.
-          </p>
-        </div>
-        <BackupButton />
+      <div className="mb-8">
+        <h1
+          className="text-3xl text-[#2C1810]"
+          style={{ fontFamily: "var(--font-playfair), Georgia, serif" }}
+        >
+          Dashboard
+        </h1>
+        <p className="text-sm text-[#2C1810]/50 mt-1">
+          Bienvenido al panel de administración de Mas Besaura.
+        </p>
       </div>
 
       {/* Stat cards */}
@@ -80,6 +77,22 @@ export default async function AdminDashboard() {
             </div>
           </div>
         ))}
+      </div>
+
+      {/* Backup */}
+      <div className="bg-white rounded-2xl border border-[#E8DCC8] p-6 mb-5 flex items-center justify-between gap-4">
+        <div className="flex items-center gap-4">
+          <div className="w-10 h-10 rounded-xl bg-[#2C1810]/8 flex items-center justify-center shrink-0">
+            <Download size={18} className="text-[#2C1810]" />
+          </div>
+          <div>
+            <div className="text-sm font-medium text-[#2C1810]">Copia de seguridad</div>
+            <div className="text-xs text-[#2C1810]/50 mt-0.5">
+              Descarga todos los datos (reservas, actividades, configuración)
+            </div>
+          </div>
+        </div>
+        <BackupButton />
       </div>
 
       {/* Próximas llegadas */}
