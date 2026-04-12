@@ -1,53 +1,44 @@
 import { NextRequest, NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { verifySessionToken, SESSION_COOKIE } from "@/lib/adminAuth";
-import { put } from "@vercel/blob";
+import { handleUpload, type HandleUploadBody } from "@vercel/blob/client";
 
-// Allow up to 8MB uploads
-export const maxDuration = 30;
+export const maxDuration = 60;
 
+// ─── Called TWICE by @vercel/blob client SDK ────────────────────────────────
+// 1. POST {type:"blob.generate-client-token"} → server validates auth, returns token
+// 2. POST {type:"blob.upload-completed"}       → server notified, can log/save URL
 export async function POST(req: NextRequest) {
-  // Auth check
-  const store = await cookies();
-  const token = store.get(SESSION_COOKIE)?.value;
-  if (!token || !(await verifySessionToken(token))) {
-    return NextResponse.json({ error: "No autorizado" }, { status: 401 });
-  }
-
-  // Resolve blob token (Vercel Blob store may inject under a prefixed name)
-  const blobToken =
-    process.env.BLOB_READ_WRITE_TOKEN ??
-    process.env.MASBESAURABLOB_READ_WRITE_TOKEN;
-
-  if (!blobToken) {
-    console.error("[upload] BLOB_READ_WRITE_TOKEN not set");
-    return NextResponse.json({ error: "Almacenamiento no configurado" }, { status: 500 });
-  }
-
-  const formData = await req.formData();
-  const file = formData.get("file") as File | null;
-  if (!file) {
-    return NextResponse.json({ error: "No se recibió ningún archivo" }, { status: 400 });
-  }
-
-  if (!file.type.startsWith("image/")) {
-    return NextResponse.json({ error: "Solo se aceptan imágenes" }, { status: 400 });
-  }
-
-  if (file.size > 5 * 1024 * 1024) {
-    return NextResponse.json({ error: "La imagen no puede superar 5MB" }, { status: 400 });
-  }
+  const body = (await req.json()) as HandleUploadBody;
 
   try {
-    const blob = await put(
-      `masbesaura/${Date.now()}-${file.name.replace(/[^a-zA-Z0-9._-]/g, "_")}`,
-      file,
-      { access: "public", token: blobToken }
-    );
-    return NextResponse.json({ url: blob.url });
+    const jsonResponse = await handleUpload({
+      body,
+      request: req,
+      onBeforeGenerateToken: async (pathname) => {
+        // Auth check — only allow logged-in admins
+        const store = await cookies();
+        const token = store.get(SESSION_COOKIE)?.value;
+        if (!token || !(await verifySessionToken(token))) {
+          throw new Error("No autorizado");
+        }
+
+        return {
+          allowedContentTypes: ["image/jpeg", "image/png", "image/webp", "image/gif", "image/avif"],
+          maximumSizeInBytes: 10 * 1024 * 1024, // 10 MB
+          tokenPayload: JSON.stringify({ pathname }),
+        };
+      },
+      onUploadCompleted: async ({ blob }) => {
+        // Upload finished — blob.url is the public URL
+        console.log("[upload] completed:", blob.url);
+      },
+    });
+
+    return NextResponse.json(jsonResponse);
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
-    console.error("[upload] Blob error:", msg);
-    return NextResponse.json({ error: msg }, { status: 500 });
+    console.error("[upload] error:", msg);
+    return NextResponse.json({ error: msg }, { status: 400 });
   }
 }
