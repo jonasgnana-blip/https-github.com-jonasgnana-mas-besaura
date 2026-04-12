@@ -1,44 +1,60 @@
 import { NextRequest, NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { verifySessionToken, SESSION_COOKIE } from "@/lib/adminAuth";
-import { handleUpload, type HandleUploadBody } from "@vercel/blob/client";
+import { put } from "@vercel/blob";
 
+export const runtime = "nodejs";
 export const maxDuration = 60;
 
-// ─── Called TWICE by @vercel/blob client SDK ────────────────────────────────
-// 1. POST {type:"blob.generate-client-token"} → server validates auth, returns token
-// 2. POST {type:"blob.upload-completed"}       → server notified, can log/save URL
+const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/webp", "image/gif", "image/avif"];
+const MAX_BYTES = 10 * 1024 * 1024; // 10 MB
+
 export async function POST(req: NextRequest) {
-  const body = (await req.json()) as HandleUploadBody;
+  // ── Auth ────────────────────────────────────────────────────────────────────
+  const store = await cookies();
+  const token = store.get(SESSION_COOKIE)?.value;
+  if (!token || !(await verifySessionToken(token))) {
+    return NextResponse.json({ error: "No autorizado" }, { status: 401 });
+  }
 
+  // ── Parse multipart form ────────────────────────────────────────────────────
+  let file: File | null = null;
   try {
-    const jsonResponse = await handleUpload({
-      body,
-      request: req,
-      onBeforeGenerateToken: async (pathname) => {
-        // Auth check — only allow logged-in admins
-        const store = await cookies();
-        const token = store.get(SESSION_COOKIE)?.value;
-        if (!token || !(await verifySessionToken(token))) {
-          throw new Error("No autorizado");
-        }
+    const form = await req.formData();
+    file = form.get("file") as File | null;
+  } catch {
+    return NextResponse.json({ error: "FormData inválido" }, { status: 400 });
+  }
 
-        return {
-          allowedContentTypes: ["image/jpeg", "image/png", "image/webp", "image/gif", "image/avif"],
-          maximumSizeInBytes: 10 * 1024 * 1024, // 10 MB
-          tokenPayload: JSON.stringify({ pathname }),
-        };
-      },
-      onUploadCompleted: async ({ blob }) => {
-        // Upload finished — blob.url is the public URL
-        console.log("[upload] completed:", blob.url);
-      },
+  if (!file || file.size === 0) {
+    return NextResponse.json({ error: "No se recibió ningún archivo" }, { status: 400 });
+  }
+
+  if (!ALLOWED_TYPES.includes(file.type)) {
+    return NextResponse.json(
+      { error: "Tipo de archivo no permitido. Solo JPG, PNG, WebP, GIF, AVIF" },
+      { status: 400 }
+    );
+  }
+
+  if (file.size > MAX_BYTES) {
+    return NextResponse.json({ error: "Archivo demasiado grande (máx 10 MB)" }, { status: 400 });
+  }
+
+  // ── Upload to Vercel Blob ───────────────────────────────────────────────────
+  try {
+    const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, "_");
+    const pathname = `masbesaura/${Date.now()}-${safeName}`;
+
+    const blob = await put(pathname, file, {
+      access: "public",
+      contentType: file.type,
     });
 
-    return NextResponse.json(jsonResponse);
+    return NextResponse.json({ url: blob.url });
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
     console.error("[upload] error:", msg);
-    return NextResponse.json({ error: msg }, { status: 400 });
+    return NextResponse.json({ error: msg }, { status: 500 });
   }
 }

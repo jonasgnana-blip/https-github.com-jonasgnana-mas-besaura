@@ -1,7 +1,6 @@
 "use client";
 import { useRef, useState } from "react";
 import { Upload, Loader2, X } from "lucide-react";
-import { upload } from "@vercel/blob/client";
 
 export default function ImageUpload({
   currentUrl,
@@ -19,24 +18,29 @@ export default function ImageUpload({
   async function handleFile(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
+
     setUploading(true);
     setError("");
+
     try {
-      // The file is uploaded directly from the browser to Vercel Blob.
-      // The route /api/admin/upload only generates a short-lived client token
-      // (no 4.5MB payload limit applies).
-      const blob = await upload(
-        `masbesaura/${Date.now()}-${file.name.replace(/[^a-zA-Z0-9._-]/g, "_")}`,
-        file,
-        {
-          access: "public",
-          handleUploadUrl: "/api/admin/upload",
-        }
-      );
-      onUpload(blob.url);
+      const form = new FormData();
+      form.append("file", file);
+
+      const res = await fetch("/api/admin/upload", {
+        method: "POST",
+        body: form,
+        // No Content-Type header — browser sets it automatically with boundary
+      });
+
+      const data = await res.json();
+
+      if (!res.ok || !data.url) {
+        throw new Error(data.error ?? "Error al subir la imagen");
+      }
+
+      onUpload(data.url);
     } catch (err) {
-      const msg = err instanceof Error ? err.message : String(err);
-      setError(msg || "Error al subir");
+      setError(err instanceof Error ? err.message : "Error desconocido");
     } finally {
       setUploading(false);
       if (inputRef.current) inputRef.current.value = "";
@@ -65,7 +69,7 @@ export default function ImageUpload({
       <input
         ref={inputRef}
         type="file"
-        accept="image/*"
+        accept="image/jpeg,image/png,image/webp,image/gif,image/avif"
         className="hidden"
         onChange={handleFile}
       />
