@@ -192,7 +192,7 @@ export function LaCasaHabitaciones({ habitaciones: habsDB = [] }: { habitaciones
   );
 }
 
-export function LaCasaEspacios() {
+export function LaCasaEspacios({ salonImg, habsImg, salaImg }: { salonImg?: string; habsImg?: string; salaImg?: string }) {
   const { lang } = useLanguage();
   const tx = getT(lang);
 
@@ -201,21 +201,21 @@ export function LaCasaEspacios() {
       nombre: tx.lacasa_salon_nombre,
       subtitulo: tx.lacasa_salon_sub,
       descripcion: tx.lacasa_salon_desc,
-      imagen: "/images/comedor-sala.jpg",
+      imagen: salonImg || "/images/comedor-sala.jpg",
       icon: <Users size={20} className="text-[#4A6741]" />,
     },
     {
       nombre: tx.lacasa_esp_habs_nombre,
       subtitulo: tx.lacasa_esp_habs_sub,
       descripcion: tx.lacasa_esp_habs_desc,
-      imagen: "/images/hab-hecate.jpg",
+      imagen: habsImg || "/images/hab-hecate.jpg",
       icon: <Bed size={20} className="text-[#C4A882]" />,
     },
     {
       nombre: tx.lacasa_sala_estar_nombre,
       subtitulo: tx.lacasa_sala_estar_sub,
       descripcion: tx.lacasa_sala_estar_desc,
-      imagen: "/images/distribuidor.jpg",
+      imagen: salaImg || "/images/distribuidor.jpg",
       icon: <Flame size={20} className="text-[#8B6914]" />,
     },
   ];
@@ -269,17 +269,17 @@ export function LaCasaEspacios() {
   );
 }
 
-const CABANYA_FOTOS = [
-  { src: "/images/cabanya-grupo.jpg", alt: "La Cabanya — espacio exterior" },
-  { src: "/images/cabanya-luna.jpg",  alt: "La Cabanya — noche de luna" },
-  { src: "/images/hero2.jpg",         alt: "La Cabanya — jardín" },
-];
-
-export function LaCasaCalendario({ unavailDates = [] }: { unavailDates?: DateRange[] }) {
+export function LaCasaCalendario({ unavailDates = [], foto1, foto2 }: { unavailDates?: DateRange[]; foto1?: string; foto2?: string }) {
   const { lang } = useLanguage();
   const locale = lang === "ca" ? "ca-ES" : "es-ES";
   const monthNames = lang === "ca" ? MONTHS_CA : MONTHS_ES;
   const dayNames   = lang === "ca" ? DAYS_CA   : DAYS_ES;
+
+  const CABANYA_FOTOS = [
+    { src: foto1 || "/images/cabanya-grupo.jpg", alt: "La Cabanya — espacio exterior" },
+    { src: foto2 || "/images/cabanya-luna.jpg",  alt: "La Cabanya — noche de luna" },
+    { src: "/images/hero2.jpg",                  alt: "La Cabanya — jardín" },
+  ];
 
   // Photo slider
   const [slide, setSlide] = useState(0);

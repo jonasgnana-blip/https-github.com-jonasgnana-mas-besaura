@@ -29,21 +29,32 @@ type Complemento = {
   activo: boolean;
 };
 
+type EspaciosCfg = { salonImg: string; habsImg: string; salaImg: string };
+type CabanyaCfg  = { foto1: string; foto2: string };
+
 export default function ConfigClient({
   habitaciones: initialHabs,
   complementos: initialComps,
   gcalConnected,
   gcalStatus,
   fbPixelIdInicial,
+  espaciosInicial,
+  cabanyaInicial,
 }: {
   habitaciones: Habitacion[];
   complementos: Complemento[];
   gcalConnected: boolean;
   gcalStatus?: string;
   fbPixelIdInicial?: string;
+  espaciosInicial: EspaciosCfg;
+  cabanyaInicial: CabanyaCfg;
 }) {
   const [habs, setHabs] = useState(initialHabs);
   const [comps, setComps] = useState(initialComps);
+  const [espacios, setEspacios] = useState<EspaciosCfg>(espaciosInicial);
+  const [cabanya, setCabanya]   = useState<CabanyaCfg>(cabanyaInicial);
+  const [espaciosSaved, setEspaciosSaved] = useState(false);
+  const [cabanyaSaved,  setCabanyaSaved]  = useState(false);
   const [saved, setSaved] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
 
@@ -56,6 +67,29 @@ export default function ConfigClient({
       await adminUpsertSistemaConfig("fb_pixel_id", pixelId.trim());
       setPixelSaved(true);
       setTimeout(() => setPixelSaved(false), 2500);
+    });
+  }
+
+  function saveEspacios() {
+    startTransition(async () => {
+      await Promise.all([
+        adminUpsertSistemaConfig("espacio_salon_img", espacios.salonImg),
+        adminUpsertSistemaConfig("espacio_habs_img",  espacios.habsImg),
+        adminUpsertSistemaConfig("espacio_sala_img",  espacios.salaImg),
+      ]);
+      setEspaciosSaved(true);
+      setTimeout(() => setEspaciosSaved(false), 2500);
+    });
+  }
+
+  function saveCabanya() {
+    startTransition(async () => {
+      await Promise.all([
+        adminUpsertSistemaConfig("cabanya_foto_1", cabanya.foto1),
+        adminUpsertSistemaConfig("cabanya_foto_2", cabanya.foto2),
+      ]);
+      setCabanyaSaved(true);
+      setTimeout(() => setCabanyaSaved(false), 2500);
     });
   }
 
@@ -445,6 +479,79 @@ export default function ConfigClient({
               </button>
             </div>
           ))}
+        </div>
+      </section>
+
+      {/* Espacios para el encuentro */}
+      <section className="mb-10">
+        <h2 className="text-xl text-[#2C1810] mb-1" style={{ fontFamily: "var(--font-playfair), Georgia, serif" }}>
+          Espacios para el encuentro
+        </h2>
+        <p className="text-sm text-[#2C1810]/50 mb-5">Imágenes de los 3 espacios comunes en la página La Casa.</p>
+        <div className="bg-white rounded-2xl border border-[#E8DCC8] p-6 space-y-6">
+          {[
+            { label: "Salón Comedor", key: "salonImg" as keyof EspaciosCfg },
+            { label: "Habitaciones",  key: "habsImg"  as keyof EspaciosCfg },
+            { label: "Sala Estar · Cocina", key: "salaImg" as keyof EspaciosCfg },
+          ].map(({ label, key }) => (
+            <div key={key} className="flex items-start gap-4 pb-5 border-b border-[#E8DCC8] last:border-0 last:pb-0">
+              <div className="flex-1">
+                <ImageUpload
+                  currentUrl={espacios[key] || null}
+                  onUpload={(url) => setEspacios(prev => ({ ...prev, [key]: url }))}
+                  label={label}
+                />
+                <input type="text" value={espacios[key]}
+                  onChange={e => setEspacios(prev => ({ ...prev, [key]: e.target.value }))}
+                  placeholder="/images/foto.jpg o URL blob"
+                  className="mt-2 w-full px-3 py-2 rounded-xl border border-[#E8DCC8] bg-[#FAFAF6] text-[#2C1810] text-xs focus:outline-none focus:ring-2 focus:ring-[#4A6741]/30"
+                />
+              </div>
+              {espacios[key] && (
+                <img src={espacios[key]} alt={label} className="w-20 h-20 object-cover rounded-xl border border-[#E8DCC8] shrink-0" />
+              )}
+            </div>
+          ))}
+          <button onClick={saveEspacios} disabled={isPending}
+            className="flex items-center gap-2 px-5 py-2 rounded-full bg-[#4A6741] text-[#F0EAD6] text-sm font-medium hover:bg-[#3A5432] transition-colors disabled:opacity-50">
+            {isPending && !espaciosSaved ? <Loader2 size={14} className="animate-spin" /> : espaciosSaved ? "✓ Guardado" : <><Save size={14} /> Guardar espacios</>}
+          </button>
+        </div>
+      </section>
+
+      {/* La Cabanya — fotos */}
+      <section className="mb-10">
+        <h2 className="text-xl text-[#2C1810] mb-1" style={{ fontFamily: "var(--font-playfair), Georgia, serif" }}>
+          La Cabanya
+        </h2>
+        <p className="text-sm text-[#2C1810]/50 mb-5">Las 2 fotos del slider de La Cabanya en la página La Casa.</p>
+        <div className="bg-white rounded-2xl border border-[#E8DCC8] p-6 space-y-6">
+          {[
+            { label: "Foto 1", key: "foto1" as keyof CabanyaCfg },
+            { label: "Foto 2", key: "foto2" as keyof CabanyaCfg },
+          ].map(({ label, key }) => (
+            <div key={key} className="flex items-start gap-4 pb-5 border-b border-[#E8DCC8] last:border-0 last:pb-0">
+              <div className="flex-1">
+                <ImageUpload
+                  currentUrl={cabanya[key] || null}
+                  onUpload={(url) => setCabanya(prev => ({ ...prev, [key]: url }))}
+                  label={label}
+                />
+                <input type="text" value={cabanya[key]}
+                  onChange={e => setCabanya(prev => ({ ...prev, [key]: e.target.value }))}
+                  placeholder="/images/cabanya.jpg o URL blob"
+                  className="mt-2 w-full px-3 py-2 rounded-xl border border-[#E8DCC8] bg-[#FAFAF6] text-[#2C1810] text-xs focus:outline-none focus:ring-2 focus:ring-[#4A6741]/30"
+                />
+              </div>
+              {cabanya[key] && (
+                <img src={cabanya[key]} alt={label} className="w-20 h-20 object-cover rounded-xl border border-[#E8DCC8] shrink-0" />
+              )}
+            </div>
+          ))}
+          <button onClick={saveCabanya} disabled={isPending}
+            className="flex items-center gap-2 px-5 py-2 rounded-full bg-[#4A6741] text-[#F0EAD6] text-sm font-medium hover:bg-[#3A5432] transition-colors disabled:opacity-50">
+            {isPending && !cabanyaSaved ? <Loader2 size={14} className="animate-spin" /> : cabanyaSaved ? "✓ Guardado" : <><Save size={14} /> Guardar fotos</>}
+          </button>
         </div>
       </section>
 

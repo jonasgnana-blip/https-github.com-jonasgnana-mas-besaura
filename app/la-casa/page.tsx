@@ -14,13 +14,19 @@ import {
 export const revalidate = 0; // always fresh — admin changes show immediately
 
 export default async function LaCasa() {
-  const [habitaciones, unavailDates] = await Promise.all([
+  const [habitaciones, unavailDates, espacioConfigs] = await Promise.all([
     prisma.habitacion.findMany({
       orderBy: { nombre: "asc" },
+      take: 3,
       select: { id: true, nombre: true, descripcion: true, capacidad: true, imagenes: true },
     }),
     getUnavailableDates("la-cabanya"),
+    prisma.sistemaConfig.findMany({
+      where: { clave: { in: ["espacio_salon_img", "espacio_habs_img", "espacio_sala_img", "cabanya_foto_1", "cabanya_foto_2"] } },
+    }),
   ]);
+
+  const cfg = Object.fromEntries(espacioConfigs.map(c => [c.clave, c.valor]));
 
   return (
     <div className="min-h-screen bg-[#FAFAF6]">
@@ -54,12 +60,20 @@ export default async function LaCasa() {
       {/* ─── ESPACIOS COMUNES ─── */}
       <section className="py-16 px-6">
         <div className="max-w-5xl mx-auto">
-          <LaCasaEspacios />
+          <LaCasaEspacios
+            salonImg={cfg["espacio_salon_img"] || undefined}
+            habsImg={cfg["espacio_habs_img"] || undefined}
+            salaImg={cfg["espacio_sala_img"] || undefined}
+          />
         </div>
       </section>
 
       {/* ─── CALENDARIO / RESERVAS ─── */}
-      <LaCasaCalendario unavailDates={unavailDates} />
+      <LaCasaCalendario
+        unavailDates={unavailDates}
+        foto1={cfg["cabanya_foto_1"] || undefined}
+        foto2={cfg["cabanya_foto_2"] || undefined}
+      />
 
       {/* ─── CTA ALOJAMIENTO ─── */}
       <LaCasaCTA />
