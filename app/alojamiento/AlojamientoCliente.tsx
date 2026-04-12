@@ -16,18 +16,7 @@ type Complemento = {
   activo: boolean;
 };
 
-type Props = {
-  complementos: Complemento[];
-  datesArtemisa: DateRange[];
-  datesSelene: DateRange[];
-  datesHecate: DateRange[];
-  datesCabanya: DateRange[];
-};
-
-type HabitacionKey = "artemisa" | "selene" | "hecate";
-type BookingOption = "desayuno" | "media_pension";
-
-const HABITACIONES: {
+type HabitacionData = {
   id: HabitacionKey;
   nombre: string;
   descripcion: string;
@@ -35,7 +24,25 @@ const HABITACIONES: {
   capacidad: number;
   precioDesayuno: number;
   precioMediaPension: number;
-}[] = [
+};
+
+type Props = {
+  complementos: Complemento[];
+  datesArtemisa: DateRange[];
+  datesSelene: DateRange[];
+  datesHecate: DateRange[];
+  datesCabanya: DateRange[];
+  habitaciones?: {
+    id: string;
+    precio_desayuno: number | null;
+    precio_media_pension: number | null;
+  }[];
+};
+
+type HabitacionKey = "artemisa" | "selene" | "hecate";
+type BookingOption = "desayuno" | "media_pension";
+
+const HABITACIONES_BASE: Omit<HabitacionData, "precioDesayuno" | "precioMediaPension">[] = [
   {
     id: "artemisa",
     nombre: "Artemisa",
@@ -43,8 +50,6 @@ const HABITACIONES: {
       "2 camas individuales y una cama doble, con baño. Estufa de pellets. Orientación este.",
     imagen: "/images/hero1.jpg",
     capacidad: 4,
-    precioDesayuno: 45,
-    precioMediaPension: 60,
   },
   {
     id: "selene",
@@ -53,8 +58,6 @@ const HABITACIONES: {
       "Habitación con altillo. 2 camas individuales abajo, 2 camas individuales arriba. Estufa de pellets. Orientación norte.",
     imagen: "/images/hero2.jpg",
     capacidad: 4,
-    precioDesayuno: 45,
-    precioMediaPension: 60,
   },
   {
     id: "hecate",
@@ -63,8 +66,6 @@ const HABITACIONES: {
       "2 camas individuales y una cama doble. Estufa de pellets. Orientación oeste.",
     imagen: "/images/hero3.jpg",
     capacidad: 4,
-    precioDesayuno: 45,
-    precioMediaPension: 60,
   },
 ];
 
@@ -399,7 +400,7 @@ function BookingPanel({
   complementos,
   onClose,
 }: {
-  habitacion: (typeof HABITACIONES)[0];
+  habitacion: HabitacionData;
   opcion: BookingOption;
   unavailableRanges: DateRange[];
   complementos: Complemento[];
@@ -700,7 +701,7 @@ function RoomCard({
   unavailableRanges,
   complementos,
 }: {
-  habitacion: (typeof HABITACIONES)[0];
+  habitacion: HabitacionData;
   unavailableRanges: DateRange[];
   complementos: Complemento[];
 }) {
@@ -783,6 +784,7 @@ function CabanyaSection({
 }: {
   unavailableRanges: DateRange[];
 }) {
+  const [open, setOpen] = useState(false);
   const [personas, setPersonas] = useState(10);
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [loading, setLoading] = useState(false);
@@ -847,74 +849,89 @@ function CabanyaSection({
               para más de 100 personas.
             </p>
 
-            <div className="bg-[#F0EAD6] rounded-2xl p-6 space-y-5">
+            <div className="space-y-4">
               <p className="text-sm text-[#2C1810]/60 font-medium">
                 10€ por persona · día
               </p>
 
-              {/* Date picker */}
-              <div>
-                <p className="text-xs font-medium text-[#2C1810]/70 uppercase tracking-wide mb-2">
-                  Fecha del evento
-                </p>
-                <DateRangePicker
-                  checkIn={selectedDate}
-                  checkOut={null}
-                  unavailableRanges={unavailableRanges}
-                  onChange={(d) => setSelectedDate(d)}
-                  singleSelect
-                />
-                {selectedDate && (
-                  <p className="text-xs text-[#4A6741] mt-2 font-medium">
-                    {selectedDate.toLocaleDateString("es-ES", {
-                      weekday: "long",
-                      day: "numeric",
-                      month: "long",
-                      year: "numeric",
-                    })}
-                  </p>
-                )}
-              </div>
+              <button
+                onClick={() => setOpen((v) => !v)}
+                className={`w-full flex items-center justify-center gap-2 px-5 py-3 rounded-xl text-sm font-medium transition-all ${
+                  open
+                    ? "bg-[#2C1810] text-[#F0EAD6]"
+                    : "bg-[#4A6741] text-[#F0EAD6] hover:bg-[#3A5432]"
+                }`}
+              >
+                {open ? "✕ Cerrar" : "Consultar disponibilidad"}
+              </button>
 
-              {/* Personas counter */}
-              <div className="flex items-center gap-3">
-                <button
-                  type="button"
-                  onClick={() => setPersonas((p) => Math.max(1, p - 1))}
-                  className="w-9 h-9 rounded-full border border-[#E8DCC8] bg-[#FAFAF6] text-[#2C1810] text-lg font-medium flex items-center justify-center hover:bg-[#E8DCC8] transition-colors"
-                >
-                  −
-                </button>
-                <span className="text-2xl font-medium text-[#2C1810] w-10 text-center">
-                  {personas}
-                </span>
-                <button
-                  type="button"
-                  onClick={() => setPersonas((p) => Math.min(100, p + 1))}
-                  className="w-9 h-9 rounded-full border border-[#E8DCC8] bg-[#FAFAF6] text-[#2C1810] text-lg font-medium flex items-center justify-center hover:bg-[#E8DCC8] transition-colors"
-                >
-                  +
-                </button>
-                <span className="text-sm text-[#2C1810]/60 ml-2">personas</span>
-              </div>
+              {open && (
+                <div className="bg-[#F0EAD6] rounded-2xl p-6 space-y-5">
+                  {/* Date picker */}
+                  <div>
+                    <p className="text-xs font-medium text-[#2C1810]/70 uppercase tracking-wide mb-2">
+                      Fecha del evento
+                    </p>
+                    <DateRangePicker
+                      checkIn={selectedDate}
+                      checkOut={null}
+                      unavailableRanges={unavailableRanges}
+                      onChange={(d) => setSelectedDate(d)}
+                      singleSelect
+                    />
+                    {selectedDate && (
+                      <p className="text-xs text-[#4A6741] mt-2 font-medium">
+                        {selectedDate.toLocaleDateString("es-ES", {
+                          weekday: "long",
+                          day: "numeric",
+                          month: "long",
+                          year: "numeric",
+                        })}
+                      </p>
+                    )}
+                  </div>
 
-              <div className="flex items-center gap-4">
-                <span className="text-lg font-medium text-[#2C1810]">
-                  Total:{" "}
-                  <span className="text-[#4A6741]">{total}€</span>
-                </span>
-                <button
-                  onClick={handleReservar}
-                  disabled={loading || !selectedDate}
-                  className="flex items-center gap-2 px-6 py-3 rounded-full bg-[#4A6741] text-[#F0EAD6] text-sm font-medium hover:bg-[#3A5432] transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
-                >
-                  {loading && <Loader2 size={16} className="animate-spin" />}
-                  Reservar Cabanya
-                </button>
-              </div>
+                  {/* Personas counter */}
+                  <div className="flex items-center gap-3">
+                    <button
+                      type="button"
+                      onClick={() => setPersonas((p) => Math.max(1, p - 1))}
+                      className="w-9 h-9 rounded-full border border-[#E8DCC8] bg-[#FAFAF6] text-[#2C1810] text-lg font-medium flex items-center justify-center hover:bg-[#E8DCC8] transition-colors"
+                    >
+                      −
+                    </button>
+                    <span className="text-2xl font-medium text-[#2C1810] w-10 text-center">
+                      {personas}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => setPersonas((p) => Math.min(100, p + 1))}
+                      className="w-9 h-9 rounded-full border border-[#E8DCC8] bg-[#FAFAF6] text-[#2C1810] text-lg font-medium flex items-center justify-center hover:bg-[#E8DCC8] transition-colors"
+                    >
+                      +
+                    </button>
+                    <span className="text-sm text-[#2C1810]/60 ml-2">personas</span>
+                  </div>
 
-              {error && (
-                <p className="text-red-600 text-xs">{error}</p>
+                  <div className="flex items-center gap-4">
+                    <span className="text-lg font-medium text-[#2C1810]">
+                      Total:{" "}
+                      <span className="text-[#4A6741]">{total}€</span>
+                    </span>
+                    <button
+                      onClick={handleReservar}
+                      disabled={loading || !selectedDate}
+                      className="flex items-center gap-2 px-6 py-3 rounded-full bg-[#4A6741] text-[#F0EAD6] text-sm font-medium hover:bg-[#3A5432] transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+                    >
+                      {loading && <Loader2 size={16} className="animate-spin" />}
+                      Reservar Cabanya
+                    </button>
+                  </div>
+
+                  {error && (
+                    <p className="text-red-600 text-xs">{error}</p>
+                  )}
+                </div>
               )}
             </div>
           </div>
@@ -988,12 +1005,22 @@ export default function AlojamientoCliente({
   datesSelene,
   datesHecate,
   datesCabanya,
+  habitaciones: habitacionesDB = [],
 }: Props) {
   const unavailableByRoom: Record<HabitacionKey, DateRange[]> = {
     artemisa: datesArtemisa,
     selene: datesSelene,
     hecate: datesHecate,
   };
+
+  const HABITACIONES: HabitacionData[] = HABITACIONES_BASE.map((base) => {
+    const db = habitacionesDB.find((h) => h.id === base.id);
+    return {
+      ...base,
+      precioDesayuno: db?.precio_desayuno ?? 45,
+      precioMediaPension: db?.precio_media_pension ?? 60,
+    };
+  });
 
   return (
     <>

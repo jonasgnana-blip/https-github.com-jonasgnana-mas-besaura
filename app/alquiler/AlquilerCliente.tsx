@@ -609,7 +609,7 @@ function CabanySalaSection({ datesCabanya }: { datesCabanya: DateRange[] }) {
             </p>
             <Field label="Nombre" value={nombre} onChange={setNombre} placeholder="Tu nombre" required />
             <Field label="Email" type="email" value={email} onChange={setEmail} placeholder="tu@email.com" required />
-            <Field label="Teléfono" type="tel" value={telefono} onChange={setTelefono} placeholder="+34 000 000 000" />
+            <Field label="Teléfono" type="tel" value={telefono} onChange={setTelefono} placeholder="+34 000 000 000" required />
           </div>
 
           {error && (
@@ -777,7 +777,7 @@ function CasaRetirosSection({ datesCasa }: { datesCasa: DateRange[] }) {
             </p>
             <Field label="Nombre" value={nombre} onChange={setNombre} placeholder="Tu nombre" required />
             <Field label="Email" type="email" value={email} onChange={setEmail} placeholder="tu@email.com" required />
-            <Field label="Teléfono" type="tel" value={telefono} onChange={setTelefono} placeholder="+34 000 000 000" />
+            <Field label="Teléfono" type="tel" value={telefono} onChange={setTelefono} placeholder="+34 000 000 000" required />
           </div>
 
           {error && (

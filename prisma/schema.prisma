@@ -11,9 +11,11 @@ model Habitacion {
   id           String    @id @default(cuid())
   nombre       String
   descripcion  String
-  precio_noche Decimal   @db.Decimal(10, 2)
-  capacidad    Int
-  imagenes     String[]
+  precio_noche         Decimal   @db.Decimal(10, 2)
+  precio_desayuno      Decimal?  @db.Decimal(10, 2)
+  precio_media_pension Decimal?  @db.Decimal(10, 2)
+  capacidad            Int
+  imagenes             String[]
   createdAt    DateTime  @default(now())
   updatedAt    DateTime  @updatedAt
 

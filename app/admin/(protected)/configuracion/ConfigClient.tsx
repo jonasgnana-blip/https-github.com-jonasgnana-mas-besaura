@@ -7,6 +7,7 @@ import {
   adminUpsertSistemaConfig,
 } from "@/app/actions/admin";
 import { Save, Loader2, CalendarCheck, CalendarX } from "lucide-react";
+import ImageUpload from "@/app/components/ImageUpload";
 
 type Habitacion = {
   id: string;
@@ -14,6 +15,9 @@ type Habitacion = {
   descripcion: string;
   precio_noche: number;
   capacidad: number;
+  precio_desayuno: number | null;
+  precio_media_pension: number | null;
+  imagenes: string[];
 };
 
 type Complemento = {
@@ -63,6 +67,9 @@ export default function ConfigClient({
         descripcion: h.descripcion,
         precio_noche: h.precio_noche,
         capacidad: h.capacidad,
+        precio_desayuno: h.precio_desayuno ?? undefined,
+        precio_media_pension: h.precio_media_pension ?? undefined,
+        imagenes: h.imagenes,
       });
       setSaved(id);
       setTimeout(() => setSaved(null), 2000);
@@ -295,6 +302,132 @@ export default function ConfigClient({
                   }
                   className="w-full px-3 py-2.5 rounded-xl border border-[#E8DCC8] bg-[#FAFAF6] text-[#2C1810] text-sm focus:outline-none focus:ring-2 focus:ring-[#4A6741]/30 resize-none"
                 />
+              </div>
+
+              {/* Precios extra */}
+              <div className="grid sm:grid-cols-2 gap-4 mb-4">
+                <div>
+                  <label className="block text-xs font-medium text-[#2C1810]/50 uppercase tracking-wide mb-1.5">
+                    Precio con desayuno (€/noche)
+                  </label>
+                  <input
+                    type="number"
+                    min={0}
+                    value={h.precio_desayuno ?? ""}
+                    onChange={(e) =>
+                      setHabs((prev) =>
+                        prev.map((x) =>
+                          x.id === h.id
+                            ? { ...x, precio_desayuno: e.target.value === "" ? null : Number(e.target.value) }
+                            : x
+                        )
+                      )
+                    }
+                    placeholder="—"
+                    className="w-full px-3 py-2.5 rounded-xl border border-[#E8DCC8] bg-[#FAFAF6] text-[#2C1810] text-sm focus:outline-none focus:ring-2 focus:ring-[#4A6741]/30"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-[#2C1810]/50 uppercase tracking-wide mb-1.5">
+                    Precio media pensión (€/noche)
+                  </label>
+                  <input
+                    type="number"
+                    min={0}
+                    value={h.precio_media_pension ?? ""}
+                    onChange={(e) =>
+                      setHabs((prev) =>
+                        prev.map((x) =>
+                          x.id === h.id
+                            ? { ...x, precio_media_pension: e.target.value === "" ? null : Number(e.target.value) }
+                            : x
+                        )
+                      )
+                    }
+                    placeholder="—"
+                    className="w-full px-3 py-2.5 rounded-xl border border-[#E8DCC8] bg-[#FAFAF6] text-[#2C1810] text-sm focus:outline-none focus:ring-2 focus:ring-[#4A6741]/30"
+                  />
+                </div>
+              </div>
+
+              {/* Imágenes */}
+              <div className="mb-4">
+                <label className="block text-xs font-medium text-[#2C1810]/50 uppercase tracking-wide mb-1.5">
+                  Imágenes
+                </label>
+                <div className="space-y-3">
+                  {h.imagenes.map((url, idx) => (
+                    <div key={idx} className="flex items-start gap-3 p-3 rounded-xl border border-[#E8DCC8] bg-[#FAFAF6]">
+                      <ImageUpload
+                        currentUrl={url || null}
+                        onUpload={(newUrl) =>
+                          setHabs((prev) =>
+                            prev.map((x) => {
+                              if (x.id !== h.id) return x;
+                              const imgs = [...x.imagenes];
+                              imgs[idx] = newUrl;
+                              return { ...x, imagenes: imgs };
+                            })
+                          )
+                        }
+                        label={`Imagen ${idx + 1}`}
+                      />
+                      <div className="flex-1 flex flex-col gap-1">
+                        <label className="block text-xs text-[#2C1810]/40">
+                          URL manual
+                        </label>
+                        <input
+                          type="text"
+                          value={url}
+                          onChange={(e) =>
+                            setHabs((prev) =>
+                              prev.map((x) => {
+                                if (x.id !== h.id) return x;
+                                const imgs = [...x.imagenes];
+                                imgs[idx] = e.target.value;
+                                return { ...x, imagenes: imgs };
+                              })
+                            )
+                          }
+                          className="w-full px-3 py-2 rounded-xl border border-[#E8DCC8] bg-white text-[#2C1810] text-xs focus:outline-none focus:ring-2 focus:ring-[#4A6741]/30"
+                          placeholder="/images/ejemplo.jpg"
+                        />
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setHabs((prev) =>
+                            prev.map((x) => {
+                              if (x.id !== h.id) return x;
+                              const imgs = x.imagenes.filter((_, i) => i !== idx);
+                              return { ...x, imagenes: imgs };
+                            })
+                          )
+                        }
+                        className="mt-5 w-7 h-7 rounded-full flex items-center justify-center bg-red-50 text-red-500 hover:bg-red-100 transition-colors text-sm font-medium shrink-0"
+                        title="Eliminar imagen"
+                      >
+                        ×
+                      </button>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Add new image via upload */}
+                <div className="mt-3 p-3 rounded-xl border border-dashed border-[#E8DCC8] bg-[#FAFAF6]">
+                  <ImageUpload
+                    currentUrl={null}
+                    onUpload={(newUrl) => {
+                      if (!newUrl) return;
+                      setHabs((prev) =>
+                        prev.map((x) =>
+                          x.id === h.id ? { ...x, imagenes: [...x.imagenes, newUrl] } : x
+                        )
+                      );
+                    }}
+                    label="Añadir nueva imagen"
+                  />
+                </div>
               </div>
 
               <button

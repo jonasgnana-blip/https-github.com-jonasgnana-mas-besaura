@@ -126,7 +126,15 @@ export async function adminGetHabitaciones() {
 
 export async function adminUpdateHabitacion(
   id: string,
-  data: { nombre?: string; precio_noche?: number; capacidad?: number; descripcion?: string }
+  data: {
+    nombre?: string;
+    precio_noche?: number;
+    capacidad?: number;
+    descripcion?: string;
+    precio_desayuno?: number;
+    precio_media_pension?: number;
+    imagenes?: string[];
+  }
 ) {
   await requireAdmin();
   return prisma.habitacion.update({ where: { id }, data });

@@ -15,6 +15,8 @@ async function main() {
       nombre: "Artemisa",
       descripcion: "2 camas individuales y una cama doble. Baño privado. Estufa de pellets. Orientación este.",
       precio_noche: 45,
+      precio_desayuno: 45,
+      precio_media_pension: 60,
       capacidad: 4,
       imagenes: ["/images/hero1.jpg"],
     },
@@ -23,6 +25,8 @@ async function main() {
       nombre: "Selene",
       descripcion: "Habitación con altillo. 2 camas individuales abajo, 2 arriba. Estufa de pellets. Orientación norte.",
       precio_noche: 45,
+      precio_desayuno: 45,
+      precio_media_pension: 60,
       capacidad: 4,
       imagenes: ["/images/hero2.jpg"],
     },
@@ -31,6 +35,8 @@ async function main() {
       nombre: "Hécate",
       descripcion: "2 camas individuales y una cama doble. Estufa de pellets. Orientación oeste.",
       precio_noche: 45,
+      precio_desayuno: 45,
+      precio_media_pension: 60,
       capacidad: 4,
       imagenes: ["/images/hero3.jpg"],
     },
@@ -55,7 +61,15 @@ async function main() {
   for (const hab of habitaciones) {
     await prisma.habitacion.upsert({
       where: { id: hab.id },
-      update: { nombre: hab.nombre, descripcion: hab.descripcion, precio_noche: hab.precio_noche, capacidad: hab.capacidad },
+      update: {
+        nombre: hab.nombre,
+        descripcion: hab.descripcion,
+        precio_noche: hab.precio_noche,
+        precio_desayuno: "precio_desayuno" in hab ? (hab as { precio_desayuno: number }).precio_desayuno : null,
+        precio_media_pension: "precio_media_pension" in hab ? (hab as { precio_media_pension: number }).precio_media_pension : null,
+        capacidad: hab.capacidad,
+        imagenes: hab.imagenes,
+      },
       create: hab,
     });
   }

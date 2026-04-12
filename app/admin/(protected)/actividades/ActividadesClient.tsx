@@ -17,6 +17,7 @@ import {
   Pencil,
   X,
 } from "lucide-react";
+import ImageUpload from "@/app/components/ImageUpload";
 
 type Sesion = {
   id: string;
@@ -567,12 +568,23 @@ export default function ActividadesClient({
                 onChange={(v) => setForm((f) => ({ ...f, duracion: v }))}
                 placeholder="ej. 2 horas"
               />
-              <Field
-                label="Imagen (ruta /images/... o URL)"
-                value={form.imagen_url}
-                onChange={(v) => setForm((f) => ({ ...f, imagen_url: v }))}
-                placeholder="/images/hero4.jpg"
+              <ImageUpload
+                currentUrl={form.imagen_url || null}
+                onUpload={(url) => setForm((f) => ({ ...f, imagen_url: url }))}
+                label="Imagen de la actividad"
               />
+              <div>
+                <label className="block text-xs text-[#2C1810]/40 mb-1">
+                  O introduce una URL / ruta manual
+                </label>
+                <input
+                  type="text"
+                  value={form.imagen_url}
+                  onChange={(e) => setForm((f) => ({ ...f, imagen_url: e.target.value }))}
+                  placeholder="/images/hero4.jpg"
+                  className="w-full border border-[#E8DCC8] rounded-xl px-3 py-2 text-xs text-[#2C1810]/70 focus:outline-none focus:border-[#4A6741]"
+                />
+              </div>
 
               <div className="flex gap-3 pt-2">
                 <button

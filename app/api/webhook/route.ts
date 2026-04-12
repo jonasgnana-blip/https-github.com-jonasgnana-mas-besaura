@@ -5,6 +5,7 @@ import { prisma } from "@/lib/prisma";
 import { renderEmailAdmin } from "@/lib/emails/email-admin";
 import { renderEmailCliente } from "@/lib/emails/email-cliente";
 import { createCalendarEvent } from "@/lib/googleCalendar";
+import { sendReservaConfirmada } from "@/lib/notifications";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
 const resend = new Resend(process.env.RESEND_API_KEY!);
@@ -110,6 +111,19 @@ export async function POST(req: NextRequest) {
     ]);
 
     console.log(`[webhook] Reserva ${reserva_id} CONFIRMADA · emails enviados`);
+
+    // Notificación adicional via lib/notifications (no bloquea si falla)
+    sendReservaConfirmada({
+      nombre_cliente: reserva.nombre_cliente,
+      email_cliente: reserva.email_cliente,
+      telefono_cliente: reserva.telefono_cliente,
+      habitacion: reserva.habitacion.nombre,
+      fecha_entrada: fechaEntrada,
+      fecha_salida: fechaSalida,
+      noches,
+      precio_total: Number(reserva.precio_total),
+      complementos: complementosData,
+    }).catch((e) => console.error("[webhook] notifications:", e));
   }
 
   return NextResponse.json({ received: true });

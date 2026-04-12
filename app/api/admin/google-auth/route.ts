@@ -7,7 +7,7 @@ export async function GET(req: NextRequest) {
   // Verify admin session
   const store = await cookies();
   const token = store.get(SESSION_COOKIE)?.value;
-  if (!token || !verifySessionToken(token)) {
+  if (!token || !(await verifySessionToken(token))) {
     return NextResponse.json({ error: "No autorizado" }, { status: 401 });
   }
 

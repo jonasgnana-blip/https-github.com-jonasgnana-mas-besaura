@@ -29,6 +29,9 @@ export default async function AdminConfigPage({
         descripcion: h.descripcion,
         precio_noche: Number(h.precio_noche),
         capacidad: h.capacidad,
+        precio_desayuno: h.precio_desayuno != null ? Number(h.precio_desayuno) : null,
+        precio_media_pension: h.precio_media_pension != null ? Number(h.precio_media_pension) : null,
+        imagenes: h.imagenes,
       }))}
       complementos={complementos.map((c) => ({
         id: c.id,

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import NavBar from "@/app/components/NavBar";
 import AlojamientoCliente from "./AlojamientoCliente";
 import { getComplementos, getUnavailableDates } from "@/app/actions/reservas";
+import { prisma } from "@/lib/prisma";
 
 export const dynamic = "force-dynamic";
 
@@ -12,13 +13,17 @@ export const metadata: Metadata = {
 };
 
 export default async function AlojamientoPage() {
-  const [compls, datesArtemisa, datesSelene, datesHecate, datesCabanya] =
+  const [compls, datesArtemisa, datesSelene, datesHecate, datesCabanya, habitacionesDB] =
     await Promise.all([
       getComplementos(),
       getUnavailableDates("artemisa"),
       getUnavailableDates("selene"),
       getUnavailableDates("hecate"),
       getUnavailableDates("la-cabanya"),
+      prisma.habitacion.findMany({
+        where: { id: { in: ["artemisa", "selene", "hecate"] } },
+        select: { id: true, precio_desayuno: true, precio_media_pension: true },
+      }),
     ]);
 
   return (
@@ -30,6 +35,11 @@ export default async function AlojamientoPage() {
         datesSelene={datesSelene}
         datesHecate={datesHecate}
         datesCabanya={datesCabanya}
+        habitaciones={habitacionesDB.map((h) => ({
+          id: h.id,
+          precio_desayuno: h.precio_desayuno != null ? Number(h.precio_desayuno) : null,
+          precio_media_pension: h.precio_media_pension != null ? Number(h.precio_media_pension) : null,
+        }))}
       />
     </div>
   );
