@@ -15,15 +15,25 @@ export default async function AdminConfigPage({
   searchParams: Promise<{ gcal?: string; msg?: string }>;
 }) {
   const params = await searchParams;
-  const [habitaciones, complementos, refreshToken, pixelConfig, espaciosCfgs] = await Promise.all([
+  const [habitacionesAll, complementos, refreshToken, pixelConfig, espaciosCfgs] = await Promise.all([
     adminGetHabitaciones(),
     adminGetComplementos(),
     getStoredRefreshToken(),
     adminGetSistemaConfig("fb_pixel_id"),
     prisma.sistemaConfig.findMany({
-      where: { clave: { in: ["espacio_salon_img","espacio_habs_img","espacio_sala_img","cabanya_foto_1","cabanya_foto_2"] } },
+      where: {
+        clave: {
+          in: [
+            "espacio_salon_img","espacio_habs_img","espacio_sala_img",
+            "espacio_salon_nombre","espacio_habs_nombre","espacio_sala_nombre",
+            "cabanya_foto_1","cabanya_foto_2",
+            "slider_foto_1","slider_foto_2","slider_foto_3","slider_foto_4","slider_foto_5",
+          ],
+        },
+      },
     }),
   ]);
+  const habitaciones = habitacionesAll.slice(0, 3);
   const cfg = Object.fromEntries(espaciosCfgs.map(c => [c.clave, c.valor]));
 
   return (
@@ -50,13 +60,23 @@ export default async function AdminConfigPage({
       gcalStatus={params.gcal}
       fbPixelIdInicial={pixelConfig?.valor ?? ""}
       espaciosInicial={{
-        salonImg: cfg["espacio_salon_img"] ?? "",
-        habsImg:  cfg["espacio_habs_img"]  ?? "",
-        salaImg:  cfg["espacio_sala_img"]  ?? "",
+        salonImg:     cfg["espacio_salon_img"]    ?? "",
+        habsImg:      cfg["espacio_habs_img"]     ?? "",
+        salaImg:      cfg["espacio_sala_img"]     ?? "",
+        salonNombre:  cfg["espacio_salon_nombre"] ?? "",
+        habsNombre:   cfg["espacio_habs_nombre"]  ?? "",
+        salaNombre:   cfg["espacio_sala_nombre"]  ?? "",
       }}
       cabanyaInicial={{
         foto1: cfg["cabanya_foto_1"] ?? "",
         foto2: cfg["cabanya_foto_2"] ?? "",
+      }}
+      sliderInicial={{
+        foto1: cfg["slider_foto_1"] ?? "",
+        foto2: cfg["slider_foto_2"] ?? "",
+        foto3: cfg["slider_foto_3"] ?? "",
+        foto4: cfg["slider_foto_4"] ?? "",
+        foto5: cfg["slider_foto_5"] ?? "",
       }}
     />
   );

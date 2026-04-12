@@ -192,27 +192,33 @@ export function LaCasaHabitaciones({ habitaciones: habsDB = [] }: { habitaciones
   );
 }
 
-export function LaCasaEspacios({ salonImg, habsImg, salaImg }: { salonImg?: string; habsImg?: string; salaImg?: string }) {
+export function LaCasaEspacios({
+  salonImg, habsImg, salaImg,
+  salonNombre, habsNombre, salaNombre,
+}: {
+  salonImg?: string; habsImg?: string; salaImg?: string;
+  salonNombre?: string; habsNombre?: string; salaNombre?: string;
+}) {
   const { lang } = useLanguage();
   const tx = getT(lang);
 
   const espacios = [
     {
-      nombre: tx.lacasa_salon_nombre,
+      nombre: salonNombre || tx.lacasa_salon_nombre,
       subtitulo: tx.lacasa_salon_sub,
       descripcion: tx.lacasa_salon_desc,
       imagen: salonImg || "/images/comedor-sala.jpg",
       icon: <Users size={20} className="text-[#4A6741]" />,
     },
     {
-      nombre: tx.lacasa_esp_habs_nombre,
+      nombre: habsNombre || tx.lacasa_esp_habs_nombre,
       subtitulo: tx.lacasa_esp_habs_sub,
       descripcion: tx.lacasa_esp_habs_desc,
       imagen: habsImg || "/images/hab-hecate.jpg",
       icon: <Bed size={20} className="text-[#C4A882]" />,
     },
     {
-      nombre: tx.lacasa_sala_estar_nombre,
+      nombre: salaNombre || tx.lacasa_sala_estar_nombre,
       subtitulo: tx.lacasa_sala_estar_sub,
       descripcion: tx.lacasa_sala_estar_desc,
       imagen: salaImg || "/images/distribuidor.jpg",

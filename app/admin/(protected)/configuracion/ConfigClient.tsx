@@ -29,8 +29,12 @@ type Complemento = {
   activo: boolean;
 };
 
-type EspaciosCfg = { salonImg: string; habsImg: string; salaImg: string };
+type EspaciosCfg = {
+  salonImg: string; habsImg: string; salaImg: string;
+  salonNombre: string; habsNombre: string; salaNombre: string;
+};
 type CabanyaCfg  = { foto1: string; foto2: string };
+type SliderCfg   = { foto1: string; foto2: string; foto3: string; foto4: string; foto5: string };
 
 export default function ConfigClient({
   habitaciones: initialHabs,
@@ -40,6 +44,7 @@ export default function ConfigClient({
   fbPixelIdInicial,
   espaciosInicial,
   cabanyaInicial,
+  sliderInicial,
 }: {
   habitaciones: Habitacion[];
   complementos: Complemento[];
@@ -48,13 +53,16 @@ export default function ConfigClient({
   fbPixelIdInicial?: string;
   espaciosInicial: EspaciosCfg;
   cabanyaInicial: CabanyaCfg;
+  sliderInicial: SliderCfg;
 }) {
   const [habs, setHabs] = useState(initialHabs);
   const [comps, setComps] = useState(initialComps);
   const [espacios, setEspacios] = useState<EspaciosCfg>(espaciosInicial);
   const [cabanya, setCabanya]   = useState<CabanyaCfg>(cabanyaInicial);
+  const [slider,  setSlider]    = useState<SliderCfg>(sliderInicial);
   const [espaciosSaved, setEspaciosSaved] = useState(false);
   const [cabanyaSaved,  setCabanyaSaved]  = useState(false);
+  const [sliderSaved,   setSliderSaved]   = useState(false);
   const [saved, setSaved] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
 
@@ -73,9 +81,12 @@ export default function ConfigClient({
   function saveEspacios() {
     startTransition(async () => {
       await Promise.all([
-        adminUpsertSistemaConfig("espacio_salon_img", espacios.salonImg),
-        adminUpsertSistemaConfig("espacio_habs_img",  espacios.habsImg),
-        adminUpsertSistemaConfig("espacio_sala_img",  espacios.salaImg),
+        adminUpsertSistemaConfig("espacio_salon_img",    espacios.salonImg),
+        adminUpsertSistemaConfig("espacio_habs_img",     espacios.habsImg),
+        adminUpsertSistemaConfig("espacio_sala_img",     espacios.salaImg),
+        adminUpsertSistemaConfig("espacio_salon_nombre", espacios.salonNombre),
+        adminUpsertSistemaConfig("espacio_habs_nombre",  espacios.habsNombre),
+        adminUpsertSistemaConfig("espacio_sala_nombre",  espacios.salaNombre),
       ]);
       setEspaciosSaved(true);
       setTimeout(() => setEspaciosSaved(false), 2500);
@@ -90,6 +101,20 @@ export default function ConfigClient({
       ]);
       setCabanyaSaved(true);
       setTimeout(() => setCabanyaSaved(false), 2500);
+    });
+  }
+
+  function saveSlider() {
+    startTransition(async () => {
+      await Promise.all([
+        adminUpsertSistemaConfig("slider_foto_1", slider.foto1),
+        adminUpsertSistemaConfig("slider_foto_2", slider.foto2),
+        adminUpsertSistemaConfig("slider_foto_3", slider.foto3),
+        adminUpsertSistemaConfig("slider_foto_4", slider.foto4),
+        adminUpsertSistemaConfig("slider_foto_5", slider.foto5),
+      ]);
+      setSliderSaved(true);
+      setTimeout(() => setSliderSaved(false), 2500);
     });
   }
 
@@ -241,6 +266,41 @@ export default function ConfigClient({
             ) : (
               <><Save size={14} /> Guardar Pixel ID</>
             )}
+          </button>
+        </div>
+      </section>
+
+      {/* Slider La Casa */}
+      <section className="mb-10">
+        <h2 className="text-xl text-[#2C1810] mb-1" style={{ fontFamily: "var(--font-playfair), Georgia, serif" }}>
+          Slider La Casa
+        </h2>
+        <p className="text-sm text-[#2C1810]/50 mb-5">
+          Hasta 5 fotos extra en el slider hero de la página La Casa. Las fotos de habitaciones y espacios también aparecen automáticamente.
+        </p>
+        <div className="bg-white rounded-2xl border border-[#E8DCC8] p-6 space-y-6">
+          {(["foto1","foto2","foto3","foto4","foto5"] as (keyof SliderCfg)[]).map((key, i) => (
+            <div key={key} className="flex items-start gap-4 pb-5 border-b border-[#E8DCC8] last:border-0 last:pb-0">
+              <div className="flex-1 space-y-2">
+                <ImageUpload
+                  currentUrl={slider[key] || null}
+                  onUpload={(url) => setSlider(prev => ({ ...prev, [key]: url }))}
+                  label={`Foto ${i + 1}`}
+                />
+                <input type="text" value={slider[key]}
+                  onChange={e => setSlider(prev => ({ ...prev, [key]: e.target.value }))}
+                  placeholder="/images/foto.jpg o URL blob"
+                  className="w-full px-3 py-2 rounded-xl border border-[#E8DCC8] bg-[#FAFAF6] text-[#2C1810] text-xs focus:outline-none focus:ring-2 focus:ring-[#4A6741]/30"
+                />
+              </div>
+              {slider[key] && (
+                <img src={slider[key]} alt={`Foto ${i+1}`} className="w-20 h-20 object-cover rounded-xl border border-[#E8DCC8] shrink-0" />
+              )}
+            </div>
+          ))}
+          <button onClick={saveSlider} disabled={isPending}
+            className="flex items-center gap-2 px-5 py-2 rounded-full bg-[#4A6741] text-[#F0EAD6] text-sm font-medium hover:bg-[#3A5432] transition-colors disabled:opacity-50">
+            {isPending && !sliderSaved ? <Loader2 size={14} className="animate-spin" /> : sliderSaved ? "✓ Guardado" : <><Save size={14} /> Guardar slider</>}
           </button>
         </div>
       </section>
@@ -490,25 +550,37 @@ export default function ConfigClient({
         <p className="text-sm text-[#2C1810]/50 mb-5">Imágenes de los 3 espacios comunes en la página La Casa.</p>
         <div className="bg-white rounded-2xl border border-[#E8DCC8] p-6 space-y-6">
           {[
-            { label: "Salón Comedor", key: "salonImg" as keyof EspaciosCfg },
-            { label: "Habitaciones",  key: "habsImg"  as keyof EspaciosCfg },
-            { label: "Sala Estar · Cocina", key: "salaImg" as keyof EspaciosCfg },
-          ].map(({ label, key }) => (
-            <div key={key} className="flex items-start gap-4 pb-5 border-b border-[#E8DCC8] last:border-0 last:pb-0">
-              <div className="flex-1">
+            { defaultLabel: "Sala Comedor",    imgKey: "salonImg" as keyof EspaciosCfg, nombreKey: "salonNombre" as keyof EspaciosCfg, placeholder: "Sala Comedor" },
+            { defaultLabel: "Cocina Recibidor", imgKey: "habsImg"  as keyof EspaciosCfg, nombreKey: "habsNombre"  as keyof EspaciosCfg, placeholder: "Cocina Recibidor" },
+            { defaultLabel: "Sala Interior",   imgKey: "salaImg"  as keyof EspaciosCfg, nombreKey: "salaNombre"  as keyof EspaciosCfg, placeholder: "Sala Interior" },
+          ].map(({ defaultLabel, imgKey, nombreKey, placeholder }) => (
+            <div key={imgKey} className="flex items-start gap-4 pb-5 border-b border-[#E8DCC8] last:border-0 last:pb-0">
+              <div className="flex-1 space-y-2">
+                <div>
+                  <label className="block text-xs font-medium text-[#2C1810]/50 uppercase tracking-wide mb-1.5">
+                    Nombre del espacio
+                  </label>
+                  <input
+                    type="text"
+                    value={espacios[nombreKey] as string}
+                    onChange={e => setEspacios(prev => ({ ...prev, [nombreKey]: e.target.value }))}
+                    placeholder={placeholder}
+                    className="w-full px-3 py-2 rounded-xl border border-[#E8DCC8] bg-[#FAFAF6] text-[#2C1810] text-sm focus:outline-none focus:ring-2 focus:ring-[#4A6741]/30"
+                  />
+                </div>
                 <ImageUpload
-                  currentUrl={espacios[key] || null}
-                  onUpload={(url) => setEspacios(prev => ({ ...prev, [key]: url }))}
-                  label={label}
+                  currentUrl={espacios[imgKey] as string || null}
+                  onUpload={(url) => setEspacios(prev => ({ ...prev, [imgKey]: url }))}
+                  label={defaultLabel}
                 />
-                <input type="text" value={espacios[key]}
-                  onChange={e => setEspacios(prev => ({ ...prev, [key]: e.target.value }))}
+                <input type="text" value={espacios[imgKey] as string}
+                  onChange={e => setEspacios(prev => ({ ...prev, [imgKey]: e.target.value }))}
                   placeholder="/images/foto.jpg o URL blob"
-                  className="mt-2 w-full px-3 py-2 rounded-xl border border-[#E8DCC8] bg-[#FAFAF6] text-[#2C1810] text-xs focus:outline-none focus:ring-2 focus:ring-[#4A6741]/30"
+                  className="w-full px-3 py-2 rounded-xl border border-[#E8DCC8] bg-[#FAFAF6] text-[#2C1810] text-xs focus:outline-none focus:ring-2 focus:ring-[#4A6741]/30"
                 />
               </div>
-              {espacios[key] && (
-                <img src={espacios[key]} alt={label} className="w-20 h-20 object-cover rounded-xl border border-[#E8DCC8] shrink-0" />
+              {espacios[imgKey] && (
+                <img src={espacios[imgKey] as string} alt={defaultLabel} className="w-20 h-20 object-cover rounded-xl border border-[#E8DCC8] shrink-0" />
               )}
             </div>
           ))}

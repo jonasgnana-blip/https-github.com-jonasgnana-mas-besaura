@@ -36,6 +36,10 @@ type Props = {
   datesCabanya: DateRange[];
   habitaciones?: {
     id: string;
+    nombre?: string;
+    descripcion?: string;
+    capacidad?: number;
+    imagen?: string;
     precio_desayuno: number | null;
     precio_media_pension: number | null;
   }[];
@@ -1053,7 +1057,11 @@ export default function AlojamientoCliente({
     const descKey = `aloj_room_${base.id}_desc` as keyof typeof tr;
     return {
       ...base,
-      descripcion: tr[descKey] as string ?? base.descripcion,
+      // DB overrides: name, description, image if set
+      nombre:     db?.nombre       ?? base.nombre,
+      descripcion: tr[descKey] as string ?? db?.descripcion ?? base.descripcion,
+      imagen:     db?.imagen       ?? base.imagen,
+      capacidad:  db?.capacidad    ?? base.capacidad,
       precioDesayuno: db?.precio_desayuno ?? 45,
       precioMediaPension: db?.precio_media_pension ?? 60,
     };

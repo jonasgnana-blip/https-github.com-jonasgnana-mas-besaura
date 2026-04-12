@@ -141,6 +141,7 @@ export async function adminUpdateHabitacion(
   const result = await prisma.habitacion.update({ where: { id }, data });
   revalidatePath("/la-casa");
   revalidatePath("/alojamiento");
+  revalidatePath("/reservar");
   revalidatePath("/");
   return result;
 }
@@ -260,9 +261,13 @@ export async function adminGetSistemaConfig(clave: string) {
 
 export async function adminUpsertSistemaConfig(clave: string, valor: string) {
   await requireAdmin();
-  return prisma.sistemaConfig.upsert({
+  const result = await prisma.sistemaConfig.upsert({
     where: { clave },
     update: { valor },
     create: { clave, valor },
   });
+  // Revalidate all pages that read SistemaConfig
+  revalidatePath("/la-casa");
+  revalidatePath("/");
+  return result;
 }

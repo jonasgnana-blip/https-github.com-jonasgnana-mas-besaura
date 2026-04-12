@@ -22,7 +22,7 @@ export default async function AlojamientoPage() {
       getUnavailableDates("la-cabanya"),
       prisma.habitacion.findMany({
         where: { id: { in: ["artemisa", "selene", "hecate"] } },
-        select: { id: true, precio_desayuno: true, precio_media_pension: true },
+        select: { id: true, nombre: true, descripcion: true, capacidad: true, imagenes: true, precio_desayuno: true, precio_media_pension: true },
       }),
     ]);
 
@@ -37,6 +37,10 @@ export default async function AlojamientoPage() {
         datesCabanya={datesCabanya}
         habitaciones={habitacionesDB.map((h) => ({
           id: h.id,
+          nombre: h.nombre ?? undefined,
+          descripcion: h.descripcion ?? undefined,
+          capacidad: h.capacidad ?? undefined,
+          imagen: h.imagenes?.[0] ?? undefined,
           precio_desayuno: h.precio_desayuno != null ? Number(h.precio_desayuno) : null,
           precio_media_pension: h.precio_media_pension != null ? Number(h.precio_media_pension) : null,
         }))}

@@ -22,11 +22,30 @@ export default async function LaCasa() {
     }),
     getUnavailableDates("la-cabanya"),
     prisma.sistemaConfig.findMany({
-      where: { clave: { in: ["espacio_salon_img", "espacio_habs_img", "espacio_sala_img", "cabanya_foto_1", "cabanya_foto_2"] } },
+      where: {
+        clave: {
+          in: [
+            "espacio_salon_img", "espacio_habs_img", "espacio_sala_img",
+            "espacio_salon_nombre", "espacio_habs_nombre", "espacio_sala_nombre",
+            "cabanya_foto_1", "cabanya_foto_2",
+            "slider_foto_1", "slider_foto_2", "slider_foto_3",
+            "slider_foto_4", "slider_foto_5",
+          ],
+        },
+      },
     }),
   ]);
 
   const cfg = Object.fromEntries(espacioConfigs.map(c => [c.clave, c.valor]));
+
+  // Build slider image list: extra slots first, then hab images, then espacio images
+  const sliderImages = [
+    cfg["slider_foto_1"], cfg["slider_foto_2"], cfg["slider_foto_3"],
+    cfg["slider_foto_4"], cfg["slider_foto_5"],
+    ...habitaciones.flatMap(h => h.imagenes),
+    cfg["espacio_salon_img"], cfg["espacio_habs_img"], cfg["espacio_sala_img"],
+    cfg["cabanya_foto_1"], cfg["cabanya_foto_2"],
+  ].filter(Boolean) as string[];
 
   return (
     <div className="min-h-screen bg-[#FAFAF6]">
@@ -34,7 +53,7 @@ export default async function LaCasa() {
 
       {/* ─── HERO ─── */}
       <section className="relative h-[55vh] flex items-end overflow-hidden pt-16">
-        <ImageFader />
+        <ImageFader images={sliderImages} />
         <div className="absolute inset-0">
           <div className="absolute inset-0 bg-gradient-to-t from-[#2C1810]/80 via-[#2C1810]/20 to-transparent" />
         </div>
@@ -64,6 +83,9 @@ export default async function LaCasa() {
             salonImg={cfg["espacio_salon_img"] || undefined}
             habsImg={cfg["espacio_habs_img"] || undefined}
             salaImg={cfg["espacio_sala_img"] || undefined}
+            salonNombre={cfg["espacio_salon_nombre"] || undefined}
+            habsNombre={cfg["espacio_habs_nombre"] || undefined}
+            salaNombre={cfg["espacio_sala_nombre"] || undefined}
           />
         </div>
       </section>
