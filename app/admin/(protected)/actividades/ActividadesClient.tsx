@@ -7,6 +7,8 @@ import {
   adminDeleteActividad,
   adminCreateSesion,
   adminDeleteSesion,
+  adminBloquearFechaActividad,
+  adminDesbloquearFechaActividad,
 } from "@/app/actions/admin";
 import {
   Plus,
@@ -14,6 +16,7 @@ import {
   ChevronDown,
   ChevronUp,
   CalendarPlus,
+  CalendarX,
   Pencil,
   X,
 } from "lucide-react";
@@ -267,6 +270,46 @@ export default function ActividadesClient({
     });
   }
 
+  // ── Bloqueo de fechas ──────────────────────────────────────────────────────
+
+  const [bloqueoFechas, setBloqueoFechas] = useState<Record<string, string>>({});
+
+  function handleBloquear(actividadId: string) {
+    const fecha = bloqueoFechas[actividadId];
+    if (!fecha) return;
+    startTransition(async () => {
+      const created = await adminBloquearFechaActividad(actividadId, fecha);
+      const newSesion: Sesion = {
+        id: created.id,
+        actividad_id: created.actividad_id,
+        fecha: created.fecha.toISOString(),
+        hora: null,
+        plazas_max: null,
+        activa: false,
+        createdAt: created.createdAt.toISOString(),
+      };
+      setActividades((prev) =>
+        prev.map((a) =>
+          a.id === actividadId ? { ...a, sesiones: [...a.sesiones, newSesion] } : a
+        )
+      );
+      setBloqueoFechas((prev) => ({ ...prev, [actividadId]: "" }));
+    });
+  }
+
+  function handleDesbloquear(actividadId: string, sesionId: string) {
+    startTransition(async () => {
+      await adminDesbloquearFechaActividad(sesionId);
+      setActividades((prev) =>
+        prev.map((a) =>
+          a.id === actividadId
+            ? { ...a, sesiones: a.sesiones.filter((s) => s.id !== sesionId) }
+            : a
+        )
+      );
+    });
+  }
+
   // ── Render ─────────────────────────────────────────────────────────────────
 
   return (
@@ -369,42 +412,28 @@ export default function ActividadesClient({
                   </div>
                 </div>
 
-                {/* Expanded: sessions */}
+                {/* Expanded: sessions + bloqueos */}
                 {expanded === a.id && (
                   <div className="px-6 pb-6 bg-[#FAFAF6] border-t border-[#E8DCC8]">
+
+                    {/* ── Sesiones activas ── */}
                     <p className="text-xs uppercase tracking-wide text-[#2C1810]/40 mt-4 mb-3">
-                      Sesiones
+                      Sesiones programadas
                     </p>
 
-                    {a.sesiones.length === 0 ? (
-                      <p className="text-xs text-[#2C1810]/40 mb-3">
-                        Sin sesiones programadas.
-                      </p>
+                    {a.sesiones.filter(s => s.activa).length === 0 ? (
+                      <p className="text-xs text-[#2C1810]/40 mb-3">Sin sesiones programadas.</p>
                     ) : (
                       <ul className="space-y-1.5 mb-4">
-                        {a.sesiones.map((s) => (
-                          <li
-                            key={s.id}
-                            className="flex items-center justify-between bg-white border border-[#E8DCC8] rounded-lg px-3 py-2 text-sm"
-                          >
+                        {a.sesiones.filter(s => s.activa).map((s) => (
+                          <li key={s.id} className="flex items-center justify-between bg-white border border-[#E8DCC8] rounded-lg px-3 py-2 text-sm">
                             <div className="text-[#2C1810]">
                               <span className="font-medium">{fmt(s.fecha)}</span>
-                              {s.hora && (
-                                <span className="text-[#2C1810]/60 ml-2">
-                                  {s.hora}
-                                </span>
-                              )}
-                              {s.plazas_max && (
-                                <span className="text-[#2C1810]/50 ml-2 text-xs">
-                                  · {s.plazas_max} plazas
-                                </span>
-                              )}
+                              {s.hora && <span className="text-[#2C1810]/60 ml-2">{s.hora}</span>}
+                              {s.plazas_max && <span className="text-[#2C1810]/50 ml-2 text-xs">· {s.plazas_max} plazas</span>}
                             </div>
-                            <button
-                              onClick={() => handleDeleteSesion(a.id, s.id)}
-                              disabled={isPending}
-                              className="p-1 rounded text-[#2C1810]/30 hover:bg-red-50 hover:text-red-500 transition-colors disabled:opacity-50"
-                            >
+                            <button onClick={() => handleDeleteSesion(a.id, s.id)} disabled={isPending}
+                              className="p-1 rounded text-[#2C1810]/30 hover:bg-red-50 hover:text-red-500 transition-colors disabled:opacity-50">
                               <Trash2 size={13} />
                             </button>
                           </li>
@@ -412,56 +441,75 @@ export default function ActividadesClient({
                       </ul>
                     )}
 
+                    {/* ── Fechas bloqueadas ── */}
+                    <div className="mt-5 pt-5 border-t border-[#E8DCC8]">
+                      <p className="text-xs uppercase tracking-wide text-[#E05A2B]/70 mb-3 flex items-center gap-1.5">
+                        <CalendarX size={12} /> Fechas bloqueadas
+                      </p>
+
+                      {a.sesiones.filter(s => !s.activa).length === 0 ? (
+                        <p className="text-xs text-[#2C1810]/40 mb-3">Sin fechas bloqueadas.</p>
+                      ) : (
+                        <ul className="space-y-1.5 mb-3">
+                          {a.sesiones.filter(s => !s.activa).map((s) => (
+                            <li key={s.id} className="flex items-center justify-between bg-red-50 border border-red-200 rounded-lg px-3 py-2 text-sm">
+                              <span className="font-medium text-red-700">{fmt(s.fecha)}</span>
+                              <button onClick={() => handleDesbloquear(a.id, s.id)} disabled={isPending}
+                                title="Desbloquear"
+                                className="px-2 py-0.5 rounded text-xs text-red-600 hover:bg-red-100 transition-colors disabled:opacity-50">
+                                Desbloquear
+                              </button>
+                            </li>
+                          ))}
+                        </ul>
+                      )}
+
+                      {/* Add bloqueo */}
+                      <div className="flex items-end gap-2">
+                        <div>
+                          <label className="block text-xs text-[#2C1810]/50 mb-1">Bloquear fecha</label>
+                          <input type="date"
+                            value={bloqueoFechas[a.id] ?? ""}
+                            onChange={e => setBloqueoFechas(prev => ({ ...prev, [a.id]: e.target.value }))}
+                            className="border border-[#E8DCC8] rounded-lg px-2.5 py-1.5 text-sm text-[#2C1810] bg-white focus:outline-none focus:border-red-400"
+                          />
+                        </div>
+                        <button onClick={() => handleBloquear(a.id)}
+                          disabled={isPending || !bloqueoFechas[a.id]}
+                          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-red-600 text-white text-xs font-medium hover:bg-red-700 transition-colors disabled:opacity-50">
+                          <CalendarX size={13} /> Bloquear
+                        </button>
+                      </div>
+                    </div>
+
                     {/* Add session form */}
-                    <div className="flex flex-wrap gap-2 items-end">
+                    <div className="flex flex-wrap gap-2 items-end mt-3">
                       <div>
-                        <label className="block text-xs text-[#2C1810]/50 mb-1">
-                          Fecha *
-                        </label>
-                        <input
-                          type="date"
-                          value={getSesionForm(a.id).fecha}
-                          onChange={(e) =>
-                            updateSesionForm(a.id, { fecha: e.target.value })
-                          }
+                        <label className="block text-xs text-[#2C1810]/50 mb-1">Fecha *</label>
+                        <input type="date" value={getSesionForm(a.id).fecha}
+                          onChange={e => updateSesionForm(a.id, { fecha: e.target.value })}
                           className="border border-[#E8DCC8] rounded-lg px-2.5 py-1.5 text-sm text-[#2C1810] bg-white focus:outline-none focus:border-[#4A6741]"
                         />
                       </div>
                       <div>
-                        <label className="block text-xs text-[#2C1810]/50 mb-1">
-                          Hora
-                        </label>
-                        <input
-                          type="time"
-                          value={getSesionForm(a.id).hora}
-                          onChange={(e) =>
-                            updateSesionForm(a.id, { hora: e.target.value })
-                          }
+                        <label className="block text-xs text-[#2C1810]/50 mb-1">Hora</label>
+                        <input type="time" value={getSesionForm(a.id).hora}
+                          onChange={e => updateSesionForm(a.id, { hora: e.target.value })}
                           className="border border-[#E8DCC8] rounded-lg px-2.5 py-1.5 text-sm text-[#2C1810] bg-white focus:outline-none focus:border-[#4A6741]"
                         />
                       </div>
                       <div>
-                        <label className="block text-xs text-[#2C1810]/50 mb-1">
-                          Plazas máx.
-                        </label>
-                        <input
-                          type="number"
-                          min="1"
-                          value={getSesionForm(a.id).plazas_max}
-                          onChange={(e) =>
-                            updateSesionForm(a.id, { plazas_max: e.target.value })
-                          }
+                        <label className="block text-xs text-[#2C1810]/50 mb-1">Plazas máx.</label>
+                        <input type="number" min="1" value={getSesionForm(a.id).plazas_max}
+                          onChange={e => updateSesionForm(a.id, { plazas_max: e.target.value })}
                           placeholder="—"
                           className="w-24 border border-[#E8DCC8] rounded-lg px-2.5 py-1.5 text-sm text-[#2C1810] bg-white focus:outline-none focus:border-[#4A6741]"
                         />
                       </div>
-                      <button
-                        onClick={() => handleAddSesion(a.id)}
+                      <button onClick={() => handleAddSesion(a.id)}
                         disabled={isPending || !getSesionForm(a.id).fecha}
-                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#4A6741] text-[#F0EAD6] text-xs font-medium hover:bg-[#3d5636] transition-colors disabled:opacity-50"
-                      >
-                        <CalendarPlus size={13} />
-                        Añadir sesión
+                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#4A6741] text-[#F0EAD6] text-xs font-medium hover:bg-[#3d5636] transition-colors disabled:opacity-50">
+                        <CalendarPlus size={13} /> Añadir sesión
                       </button>
                     </div>
                   </div>

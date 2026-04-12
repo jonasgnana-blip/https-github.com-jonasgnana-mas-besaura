@@ -167,8 +167,25 @@ export async function adminGetActividades() {
   await requireAdmin();
   return prisma.actividad.findMany({
     orderBy: { createdAt: "desc" },
-    include: { sesiones: { orderBy: { fecha: "asc" }, take: 5 } },
+    include: { sesiones: { orderBy: { fecha: "asc" } } },
   });
+}
+
+export async function adminBloquearFechaActividad(actividadId: string, fecha: string) {
+  await requireAdmin();
+  // Create a sesion with activa: false to block that date
+  return prisma.sesionActividad.create({
+    data: {
+      actividad_id: actividadId,
+      fecha: new Date(fecha),
+      activa: false,
+    },
+  });
+}
+
+export async function adminDesbloquearFechaActividad(sesionId: string) {
+  await requireAdmin();
+  return prisma.sesionActividad.delete({ where: { id: sesionId } });
 }
 
 export async function adminCreateActividad(data: {
