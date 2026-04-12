@@ -1,9 +1,11 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState } from "react";
 import { Loader2, ChevronLeft, ChevronRight, Phone, MapPin } from "lucide-react";
 import { createReserva } from "@/app/actions/reservas";
 import type { DateRange } from "@/app/actions/reservas";
+import { useLanguage } from "@/lib/LanguageContext";
+import { getT } from "@/lib/i18n";
 
 // ── Types ──────────────────────────────────────────────────────────────────────
 
@@ -116,11 +118,16 @@ function nightsBetween(a: Date, b: Date): number {
   return Math.round((b.getTime() - a.getTime()) / 86400000);
 }
 
-const MONTH_NAMES = [
+const MONTH_NAMES_ES = [
   "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
   "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre",
 ];
-const DAY_NAMES = ["Lu", "Ma", "Mi", "Ju", "Vi", "Sá", "Do"];
+const MONTH_NAMES_CA = [
+  "Gener", "Febrer", "Març", "Abril", "Maig", "Juny",
+  "Juliol", "Agost", "Setembre", "Octubre", "Novembre", "Desembre",
+];
+const DAY_NAMES_ES = ["Lu", "Ma", "Mi", "Ju", "Vi", "Sá", "Do"];
+const DAY_NAMES_CA = ["Dl", "Dt", "Dc", "Dj", "Dv", "Ds", "Dg"];
 
 // ── Calendar Component ─────────────────────────────────────────────────────────
 
@@ -134,6 +141,8 @@ function CalendarMonth({
   onDayClick,
   onDayHover,
   singleSelect,
+  monthNames,
+  dayNames,
 }: {
   year: number;
   month: number;
@@ -144,6 +153,8 @@ function CalendarMonth({
   onDayClick: (d: Date) => void;
   onDayHover: (d: Date | null) => void;
   singleSelect?: boolean;
+  monthNames?: string[];
+  dayNames?: string[];
 }) {
   const firstDay = new Date(year, month, 1);
   // Monday-first: getDay() returns 0=Sun…6=Sat → convert to 0=Mon…6=Sun
@@ -156,13 +167,16 @@ function CalendarMonth({
   for (let i = 0; i < startDow; i++) cells.push(null);
   for (let d = 1; d <= daysInMonth; d++) cells.push(new Date(year, month, d));
 
+  const resolvedMonthNames = monthNames ?? MONTH_NAMES_ES;
+  const resolvedDayNames = dayNames ?? DAY_NAMES_ES;
+
   return (
     <div className="select-none">
       <div className="text-center font-medium text-[#2C1810] mb-3 text-sm tracking-wide">
-        {MONTH_NAMES[month]} {year}
+        {resolvedMonthNames[month]} {year}
       </div>
       <div className="grid grid-cols-7 mb-1">
-        {DAY_NAMES.map((d) => (
+        {resolvedDayNames.map((d) => (
           <div key={d} className="text-center text-[10px] text-[#2C1810]/40 font-medium py-1">
             {d}
           </div>
@@ -263,6 +277,12 @@ function DateRangePicker({
   onChange: (checkIn: Date | null, checkOut: Date | null) => void;
   singleSelect?: boolean;
 }) {
+  const { lang } = useLanguage();
+  const tr = getT(lang);
+  const monthNames = lang === "ca" ? MONTH_NAMES_CA : MONTH_NAMES_ES;
+  const dayNames = lang === "ca" ? DAY_NAMES_CA : DAY_NAMES_ES;
+  const locale = lang === "ca" ? "ca-ES" : "es-ES";
+
   const today = new Date();
   const [viewMonth, setViewMonth] = useState(today.getMonth());
   const [viewYear, setViewYear] = useState(today.getFullYear());
@@ -355,6 +375,8 @@ function DateRangePicker({
           onDayClick={handleDayClick}
           onDayHover={setHovered}
           singleSelect={singleSelect}
+          monthNames={monthNames}
+          dayNames={dayNames}
         />
         <CalendarMonth
           year={nextYear}
@@ -366,6 +388,8 @@ function DateRangePicker({
           onDayClick={handleDayClick}
           onDayHover={setHovered}
           singleSelect={singleSelect}
+          monthNames={monthNames}
+          dayNames={dayNames}
         />
       </div>
 
@@ -374,17 +398,17 @@ function DateRangePicker({
         <div className="mt-4 pt-3 border-t border-[#E8DCC8] flex flex-wrap gap-4 text-xs text-[#2C1810]/60">
           {checkIn && !checkOut && (
             <span className="text-[#4A6741] font-medium">
-              Selecciona la fecha de salida
+              {tr.aloj_cal_salida}
             </span>
           )}
           {checkIn && checkOut && (
             <span className="text-[#4A6741] font-medium">
-              {nightsBetween(checkIn, checkOut)} noche{nightsBetween(checkIn, checkOut) !== 1 ? "s" : ""} ·{" "}
-              {checkIn.toLocaleDateString("es-ES", { day: "numeric", month: "short" })} →{" "}
-              {checkOut.toLocaleDateString("es-ES", { day: "numeric", month: "short" })}
+              {nightsBetween(checkIn, checkOut)} {nightsBetween(checkIn, checkOut) !== 1 ? tr.aloj_cal_dias_pl : tr.aloj_cal_dias} ·{" "}
+              {checkIn.toLocaleDateString(locale, { day: "numeric", month: "short" })} →{" "}
+              {checkOut.toLocaleDateString(locale, { day: "numeric", month: "short" })}
             </span>
           )}
-          {!checkIn && <span>Selecciona la fecha de entrada</span>}
+          {!checkIn && <span>{tr.aloj_cal_entrada}</span>}
         </div>
       )}
     </div>
@@ -406,6 +430,9 @@ function BookingPanel({
   complementos: Complemento[];
   onClose: () => void;
 }) {
+  const { lang } = useLanguage();
+  const tr = getT(lang);
+
   const precioPorPersonaNoche =
     opcion === "desayuno" ? habitacion.precioDesayuno : habitacion.precioMediaPension;
 
@@ -442,11 +469,11 @@ function BookingPanel({
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!checkIn || !checkOut) {
-      setError("Por favor selecciona las fechas de entrada y salida.");
+      setError(tr.aloj_booking_error_fechas);
       return;
     }
     if (!nombre.trim() || !email.trim() || !telefono.trim()) {
-      setError("Por favor completa todos los campos de contacto.");
+      setError(tr.aloj_booking_error_contacto);
       return;
     }
     setLoading(true);
@@ -498,11 +525,11 @@ function BookingPanel({
             className="text-lg text-[#2C1810]"
             style={{ fontFamily: "var(--font-playfair), Georgia, serif" }}
           >
-            Reservar {habitacion.nombre}
+            {tr.nav_reservar} {habitacion.nombre}
           </h4>
           <p className="text-xs text-[#2C1810]/60 mt-0.5">
-            {opcion === "desayuno" ? "Alojamiento + Desayuno" : "Alojamiento + Media Pensión"} ·{" "}
-            {precioPorPersonaNoche}€/persona/noche
+            {opcion === "desayuno" ? tr.aloj_booking_desayuno : tr.aloj_booking_media_pension} ·{" "}
+            {precioPorPersonaNoche}€/{tr.aloj_booking_persona}/{lang === "ca" ? "nit" : "noche"}
           </p>
         </div>
         <button
@@ -517,7 +544,7 @@ function BookingPanel({
         {/* Date picker */}
         <div>
           <p className="text-xs font-medium text-[#2C1810]/70 uppercase tracking-wide mb-2">
-            Fechas
+            {tr.aloj_booking_fecha_label}
           </p>
           <DateRangePicker
             checkIn={checkIn}
@@ -533,7 +560,7 @@ function BookingPanel({
         {/* Personas */}
         <div>
           <p className="text-xs font-medium text-[#2C1810]/70 uppercase tracking-wide mb-3">
-            Número de personas
+            {tr.aloj_booking_personas_label}
           </p>
           <div className="flex items-center gap-3">
             <button
@@ -554,7 +581,7 @@ function BookingPanel({
               +
             </button>
             <span className="text-sm text-[#2C1810]/50">
-              (máx. {habitacion.capacidad})
+              ({tr.aloj_booking_max} {habitacion.capacidad})
             </span>
           </div>
         </div>
@@ -563,7 +590,7 @@ function BookingPanel({
         {complementos.length > 0 && (
           <div>
             <p className="text-xs font-medium text-[#2C1810]/70 uppercase tracking-wide mb-3">
-              Complementos
+              {tr.aloj_booking_complementos_label}
             </p>
             <div className="space-y-2">
               {complementos.map((c) => {
@@ -592,7 +619,7 @@ function BookingPanel({
                         <span className="text-sm text-[#4A6741] font-medium whitespace-nowrap">
                           {p}€{" "}
                           <span className="text-[10px] text-[#2C1810]/50 font-normal">
-                            {c.tipo_cobro === "POR_NOCHE" ? "por noche" : "precio único"}
+                            {c.tipo_cobro === "POR_NOCHE" ? tr.aloj_booking_por_noche : tr.aloj_booking_precio_unico}
                           </span>
                         </span>
                       </div>
@@ -610,12 +637,12 @@ function BookingPanel({
         {/* Guest form */}
         <div>
           <p className="text-xs font-medium text-[#2C1810]/70 uppercase tracking-wide mb-3">
-            Datos de contacto
+            {tr.aloj_booking_contacto_label}
           </p>
           <div className="space-y-3">
             <input
               type="text"
-              placeholder="Nombre completo"
+              placeholder={tr.aloj_booking_nombre_ph}
               value={nombre}
               onChange={(e) => setNombre(e.target.value)}
               className="w-full px-4 py-3 rounded-xl border border-[#E8DCC8] bg-[#FAFAF6] text-[#2C1810] text-sm placeholder:text-[#2C1810]/40 focus:outline-none focus:border-[#4A6741] transition-colors"
@@ -623,7 +650,7 @@ function BookingPanel({
             />
             <input
               type="email"
-              placeholder="Correo electrónico"
+              placeholder={tr.aloj_booking_email_ph}
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               className="w-full px-4 py-3 rounded-xl border border-[#E8DCC8] bg-[#FAFAF6] text-[#2C1810] text-sm placeholder:text-[#2C1810]/40 focus:outline-none focus:border-[#4A6741] transition-colors"
@@ -631,7 +658,7 @@ function BookingPanel({
             />
             <input
               type="tel"
-              placeholder="Teléfono"
+              placeholder={tr.aloj_booking_tel_ph}
               value={telefono}
               onChange={(e) => setTelefono(e.target.value)}
               className="w-full px-4 py-3 rounded-xl border border-[#E8DCC8] bg-[#FAFAF6] text-[#2C1810] text-sm placeholder:text-[#2C1810]/40 focus:outline-none focus:border-[#4A6741] transition-colors"
@@ -644,11 +671,11 @@ function BookingPanel({
         {noches > 0 && (
           <div className="bg-[#FAFAF6] rounded-xl border border-[#E8DCC8] p-4 space-y-2">
             <p className="text-xs font-medium text-[#2C1810]/70 uppercase tracking-wide mb-3">
-              Resumen
+              {tr.aloj_booking_resumen}
             </p>
             <div className="flex justify-between text-sm text-[#2C1810]/70">
               <span>
-                {personas} persona{personas !== 1 ? "s" : ""} × {precioPorPersonaNoche}€ × {noches} noche{noches !== 1 ? "s" : ""}
+                {personas} {personas !== 1 ? tr.aloj_booking_personas : tr.aloj_booking_persona} × {precioPorPersonaNoche}€ × {noches} {noches !== 1 ? tr.aloj_booking_noches_pl : tr.aloj_booking_noches}
               </span>
               <span>{personas * precioPorPersonaNoche * noches}€</span>
             </div>
@@ -660,14 +687,14 @@ function BookingPanel({
                 return (
                   <div key={c.id} className="flex justify-between text-sm text-[#2C1810]/70">
                     <span>
-                      {c.nombre}{c.tipo_cobro === "POR_NOCHE" ? ` × ${noches} noches` : ""}
+                      {c.nombre}{c.tipo_cobro === "POR_NOCHE" ? ` × ${noches} ${tr.aloj_booking_noches_pl}` : ""}
                     </span>
                     <span>{subtotal}€</span>
                   </div>
                 );
               })}
             <div className="pt-2 border-t border-[#E8DCC8] flex justify-between font-semibold text-[#2C1810]">
-              <span>Total</span>
+              <span>{tr.aloj_booking_total}</span>
               <span className="text-[#4A6741] text-lg">{total}€</span>
             </div>
           </div>
@@ -687,7 +714,7 @@ function BookingPanel({
           className="w-full flex items-center justify-center gap-2 px-6 py-4 rounded-xl bg-[#4A6741] text-[#F0EAD6] font-medium hover:bg-[#3A5432] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {loading && <Loader2 size={18} className="animate-spin" />}
-          {loading ? "Procesando..." : `Reservar y pagar${total > 0 ? ` · ${total}€` : ""}`}
+          {loading ? tr.aloj_booking_procesando : `${tr.aloj_booking_reservar_pagar}${total > 0 ? ` · ${total}€` : ""}`}
         </button>
       </form>
     </div>
@@ -705,6 +732,8 @@ function RoomCard({
   unavailableRanges: DateRange[];
   complementos: Complemento[];
 }) {
+  const { lang } = useLanguage();
+  const tr = getT(lang);
   const [activePanel, setActivePanel] = useState<BookingOption | null>(null);
 
   function togglePanel(opcion: BookingOption) {
@@ -717,7 +746,7 @@ function RoomCard({
       <div className="aspect-[4/3] overflow-hidden">
         <img
           src={habitacion.imagen}
-          alt={`Habitación ${habitacion.nombre}`}
+          alt={habitacion.nombre}
           className="w-full h-full object-cover"
         />
       </div>
@@ -741,10 +770,10 @@ function RoomCard({
               opcion === "desayuno"
                 ? habitacion.precioDesayuno
                 : habitacion.precioMediaPension;
-            const label =
+            const labelText =
               opcion === "desayuno"
-                ? `Desayuno · ${precio}€/persona`
-                : `Media Pensión · ${precio}€/persona`;
+                ? `${tr.aloj_btn_desayuno} · ${precio}€/${tr.aloj_booking_persona}`
+                : `${tr.aloj_btn_media_pension} · ${precio}€/${tr.aloj_booking_persona}`;
             const active = activePanel === opcion;
             return (
               <button
@@ -756,7 +785,7 @@ function RoomCard({
                     : "bg-[#4A6741] text-[#F0EAD6] hover:bg-[#3A5432]"
                 }`}
               >
-                {active ? "✕ Cerrar" : label}
+                {active ? tr.aloj_btn_close : labelText}
               </button>
             );
           })}
@@ -784,6 +813,8 @@ function CabanyaSection({
 }: {
   unavailableRanges: DateRange[];
 }) {
+  const { lang } = useLanguage();
+  const tr = getT(lang);
   const [open, setOpen] = useState(false);
   const [personas, setPersonas] = useState(10);
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
@@ -793,7 +824,7 @@ function CabanyaSection({
 
   async function handleReservar() {
     if (!selectedDate) {
-      setError("Por favor selecciona una fecha.");
+      setError(tr.aloj_cabanya_error_fecha);
       return;
     }
     setLoading(true);
@@ -817,7 +848,7 @@ function CabanyaSection({
         setLoading(false);
       }
     } catch {
-      setError("Error de conexión. Inténtalo de nuevo.");
+      setError(tr.act_card_error_conexion);
       setLoading(false);
     }
   }
@@ -835,23 +866,21 @@ function CabanyaSection({
           </div>
           <div>
             <p className="text-[#4A6741] text-sm tracking-[0.2em] uppercase font-medium mb-4">
-              Sala exterior
+              {tr.aloj_cabanya_label}
             </p>
             <h2
               className="text-3xl md:text-4xl text-[#2C1810] mb-5"
               style={{ fontFamily: "var(--font-playfair), Georgia, serif" }}
             >
-              La Cabanya · Sala Granero
+              {tr.aloj_cabanya_title}
             </h2>
             <p className="text-[#2C1810]/70 leading-relaxed mb-8">
-              350 m² de sala con suelo de microcemento mirando al valle. Soleada en invierno y con
-              sombra en verano. Con baño, cocina eléctrica, platos, vasos y utensilios. Capacidad
-              para más de 100 personas.
+              {tr.aloj_cabanya_desc}
             </p>
 
             <div className="space-y-4">
               <p className="text-sm text-[#2C1810]/60 font-medium">
-                10€ por persona · día
+                {tr.aloj_cabanya_price}
               </p>
 
               <button
@@ -862,7 +891,7 @@ function CabanyaSection({
                     : "bg-[#4A6741] text-[#F0EAD6] hover:bg-[#3A5432]"
                 }`}
               >
-                {open ? "✕ Cerrar" : "Consultar disponibilidad"}
+                {open ? tr.aloj_btn_close : tr.aloj_cabanya_consultar}
               </button>
 
               {open && (
@@ -870,7 +899,7 @@ function CabanyaSection({
                   {/* Date picker */}
                   <div>
                     <p className="text-xs font-medium text-[#2C1810]/70 uppercase tracking-wide mb-2">
-                      Fecha del evento
+                      {tr.aloj_cabanya_fecha_label}
                     </p>
                     <DateRangePicker
                       checkIn={selectedDate}
@@ -881,7 +910,7 @@ function CabanyaSection({
                     />
                     {selectedDate && (
                       <p className="text-xs text-[#4A6741] mt-2 font-medium">
-                        {selectedDate.toLocaleDateString("es-ES", {
+                        {selectedDate.toLocaleDateString(lang === "ca" ? "ca-ES" : "es-ES", {
                           weekday: "long",
                           day: "numeric",
                           month: "long",
@@ -910,12 +939,12 @@ function CabanyaSection({
                     >
                       +
                     </button>
-                    <span className="text-sm text-[#2C1810]/60 ml-2">personas</span>
+                    <span className="text-sm text-[#2C1810]/60 ml-2">{tr.aloj_cabanya_personas}</span>
                   </div>
 
                   <div className="flex items-center gap-4">
                     <span className="text-lg font-medium text-[#2C1810]">
-                      Total:{" "}
+                      {tr.aloj_cabanya_total}{" "}
                       <span className="text-[#4A6741]">{total}€</span>
                     </span>
                     <button
@@ -924,7 +953,7 @@ function CabanyaSection({
                       className="flex items-center gap-2 px-6 py-3 rounded-full bg-[#4A6741] text-[#F0EAD6] text-sm font-medium hover:bg-[#3A5432] transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
                     >
                       {loading && <Loader2 size={16} className="animate-spin" />}
-                      Reservar Cabanya
+                      {tr.aloj_cabanya_btn}
                     </button>
                   </div>
 
@@ -944,6 +973,8 @@ function CabanyaSection({
 // ── Complementos info section ──────────────────────────────────────────────────
 
 function ComplementosSection({ complementos }: { complementos: Complemento[] }) {
+  const { lang } = useLanguage();
+  const tr = getT(lang);
   if (!complementos.length) return null;
 
   return (
@@ -951,16 +982,16 @@ function ComplementosSection({ complementos }: { complementos: Complemento[] }) 
       <div className="max-w-6xl mx-auto">
         <div className="text-center mb-12">
           <p className="text-[#4A6741] text-sm tracking-[0.2em] uppercase font-medium mb-3">
-            Enriquece tu estancia
+            {tr.compl_label}
           </p>
           <h2
             className="text-3xl md:text-4xl text-[#2C1810]"
             style={{ fontFamily: "var(--font-playfair), Georgia, serif" }}
           >
-            Complementos disponibles
+            {tr.compl_title}
           </h2>
           <p className="text-[#2C1810]/60 mt-3 max-w-xl mx-auto text-sm">
-            Añade estos servicios al realizar tu reserva para una experiencia más completa.
+            {tr.compl_desc}
           </p>
         </div>
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
@@ -981,7 +1012,7 @@ function ComplementosSection({ complementos }: { complementos: Complemento[] }) 
                   <div className="text-right shrink-0">
                     <p className="text-[#4A6741] font-semibold">{p}€</p>
                     <p className="text-[10px] text-[#2C1810]/45">
-                      {c.tipo_cobro === "POR_NOCHE" ? "por noche" : "precio único"}
+                      {c.tipo_cobro === "POR_NOCHE" ? tr.aloj_booking_por_noche : tr.aloj_booking_precio_unico}
                     </p>
                   </div>
                 </div>
@@ -1007,6 +1038,9 @@ export default function AlojamientoCliente({
   datesCabanya,
   habitaciones: habitacionesDB = [],
 }: Props) {
+  const { lang } = useLanguage();
+  const tr = getT(lang);
+
   const unavailableByRoom: Record<HabitacionKey, DateRange[]> = {
     artemisa: datesArtemisa,
     selene: datesSelene,
@@ -1015,8 +1049,11 @@ export default function AlojamientoCliente({
 
   const HABITACIONES: HabitacionData[] = HABITACIONES_BASE.map((base) => {
     const db = habitacionesDB.find((h) => h.id === base.id);
+    // Use translated descriptions
+    const descKey = `aloj_room_${base.id}_desc` as keyof typeof tr;
     return {
       ...base,
+      descripcion: tr[descKey] as string ?? base.descripcion,
       precioDesayuno: db?.precio_desayuno ?? 45,
       precioMediaPension: db?.precio_media_pension ?? 60,
     };
@@ -1042,10 +1079,10 @@ export default function AlojamientoCliente({
             className="text-5xl md:text-6xl text-[#F0EAD6]"
             style={{ fontFamily: "var(--font-playfair), Georgia, serif" }}
           >
-            Alojamiento
+            {tr.nav_alojamiento}
           </h1>
           <p className="text-[#E8DCC8]/80 text-lg mt-3 font-light">
-            Tres habitaciones únicas entre bosques y ríos
+            {tr.aloj_hero_subtitle}
           </p>
         </div>
       </section>
@@ -1055,13 +1092,13 @@ export default function AlojamientoCliente({
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-14">
             <p className="text-[#4A6741] text-sm tracking-[0.2em] uppercase font-medium mb-3">
-              Las habitaciones
+              {tr.aloj_rooms_label}
             </p>
             <h2
               className="text-3xl md:text-4xl text-[#2C1810]"
               style={{ fontFamily: "var(--font-playfair), Georgia, serif" }}
             >
-              Tres diosas que custodian tu descanso
+              {tr.aloj_rooms_title}
             </h2>
           </div>
 

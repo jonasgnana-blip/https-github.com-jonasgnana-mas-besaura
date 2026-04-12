@@ -4,6 +4,8 @@ import { useState } from "react";
 import { Loader2, ChevronRight } from "lucide-react";
 import SingleDatePicker from "@/app/components/SingleDatePicker";
 import type { DateRange } from "@/app/actions/reservas";
+import { useLanguage } from "@/lib/LanguageContext";
+import { getT } from "@/lib/i18n";
 
 /* ── BotonActividad ──────────────────────────────────────────────────────────── */
 
@@ -15,6 +17,8 @@ type BotonProps = {
 };
 
 export function BotonActividad({ label, nombre, precio, descripcion }: BotonProps) {
+  const { lang } = useLanguage();
+  const tr = getT(lang);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -35,7 +39,7 @@ export function BotonActividad({ label, nombre, precio, descripcion }: BotonProp
         setLoading(false);
       }
     } catch {
-      setError("Error de conexión. Inténtalo de nuevo.");
+      setError(tr.act_card_error_conexion);
       setLoading(false);
     }
   }
@@ -58,6 +62,8 @@ export function BotonActividad({ label, nombre, precio, descripcion }: BotonProp
 /* ── ComidaCaseraReserva ─────────────────────────────────────────────────────── */
 
 export function ComidaCaseraReserva() {
+  const { lang } = useLanguage();
+  const tr = getT(lang);
   const [open, setOpen] = useState(false);
   const [cantidad, setCantidad] = useState(1);
   const [loading, setLoading] = useState(false);
@@ -86,7 +92,7 @@ export function ComidaCaseraReserva() {
         setLoading(false);
       }
     } catch {
-      setError("Error de conexión. Inténtalo de nuevo.");
+      setError(tr.act_card_error_conexion);
       setLoading(false);
     }
   }
@@ -97,7 +103,7 @@ export function ComidaCaseraReserva() {
         onClick={() => setOpen((v) => !v)}
         className="flex items-center gap-2 px-5 py-2.5 rounded-full border border-[#4A6741] text-[#4A6741] text-sm font-medium hover:bg-[#4A6741] hover:text-[#F0EAD6] transition-colors"
       >
-        {open ? "Cerrar" : "Comida Casera — 15€"}
+        {open ? tr.act_card_cerrar : tr.act_card_comida}
         <ChevronRight size={14} className={`transition-transform ${open ? "rotate-90" : ""}`} />
       </button>
 
@@ -127,7 +133,7 @@ export function ComidaCaseraReserva() {
             className="flex items-center justify-center gap-2 px-6 py-2.5 rounded-full bg-[#4A6741] text-[#F0EAD6] text-sm font-medium hover:bg-[#3A5432] transition-colors disabled:opacity-60"
           >
             {loading && <Loader2 size={14} className="animate-spin" />}
-            Reservar Comida Casera — {total}€
+            {tr.act_card_comida_btn} — {total}€
           </button>
           {error && <p className="text-red-600 text-xs">{error}</p>}
         </div>
@@ -151,6 +157,8 @@ export function ActividadConFecha({
   descripcion,
   unavailableDates,
 }: ActividadConFechaProps) {
+  const { lang } = useLanguage();
+  const tr = getT(lang);
   const [open, setOpen] = useState(false);
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const [personas, setPersonas] = useState(1);
@@ -165,7 +173,7 @@ export function ActividadConFecha({
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!selectedDate) {
-      setError("Por favor selecciona una fecha.");
+      setError(tr.act_card_error_fecha);
       return;
     }
     setLoading(true);
@@ -190,7 +198,7 @@ export function ActividadConFecha({
         setLoading(false);
       }
     } catch {
-      setError("Error de conexión. Inténtalo de nuevo.");
+      setError(tr.act_card_error_conexion);
       setLoading(false);
     }
   }
@@ -201,7 +209,7 @@ export function ActividadConFecha({
         onClick={() => setOpen((v) => !v)}
         className="flex items-center gap-2 px-5 py-2.5 rounded-full bg-[#4A6741] text-[#F0EAD6] text-sm font-medium hover:bg-[#3A5432] transition-colors"
       >
-        {open ? "Cerrar" : `Reservar — ${precio}€/persona`}
+        {open ? tr.act_card_cerrar : `${tr.act_card_reservar} — ${precio}€/${tr.act_card_persona}`}
         <ChevronRight size={14} className={`transition-transform ${open ? "rotate-90" : ""}`} />
       </button>
 
@@ -212,12 +220,12 @@ export function ActividadConFecha({
             unavailableDates={unavailableDates}
             selected={selectedDate}
             onSelect={setSelectedDate}
-            label="Selecciona una fecha"
+            label={tr.act_card_fecha_label}
           />
 
           {/* Persons counter */}
           <div className="flex flex-col gap-2">
-            <label className="text-sm font-medium text-[#2C1810]">Personas</label>
+            <label className="text-sm font-medium text-[#2C1810]">{tr.act_card_personas_label}</label>
             <div className="flex items-center gap-3">
               <button
                 type="button"
@@ -244,7 +252,7 @@ export function ActividadConFecha({
           <div className="flex flex-col gap-3">
             <input
               type="text"
-              placeholder="Nombre completo"
+              placeholder={tr.aloj_booking_nombre_ph}
               value={guestNombre}
               onChange={(e) => setGuestNombre(e.target.value)}
               required
@@ -252,7 +260,7 @@ export function ActividadConFecha({
             />
             <input
               type="email"
-              placeholder="Correo electrónico"
+              placeholder={tr.aloj_booking_email_ph}
               value={guestEmail}
               onChange={(e) => setGuestEmail(e.target.value)}
               required
@@ -260,7 +268,7 @@ export function ActividadConFecha({
             />
             <input
               type="tel"
-              placeholder="Teléfono"
+              placeholder={tr.aloj_booking_tel_ph}
               value={guestTelefono}
               onChange={(e) => setGuestTelefono(e.target.value)}
               required
@@ -276,7 +284,7 @@ export function ActividadConFecha({
             className="flex items-center justify-center gap-2 px-6 py-2.5 rounded-full bg-[#4A6741] text-[#F0EAD6] text-sm font-medium hover:bg-[#3A5432] transition-colors disabled:opacity-60"
           >
             {loading && <Loader2 size={14} className="animate-spin" />}
-            Confirmar reserva — {total}€
+            {tr.act_card_confirmar} — {total}€
           </button>
         </form>
       )}
@@ -291,6 +299,8 @@ type CabanyaProps = {
 };
 
 export function CabanyaActividadReserva({ unavailableDates: _unavailableDates }: CabanyaProps = {}) {
+  const { lang } = useLanguage();
+  const tr = getT(lang);
   const [open, setOpen] = useState(false);
   const [personas, setPersonas] = useState(1);
   const [loading, setLoading] = useState(false);
@@ -314,7 +324,7 @@ export function CabanyaActividadReserva({ unavailableDates: _unavailableDates }:
         setLoading(false);
       }
     } catch {
-      setError("Error de conexión. Inténtalo de nuevo.");
+      setError(tr.act_card_error_conexion);
       setLoading(false);
     }
   }
@@ -325,7 +335,7 @@ export function CabanyaActividadReserva({ unavailableDates: _unavailableDates }:
         onClick={() => setOpen((v) => !v)}
         className="flex items-center gap-2 px-5 py-2.5 rounded-full bg-[#4A6741] text-[#F0EAD6] text-sm font-medium hover:bg-[#3A5432] transition-colors"
       >
-        {open ? "Cerrar" : "Reservar La Cabanya — 10€/persona"}
+        {open ? tr.act_card_cerrar : tr.act_card_cabanya_btn}
         <ChevronRight size={14} className={`transition-transform ${open ? "rotate-90" : ""}`} />
       </button>
 
@@ -346,7 +356,7 @@ export function CabanyaActividadReserva({ unavailableDates: _unavailableDates }:
               +
             </button>
             <span className="text-sm text-[#2C1810]/60">
-              {personas} personas · <span className="font-medium text-[#4A6741]">{total}€</span>
+              {personas} {tr.act_card_personas_txt} · <span className="font-medium text-[#4A6741]">{total}€</span>
             </span>
           </div>
           <button
@@ -355,7 +365,7 @@ export function CabanyaActividadReserva({ unavailableDates: _unavailableDates }:
             className="flex items-center justify-center gap-2 px-6 py-2.5 rounded-full bg-[#4A6741] text-[#F0EAD6] text-sm font-medium hover:bg-[#3A5432] transition-colors disabled:opacity-60"
           >
             {loading && <Loader2 size={14} className="animate-spin" />}
-            Reservar Sala — {total}€
+            {tr.act_card_cabanya_sala} — {total}€
           </button>
           {error && <p className="text-red-600 text-xs">{error}</p>}
         </div>

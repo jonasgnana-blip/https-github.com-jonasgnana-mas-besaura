@@ -3,16 +3,20 @@
 import { useState } from "react";
 import Link from "next/link";
 import { Menu, X, Phone } from "lucide-react";
-
-const NAV_LINKS = [
-  { label: "La Casa", href: "/la-casa" },
-  { label: "Alojamiento", href: "/alojamiento" },
-  { label: "Actividades", href: "/actividades" },
-  { label: "Alquiler", href: "/alquiler" },
-];
+import { useLanguage } from "@/lib/LanguageContext";
+import { getT } from "@/lib/i18n";
 
 export default function NavBar() {
   const [open, setOpen] = useState(false);
+  const { lang, setLang } = useLanguage();
+  const tr = getT(lang);
+
+  const NAV_LINKS = [
+    { label: tr.nav_la_casa, href: "/la-casa" },
+    { label: tr.nav_alojamiento, href: "/alojamiento" },
+    { label: tr.nav_actividades, href: "/actividades" },
+    { label: tr.nav_alquiler, href: "/alquiler" },
+  ];
 
   return (
     <>
@@ -43,18 +47,70 @@ export default function NavBar() {
               href="/alojamiento"
               className="px-5 py-2 bg-[#4A6741] text-[#F0EAD6] rounded-full hover:bg-[#3A5432] transition-colors text-sm"
             >
-              Reservar
+              {tr.nav_reservar}
             </Link>
+
+            {/* Language toggle */}
+            <div className="flex items-center gap-1 text-xs text-[#4A6741]/70 border border-[#E8DCC8] rounded-full px-2.5 py-1">
+              <button
+                onClick={() => setLang("es")}
+                className={`transition-colors ${
+                  lang === "es"
+                    ? "font-bold text-[#2C1810]"
+                    : "hover:text-[#2C1810]"
+                }`}
+                aria-label="Castellano"
+              >
+                ES
+              </button>
+              <span className="text-[#4A6741]/30">|</span>
+              <button
+                onClick={() => setLang("ca")}
+                className={`transition-colors ${
+                  lang === "ca"
+                    ? "font-bold text-[#2C1810]"
+                    : "hover:text-[#2C1810]"
+                }`}
+                aria-label="Català"
+              >
+                CA
+              </button>
+            </div>
           </nav>
 
-          {/* Mobile hamburger */}
-          <button
-            className="md:hidden p-2 text-[#4A6741] hover:text-[#2C1810] transition-colors"
-            onClick={() => setOpen((v) => !v)}
-            aria-label="Menu"
-          >
-            {open ? <X size={22} /> : <Menu size={22} />}
-          </button>
+          {/* Mobile: lang toggle + hamburger */}
+          <div className="md:hidden flex items-center gap-3">
+            {/* Language toggle mobile */}
+            <div className="flex items-center gap-1 text-xs text-[#4A6741]/70 border border-[#E8DCC8] rounded-full px-2 py-0.5">
+              <button
+                onClick={() => setLang("es")}
+                className={`transition-colors ${
+                  lang === "es" ? "font-bold text-[#2C1810]" : "hover:text-[#2C1810]"
+                }`}
+                aria-label="Castellano"
+              >
+                ES
+              </button>
+              <span className="text-[#4A6741]/30">|</span>
+              <button
+                onClick={() => setLang("ca")}
+                className={`transition-colors ${
+                  lang === "ca" ? "font-bold text-[#2C1810]" : "hover:text-[#2C1810]"
+                }`}
+                aria-label="Català"
+              >
+                CA
+              </button>
+            </div>
+
+            <button
+              className="p-2 text-[#4A6741] hover:text-[#2C1810] transition-colors"
+              onClick={() => setOpen((v) => !v)}
+              aria-label="Menu"
+            >
+              {open ? <X size={22} /> : <Menu size={22} />}
+            </button>
+          </div>
         </div>
 
         {/* Mobile dropdown */}
@@ -75,7 +131,7 @@ export default function NavBar() {
               onClick={() => setOpen(false)}
               className="inline-block px-5 py-2 bg-[#4A6741] text-[#F0EAD6] rounded-full hover:bg-[#3A5432] transition-colors text-sm font-medium text-center"
             >
-              Reservar
+              {tr.nav_reservar}
             </Link>
           </div>
         )}

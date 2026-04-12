@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Playfair_Display, Inter } from "next/font/google";
 import Script from "next/script";
 import "./globals.css";
+import { LanguageProvider } from "@/lib/LanguageContext";
 
 const playfair = Playfair_Display({
   variable: "--font-playfair",
@@ -87,7 +88,9 @@ export default function RootLayout({
         />
       </head>
       <body>
+        <LanguageProvider>
         {children}
+        </LanguageProvider>
 
         {/* Facebook Pixel */}
         {fbPixelId && (

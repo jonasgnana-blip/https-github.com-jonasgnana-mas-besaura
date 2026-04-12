@@ -3,6 +3,8 @@
 import { useState } from "react";
 import { Loader2, ChevronLeft, ChevronRight } from "lucide-react";
 import type { DateRange } from "@/app/actions/reservas";
+import { useLanguage } from "@/lib/LanguageContext";
+import { getT } from "@/lib/i18n";
 
 // ── Types ──────────────────────────────────────────────────────────────────────
 
@@ -47,11 +49,16 @@ function nightsBetween(a: Date, b: Date): number {
   return Math.round((b.getTime() - a.getTime()) / 86400000);
 }
 
-const MONTH_NAMES = [
+const MONTH_NAMES_ES = [
   "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
   "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre",
 ];
-const DAY_NAMES = ["Lu", "Ma", "Mi", "Ju", "Vi", "Sá", "Do"];
+const MONTH_NAMES_CA = [
+  "Gener", "Febrer", "Març", "Abril", "Maig", "Juny",
+  "Juliol", "Agost", "Setembre", "Octubre", "Novembre", "Desembre",
+];
+const DAY_NAMES_ES = ["Lu", "Ma", "Mi", "Ju", "Vi", "Sá", "Do"];
+const DAY_NAMES_CA = ["Dl", "Dt", "Dc", "Dj", "Dv", "Ds", "Dg"];
 
 // ── CalendarMonth ──────────────────────────────────────────────────────────────
 
@@ -65,6 +72,8 @@ function CalendarMonth({
   onDayClick,
   onDayHover,
   singleSelect,
+  monthNames,
+  dayNames,
 }: {
   year: number;
   month: number;
@@ -75,7 +84,12 @@ function CalendarMonth({
   onDayClick: (d: Date) => void;
   onDayHover: (d: Date | null) => void;
   singleSelect?: boolean;
+  monthNames?: string[];
+  dayNames?: string[];
 }) {
+  const resolvedMonthNames = monthNames ?? MONTH_NAMES_ES;
+  const resolvedDayNames = dayNames ?? DAY_NAMES_ES;
+
   const firstDay = new Date(year, month, 1);
   const startDow = (firstDay.getDay() + 6) % 7;
   const daysInMonth = new Date(year, month + 1, 0).getDate();
@@ -89,10 +103,10 @@ function CalendarMonth({
   return (
     <div className="select-none">
       <div className="text-center font-medium text-[#2C1810] mb-3 text-sm tracking-wide">
-        {MONTH_NAMES[month]} {year}
+        {resolvedMonthNames[month]} {year}
       </div>
       <div className="grid grid-cols-7 mb-1">
-        {DAY_NAMES.map((d) => (
+        {resolvedDayNames.map((d) => (
           <div key={d} className="text-center text-[10px] text-[#2C1810]/40 font-medium py-1">
             {d}
           </div>
@@ -207,6 +221,12 @@ function SingleDatePicker({
   unavailableRanges: DateRange[];
   onChange: (d: Date | null) => void;
 }) {
+  const { lang } = useLanguage();
+  const tr = getT(lang);
+  const monthNames = lang === "ca" ? MONTH_NAMES_CA : MONTH_NAMES_ES;
+  const dayNames = lang === "ca" ? DAY_NAMES_CA : DAY_NAMES_ES;
+  const locale = lang === "ca" ? "ca-ES" : "es-ES";
+
   const today = new Date();
   const [viewMonth, setViewMonth] = useState(today.getMonth());
   const [viewYear, setViewYear] = useState(today.getFullYear());
@@ -265,16 +285,18 @@ function SingleDatePicker({
         onDayClick={handleDayClick}
         onDayHover={() => {}}
         singleSelect
+        monthNames={monthNames}
+        dayNames={dayNames}
       />
 
       {selected && (
         <div className="mt-4 pt-3 border-t border-[#E8DCC8] text-xs text-[#4A6741] font-medium">
-          {selected.toLocaleDateString("es-ES", { weekday: "long", day: "numeric", month: "long", year: "numeric" })}
+          {selected.toLocaleDateString(locale, { weekday: "long", day: "numeric", month: "long", year: "numeric" })}
         </div>
       )}
       {!selected && (
         <div className="mt-4 pt-3 border-t border-[#E8DCC8] text-xs text-[#2C1810]/50">
-          Selecciona una fecha
+          {tr.aloj_cabanya_consultar}
         </div>
       )}
     </div>
@@ -294,6 +316,12 @@ function DateRangePicker({
   unavailableRanges: DateRange[];
   onChange: (checkIn: Date | null, checkOut: Date | null) => void;
 }) {
+  const { lang } = useLanguage();
+  const tr = getT(lang);
+  const monthNames = lang === "ca" ? MONTH_NAMES_CA : MONTH_NAMES_ES;
+  const dayNames = lang === "ca" ? DAY_NAMES_CA : DAY_NAMES_ES;
+  const locale = lang === "ca" ? "ca-ES" : "es-ES";
+
   const today = new Date();
   const [viewMonth, setViewMonth] = useState(today.getMonth());
   const [viewYear, setViewYear] = useState(today.getFullYear());
@@ -375,6 +403,8 @@ function DateRangePicker({
           unavailableRanges={unavailableRanges}
           onDayClick={handleDayClick}
           onDayHover={setHovered}
+          monthNames={monthNames}
+          dayNames={dayNames}
         />
         <CalendarMonth
           year={nextYear}
@@ -385,23 +415,25 @@ function DateRangePicker({
           unavailableRanges={unavailableRanges}
           onDayClick={handleDayClick}
           onDayHover={setHovered}
+          monthNames={monthNames}
+          dayNames={dayNames}
         />
       </div>
 
       <div className="mt-4 pt-3 border-t border-[#E8DCC8] flex flex-wrap gap-4 text-xs text-[#2C1810]/60">
         {checkIn && !checkOut && (
           <span className="text-[#4A6741] font-medium">
-            Selecciona la fecha de salida
+            {tr.aloj_cal_salida}
           </span>
         )}
         {checkIn && checkOut && (
           <span className="text-[#4A6741] font-medium">
-            {nightsBetween(checkIn, checkOut)} día{nightsBetween(checkIn, checkOut) !== 1 ? "s" : ""} ·{" "}
-            {checkIn.toLocaleDateString("es-ES", { day: "numeric", month: "short" })} →{" "}
-            {checkOut.toLocaleDateString("es-ES", { day: "numeric", month: "short" })}
+            {nightsBetween(checkIn, checkOut)} {nightsBetween(checkIn, checkOut) !== 1 ? tr.alq_dias : tr.aloj_cal_dias} ·{" "}
+            {checkIn.toLocaleDateString(locale, { day: "numeric", month: "short" })} →{" "}
+            {checkOut.toLocaleDateString(locale, { day: "numeric", month: "short" })}
           </span>
         )}
-        {!checkIn && <span>Selecciona la fecha de entrada</span>}
+        {!checkIn && <span>{tr.aloj_cal_entrada}</span>}
       </div>
     </div>
   );
@@ -483,6 +515,9 @@ function Field({
 // ── Section A: La Cabanya ──────────────────────────────────────────────────────
 
 function CabanySalaSection({ datesCabanya }: { datesCabanya: DateRange[] }) {
+  const { lang } = useLanguage();
+  const tr = getT(lang);
+  const locale = lang === "ca" ? "ca-ES" : "es-ES";
   const [open, setOpen] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [personas, setPersonas] = useState(10);
@@ -496,11 +531,11 @@ function CabanySalaSection({ datesCabanya }: { datesCabanya: DateRange[] }) {
 
   async function handleReservar() {
     if (!selectedDate) {
-      setError("Por favor selecciona una fecha.");
+      setError(tr.alq_cabanya_error_fecha);
       return;
     }
     if (!nombre.trim() || !email.trim()) {
-      setError("Por favor completa nombre y email.");
+      setError(tr.alq_cabanya_error_contacto);
       return;
     }
     setLoading(true);
@@ -528,7 +563,7 @@ function CabanySalaSection({ datesCabanya }: { datesCabanya: DateRange[] }) {
         setLoading(false);
       }
     } catch {
-      setError("Error de conexión. Inténtalo de nuevo.");
+      setError(tr.act_card_error_conexion);
       setLoading(false);
     }
   }
@@ -538,30 +573,29 @@ function CabanySalaSection({ datesCabanya }: { datesCabanya: DateRange[] }) {
       {/* Header — always visible */}
       <div className="bg-[#2C1810] px-8 py-6">
         <p className="text-[#C4A882] text-xs tracking-[0.2em] uppercase font-medium mb-1">
-          Alquiler de espacio
+          {tr.alq_cabanya_tipo}
         </p>
         <h3
           className="text-2xl text-[#F0EAD6] mb-1"
           style={{ fontFamily: "var(--font-playfair), Georgia, serif" }}
         >
-          La Cabanya · Sala Granero
+          {tr.alq_cabanya_title}
         </h3>
         <p className="text-[#E8DCC8]/60 text-sm">
-          10€ por persona · día
+          {tr.alq_cabanya_price}
         </p>
       </div>
 
       {/* Description + CTA — always visible */}
       <div className="px-8 pt-6 pb-4">
         <p className="text-[#2C1810]/70 text-sm leading-relaxed mb-6">
-          350 m² de sala con suelo de microcemento mirando al valle. Con baño, cocina eléctrica,
-          platos y utensilios. Para eventos, actividades, comidas familiares... Hasta 100 personas.
+          {tr.alq_cabanya_desc}
         </p>
         <button
           onClick={() => setOpen((v) => !v)}
           className="flex items-center gap-2 px-7 py-3.5 rounded-full bg-[#4A6741] text-[#F0EAD6] text-sm font-medium hover:bg-[#3A5432] transition-colors"
         >
-          {open ? "Cerrar" : "Consultar disponibilidad"}
+          {open ? tr.alq_cerrar : tr.alq_cabanya_consultar}
           <ChevronRight size={15} className={`transition-transform ${open ? "rotate-90" : ""}`} />
         </button>
       </div>
@@ -572,7 +606,7 @@ function CabanySalaSection({ datesCabanya }: { datesCabanya: DateRange[] }) {
           {/* Date picker */}
           <div>
             <p className="text-xs font-medium text-[#2C1810]/50 uppercase tracking-wide mb-3">
-              Fecha del evento
+              {tr.alq_cabanya_fecha_label}
             </p>
             <SingleDatePicker
               selected={selectedDate}
@@ -584,7 +618,7 @@ function CabanySalaSection({ datesCabanya }: { datesCabanya: DateRange[] }) {
           {/* Personas counter */}
           <div>
             <p className="text-xs font-medium text-[#2C1810]/50 uppercase tracking-wide mb-3">
-              Número de personas
+              {tr.alq_cabanya_personas_label}
             </p>
             <Counter value={personas} min={1} max={100} onChange={setPersonas} />
           </div>
@@ -592,12 +626,12 @@ function CabanySalaSection({ datesCabanya }: { datesCabanya: DateRange[] }) {
           {/* Price summary */}
           <div className="bg-[#F0EAD6] rounded-xl p-5 space-y-1.5">
             <div className="flex justify-between text-sm text-[#2C1810]/60">
-              <span>{personas} personas × 10€</span>
+              <span>{personas} {tr.aloj_booking_personas} × 10€</span>
               <span className="font-semibold text-[#2C1810] text-base">{total}€</span>
             </div>
             {selectedDate && (
               <div className="text-xs text-[#2C1810]/50">
-                {selectedDate.toLocaleDateString("es-ES", { weekday: "long", day: "numeric", month: "long", year: "numeric" })}
+                {selectedDate.toLocaleDateString(locale, { weekday: "long", day: "numeric", month: "long", year: "numeric" })}
               </div>
             )}
           </div>
@@ -605,11 +639,11 @@ function CabanySalaSection({ datesCabanya }: { datesCabanya: DateRange[] }) {
           {/* Guest form */}
           <div className="space-y-4">
             <p className="text-xs font-medium text-[#2C1810]/50 uppercase tracking-wide">
-              Datos de contacto
+              {tr.alq_cabanya_contacto_label}
             </p>
-            <Field label="Nombre" value={nombre} onChange={setNombre} placeholder="Tu nombre" required />
-            <Field label="Email" type="email" value={email} onChange={setEmail} placeholder="tu@email.com" required />
-            <Field label="Teléfono" type="tel" value={telefono} onChange={setTelefono} placeholder="+34 000 000 000" required />
+            <Field label={tr.alq_cabanya_nombre_label} value={nombre} onChange={setNombre} placeholder={tr.alq_cabanya_nombre_ph} required />
+            <Field label={tr.alq_cabanya_email_label} type="email" value={email} onChange={setEmail} placeholder="tu@email.com" required />
+            <Field label={tr.alq_cabanya_tel_label} type="tel" value={telefono} onChange={setTelefono} placeholder={tr.alq_cabanya_tel_ph} required />
           </div>
 
           {error && (
@@ -622,7 +656,7 @@ function CabanySalaSection({ datesCabanya }: { datesCabanya: DateRange[] }) {
             className="w-full flex items-center justify-center gap-2 px-6 py-4 rounded-full bg-[#4A6741] text-[#F0EAD6] text-sm font-medium hover:bg-[#3A5432] transition-colors disabled:opacity-60"
           >
             {loading && <Loader2 size={16} className="animate-spin" />}
-            Reservar La Cabanya — {total}€
+            {tr.alq_cabanya_reservar} — {total}€
           </button>
         </div>
       )}
@@ -633,6 +667,8 @@ function CabanySalaSection({ datesCabanya }: { datesCabanya: DateRange[] }) {
 // ── Section B: Casa Retiros ────────────────────────────────────────────────────
 
 function CasaRetirosSection({ datesCasa }: { datesCasa: DateRange[] }) {
+  const { lang } = useLanguage();
+  const tr = getT(lang);
   const [open, setOpen] = useState(false);
   const [checkIn, setCheckIn] = useState<Date | null>(null);
   const [checkOut, setCheckOut] = useState<Date | null>(null);
@@ -654,11 +690,11 @@ function CasaRetirosSection({ datesCasa }: { datesCasa: DateRange[] }) {
 
   async function handleReservar(tipo: "mitad" | "total") {
     if (!checkIn || !checkOut) {
-      setError("Por favor selecciona las fechas de entrada y salida.");
+      setError(tr.alq_casa_error_fechas);
       return;
     }
     if (!nombre.trim() || !email.trim()) {
-      setError("Por favor completa nombre y email.");
+      setError(tr.alq_casa_error_contacto);
       return;
     }
     setLoading(tipo);
@@ -690,7 +726,7 @@ function CasaRetirosSection({ datesCasa }: { datesCasa: DateRange[] }) {
         setLoading(null);
       }
     } catch {
-      setError("Error de conexión. Inténtalo de nuevo.");
+      setError(tr.act_card_error_conexion);
       setLoading(null);
     }
   }
@@ -700,30 +736,29 @@ function CasaRetirosSection({ datesCasa }: { datesCasa: DateRange[] }) {
       {/* Header — always visible */}
       <div className="bg-[#4A6741] px-8 py-6">
         <p className="text-[#F0EAD6]/60 text-xs tracking-[0.2em] uppercase font-medium mb-1">
-          Casa completa
+          {tr.alq_casa_tipo}
         </p>
         <h3
           className="text-2xl text-[#F0EAD6] mb-1"
           style={{ fontFamily: "var(--font-playfair), Georgia, serif" }}
         >
-          Alquiler Casa para Retiros
+          {tr.alq_casa_title}
         </h3>
         <p className="text-[#F0EAD6]/60 text-sm">
-          80€ por persona · día
+          {tr.alq_casa_price}
         </p>
       </div>
 
       {/* Description + CTA — always visible */}
       <div className="px-8 pt-6 pb-4">
         <p className="text-[#2C1810]/70 text-sm leading-relaxed mb-6">
-          La masía completa para grupos y retiros. Hasta 12 personas. Incluye todas las habitaciones,
-          salones, cocina y jardín. Precio basado en personas y días de estancia.
+          {tr.alq_casa_desc}
         </p>
         <button
           onClick={() => setOpen((v) => !v)}
           className="flex items-center gap-2 px-7 py-3.5 rounded-full bg-[#4A6741] text-[#F0EAD6] text-sm font-medium hover:bg-[#3A5432] transition-colors"
         >
-          {open ? "Cerrar" : "Consultar disponibilidad"}
+          {open ? tr.alq_cerrar : tr.alq_casa_consultar}
           <ChevronRight size={15} className={`transition-transform ${open ? "rotate-90" : ""}`} />
         </button>
       </div>
@@ -734,7 +769,7 @@ function CasaRetirosSection({ datesCasa }: { datesCasa: DateRange[] }) {
           {/* Date range picker */}
           <div>
             <p className="text-xs font-medium text-[#2C1810]/50 uppercase tracking-wide mb-3">
-              Fechas de entrada y salida
+              {tr.alq_casa_fechas_label}
             </p>
             <DateRangePicker
               checkIn={checkIn}
@@ -747,7 +782,7 @@ function CasaRetirosSection({ datesCasa }: { datesCasa: DateRange[] }) {
           {/* Personas counter */}
           <div>
             <p className="text-xs font-medium text-[#2C1810]/50 uppercase tracking-wide mb-3">
-              Número de personas
+              {tr.alq_casa_personas_label}
             </p>
             <Counter value={personas} min={1} max={12} onChange={setPersonas} />
           </div>
@@ -756,7 +791,7 @@ function CasaRetirosSection({ datesCasa }: { datesCasa: DateRange[] }) {
           <div className="bg-[#F0EAD6] rounded-xl p-5 space-y-2">
             <div className="flex justify-between text-sm text-[#2C1810]/60">
               <span>
-                {personas} personas × {dias > 0 ? dias : "—"} días × 80€
+                {personas} {tr.aloj_booking_personas} × {dias > 0 ? dias : "—"} {tr.alq_dias} × 80€
               </span>
               <span className="font-semibold text-[#2C1810] text-base">
                 {dias > 0 ? `${totalCompleto}€` : "—"}
@@ -764,7 +799,7 @@ function CasaRetirosSection({ datesCasa }: { datesCasa: DateRange[] }) {
             </div>
             {dias > 0 && (
               <div className="flex justify-between text-sm text-[#2C1810]/60">
-                <span>50% para reservar</span>
+                <span>{tr.alq_casa_50}</span>
                 <span className="font-medium text-[#4A6741]">{totalMitad}€</span>
               </div>
             )}
@@ -773,11 +808,11 @@ function CasaRetirosSection({ datesCasa }: { datesCasa: DateRange[] }) {
           {/* Guest form */}
           <div className="space-y-4">
             <p className="text-xs font-medium text-[#2C1810]/50 uppercase tracking-wide">
-              Datos de contacto
+              {tr.alq_casa_contacto_label}
             </p>
-            <Field label="Nombre" value={nombre} onChange={setNombre} placeholder="Tu nombre" required />
-            <Field label="Email" type="email" value={email} onChange={setEmail} placeholder="tu@email.com" required />
-            <Field label="Teléfono" type="tel" value={telefono} onChange={setTelefono} placeholder="+34 000 000 000" required />
+            <Field label={tr.alq_casa_nombre_label} value={nombre} onChange={setNombre} placeholder={tr.alq_casa_nombre_ph} required />
+            <Field label={tr.alq_casa_email_label} type="email" value={email} onChange={setEmail} placeholder="tu@email.com" required />
+            <Field label={tr.alq_casa_tel_label} type="tel" value={telefono} onChange={setTelefono} placeholder={tr.alq_casa_tel_ph} required />
           </div>
 
           {error && (
@@ -791,7 +826,7 @@ function CasaRetirosSection({ datesCasa }: { datesCasa: DateRange[] }) {
               className="flex-1 flex items-center justify-center gap-2 px-6 py-3.5 rounded-full bg-[#4A6741] text-[#F0EAD6] text-sm font-medium hover:bg-[#3A5432] transition-colors disabled:opacity-60"
             >
               {loading === "mitad" && <Loader2 size={16} className="animate-spin" />}
-              Reservar con el 50%{dias > 0 ? ` — ${totalMitad}€` : ""}
+              {tr.alq_casa_reservar_mitad}{dias > 0 ? ` — ${totalMitad}€` : ""}
             </button>
             <button
               onClick={() => handleReservar("total")}
@@ -799,7 +834,7 @@ function CasaRetirosSection({ datesCasa }: { datesCasa: DateRange[] }) {
               className="flex-1 flex items-center justify-center gap-2 px-6 py-3.5 rounded-full border border-[#4A6741] text-[#4A6741] bg-transparent text-sm font-medium hover:bg-[#4A6741] hover:text-[#F0EAD6] transition-colors disabled:opacity-60"
             >
               {loading === "total" && <Loader2 size={16} className="animate-spin" />}
-              Importe completo{dias > 0 ? ` — ${totalCompleto}€` : ""}
+              {tr.alq_casa_reservar_total}{dias > 0 ? ` — ${totalCompleto}€` : ""}
             </button>
           </div>
         </div>
