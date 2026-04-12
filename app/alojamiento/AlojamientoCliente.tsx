@@ -1051,18 +1051,18 @@ export default function AlojamientoCliente({
     hecate: datesHecate,
   };
 
-  const HABITACIONES: HabitacionData[] = HABITACIONES_BASE.map((base) => {
-    const db = habitacionesDB.find((h) => h.id === base.id);
-    // Use translated descriptions
-    const descKey = `aloj_room_${base.id}_desc` as keyof typeof tr;
+  const HABITACIONES: HabitacionData[] = HABITACIONES_BASE.map((base, idx) => {
+    // Match by name fragment (artemisa → "Artemisa") or by position
+    const db = habitacionesDB.find(h =>
+      h.nombre?.toLowerCase().includes(base.id.toLowerCase())
+    ) ?? habitacionesDB[idx];
     return {
       ...base,
-      // DB overrides: name, description, image if set
-      nombre:     db?.nombre       ?? base.nombre,
-      descripcion: tr[descKey] as string ?? db?.descripcion ?? base.descripcion,
-      imagen:     db?.imagen       ?? base.imagen,
-      capacidad:  db?.capacidad    ?? base.capacidad,
-      precioDesayuno: db?.precio_desayuno ?? 45,
+      nombre:      db?.nombre      || base.nombre,
+      descripcion: db?.descripcion || base.descripcion,
+      imagen:      (db?.imagen && db.imagen !== "") ? db.imagen : base.imagen,
+      capacidad:   db?.capacidad   ?? base.capacidad,
+      precioDesayuno:    db?.precio_desayuno    ?? 45,
       precioMediaPension: db?.precio_media_pension ?? 60,
     };
   });

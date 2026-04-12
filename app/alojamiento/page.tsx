@@ -21,7 +21,8 @@ export default async function AlojamientoPage() {
       getUnavailableDates("hecate"),
       getUnavailableDates("la-cabanya"),
       prisma.habitacion.findMany({
-        where: { id: { in: ["artemisa", "selene", "hecate"] } },
+        orderBy: { nombre: "asc" },
+        take: 3,
         select: { id: true, nombre: true, descripcion: true, capacidad: true, imagenes: true, precio_desayuno: true, precio_media_pension: true },
       }),
     ]);
