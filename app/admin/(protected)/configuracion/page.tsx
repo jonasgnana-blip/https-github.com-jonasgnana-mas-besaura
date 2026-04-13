@@ -59,6 +59,7 @@ export default async function AdminConfigPage({
       }))}
       gcalConnected={!!refreshToken}
       gcalStatus={params.gcal}
+      gcalMsg={params.msg}
       fbPixelIdInicial={pixelConfig?.valor ?? ""}
       espaciosInicial={{
         salonImg:     cfg["espacio_salon_img"]    ?? "",

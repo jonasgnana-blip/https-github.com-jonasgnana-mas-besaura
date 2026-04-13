@@ -128,6 +128,7 @@ export default function ConfigClient({
   complementos: initialComps,
   gcalConnected,
   gcalStatus,
+  gcalMsg,
   fbPixelIdInicial,
   espaciosInicial,
   cabanyaInicial,
@@ -139,6 +140,7 @@ export default function ConfigClient({
   complementos: Complemento[];
   gcalConnected: boolean;
   gcalStatus?: string;
+  gcalMsg?: string;
   fbPixelIdInicial?: string;
   espaciosInicial: EspaciosCfg;
   cabanyaInicial: CabanyaCfg;
@@ -451,7 +453,9 @@ export default function ConfigClient({
             </div>
           </div>
           {gcalStatus === "error" && (
-            <div className="text-xs text-red-600 bg-red-50 px-3 py-2 rounded-lg">Error al conectar. Inténtalo de nuevo.</div>
+            <div className="text-xs text-red-600 bg-red-50 px-3 py-2 rounded-lg max-w-xs break-all">
+              {gcalMsg ? `Error: ${gcalMsg}` : "Error al conectar. Inténtalo de nuevo."}
+            </div>
           )}
           {gcalStatus === "ok" && !gcalConnected && (
             <div className="text-xs text-green-700 bg-green-50 px-3 py-2 rounded-lg">¡Conectado correctamente!</div>
