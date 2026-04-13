@@ -6,13 +6,17 @@ export const runtime = "nodejs";
 const SITE_URL =
   process.env.NEXT_PUBLIC_SITE_URL || "https://masbesaura.com";
 
-const SUCCESS_URL = `${SITE_URL}/reservar/exito?session_id={CHECKOUT_SESSION_ID}`;
+// Note: {CHECKOUT_SESSION_ID} contains curly braces which fail URL validation
+// in native fetch. Use a plain URL — the webhook handles payment confirmation.
+const SUCCESS_URL = `${SITE_URL}/reservar/exito`;
 const CANCEL_URL = `${SITE_URL}/reservar/cancelado`;
 
 function getStripe() {
   const key = process.env.STRIPE_SECRET_KEY;
   if (!key) throw new Error("STRIPE_SECRET_KEY no configurada en Vercel");
-  return new Stripe(key);
+  // Use fetch-based HTTP client — Node.js https module fails on Vercel,
+  // but native fetch (available in Node 18+) works correctly.
+  return new Stripe(key, { httpClient: Stripe.createFetchHttpClient() });
 }
 
 type HabitacionBody = {

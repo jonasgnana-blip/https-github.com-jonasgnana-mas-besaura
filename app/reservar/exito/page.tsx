@@ -22,11 +22,34 @@ export default async function ExitoPage({
     : null;
 
   if (!reserva) {
+    // Generic success page for actividades, cabanya, alquiler (no reserva_id)
     return (
-      <div className="min-h-screen bg-[#FAFAF6] flex items-center justify-center px-6">
-        <div className="text-center">
-          <p className="text-[#2C1810]/60 mb-4">Reserva no encontrada.</p>
-          <Link href="/" className="text-[#4A6741] underline">Volver al inicio</Link>
+      <div className="min-h-screen bg-[#FAFAF6] flex items-center justify-center px-6 py-16">
+        <div className="max-w-lg w-full text-center">
+          <div className="flex justify-center mb-8">
+            <div className="w-20 h-20 rounded-full bg-[#4A6741]/10 flex items-center justify-center">
+              <CheckCircle size={40} className="text-[#4A6741]" />
+            </div>
+          </div>
+          <h1
+            className="text-4xl text-[#2C1810] mb-3"
+            style={{ fontFamily: "var(--font-playfair), Georgia, serif" }}
+          >
+            ¡Pago recibido!
+          </h1>
+          <p className="text-[#2C1810]/60 mb-8">
+            Hemos recibido tu pago correctamente. En breve recibirás un email de confirmación con todos los detalles.
+          </p>
+          <div className="bg-[#F0EAD6] rounded-xl p-4 mb-8 text-sm text-[#2C1810]/70">
+            Si tienes alguna pregunta, escríbenos a{" "}
+            <a href="https://wa.me/34665822542" className="text-[#4A6741] font-medium">WhatsApp</a>.
+          </div>
+          <Link
+            href="/"
+            className="inline-block px-8 py-3 rounded-full bg-[#4A6741] text-[#F0EAD6] hover:bg-[#3A5432] transition-colors text-sm font-medium"
+          >
+            Volver al inicio
+          </Link>
         </div>
       </div>
     );
