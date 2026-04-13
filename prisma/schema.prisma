@@ -144,7 +144,11 @@ model SesionActividad {
 model ReservaActividad {
   id                String           @id @default(cuid())
   sesion_id         String?
-  actividad_id      String
+  actividad_id      String?
+  actividad_nombre  String?
+  tipo              String           @default("actividad") // actividad | cabanya | alquiler
+  fecha_inicio      DateTime?        @db.Date
+  fecha_fin         DateTime?        @db.Date
   nombre_cliente    String
   email_cliente     String
   telefono_cliente  String

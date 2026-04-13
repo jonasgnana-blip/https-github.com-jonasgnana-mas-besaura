@@ -6,18 +6,22 @@ export const runtime = "nodejs";
 const SITE_URL =
   process.env.NEXT_PUBLIC_SITE_URL || "https://masbesaura.com";
 
-// Note: {CHECKOUT_SESSION_ID} contains curly braces which fail URL validation
-// in native fetch. Use a plain URL — the webhook handles payment confirmation.
 const SUCCESS_URL = `${SITE_URL}/reservar/exito`;
 const CANCEL_URL = `${SITE_URL}/reservar/cancelado`;
 
 function getStripe() {
   const key = process.env.STRIPE_SECRET_KEY;
   if (!key) throw new Error("STRIPE_SECRET_KEY no configurada en Vercel");
-  // Use fetch-based HTTP client — Node.js https module fails on Vercel,
-  // but native fetch (available in Node 18+) works correctly.
   return new Stripe(key, { httpClient: Stripe.createFetchHttpClient() });
 }
+
+// ── Types ─────────────────────────────────────────────────────────────────────
+
+type ClienteInfo = {
+  nombre_cliente?: string;
+  email_cliente?: string;
+  telefono_cliente?: string;
+};
 
 type HabitacionBody = {
   tipo: "habitacion";
@@ -28,7 +32,7 @@ type HabitacionBody = {
   fecha_entrada?: string;
   fecha_salida?: string;
   reserva_id?: string;
-};
+} & ClienteInfo;
 
 type ActividadBody = {
   tipo: "actividad";
@@ -36,7 +40,9 @@ type ActividadBody = {
   precio: number;
   cantidad?: number;
   descripcion?: string;
-};
+  actividad_id?: string;
+  fecha_entrada?: string;
+} & ClienteInfo;
 
 type CabanyaBody = {
   tipo: "cabanya";
@@ -45,22 +51,18 @@ type CabanyaBody = {
   dias?: number;
   fecha_entrada?: string;
   fecha_salida?: string;
-  nombre_cliente?: string;
-  email_cliente?: string;
-  telefono_cliente?: string;
-};
+} & ClienteInfo;
 
 type AlquilerBody = {
   tipo: "alquiler";
   precio: number;
   personas: number;
   dias: number;
-};
+  fecha_entrada?: string;
+  fecha_salida?: string;
+} & ClienteInfo;
 
-// Legacy body (room booking by reserva_id)
-type LegacyBody = {
-  reserva_id: string;
-};
+type LegacyBody = { reserva_id: string };
 
 type CheckoutBody =
   | HabitacionBody
@@ -69,7 +71,7 @@ type CheckoutBody =
   | AlquilerBody
   | LegacyBody;
 
-// ── Input validation helpers ──────────────────────────────────────────────────
+// ── Validation ────────────────────────────────────────────────────────────────
 
 function isValidPrice(p: unknown): p is number {
   return typeof p === "number" && isFinite(p) && p > 0 && p <= 50_000;
@@ -85,24 +87,20 @@ function sanitizeStr(s: unknown, maxLen = 200): string {
   return s.replace(/[<>]/g, "").slice(0, maxLen);
 }
 
+// ── Main handler ──────────────────────────────────────────────────────────────
+
 export async function POST(req: NextRequest) {
   try {
     const body: CheckoutBody = await req.json();
 
-    // ── Legacy path: reserva_id-based room checkout ────────────────────────
     if ("reserva_id" in body && body.reserva_id && !("tipo" in body)) {
       return handleLegacyReserva(body.reserva_id);
     }
 
     if (!("tipo" in body)) {
-      return NextResponse.json(
-        { error: "tipo o reserva_id requerido" },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "tipo o reserva_id requerido" }, { status: 400 });
     }
 
-    // ── Typed checkout ─────────────────────────────────────────────────────
-    // Validate common fields before delegating
     if ("precio" in body && !isValidPrice(body.precio)) {
       return NextResponse.json({ error: "Precio inválido" }, { status: 400 });
     }
@@ -115,19 +113,15 @@ export async function POST(req: NextRequest) {
     if ("noches" in body && body.noches != null && !isValidDias(body.noches)) {
       return NextResponse.json({ error: "Número de noches inválido" }, { status: 400 });
     }
-    if ("nombre" in body) (body as HabitacionBody).nombre = sanitizeStr(body.nombre);
-    if ("descripcion" in body && body.descripcion)
-      (body as ActividadBody).descripcion = sanitizeStr(body.descripcion, 500);
+    if ("nombre" in body) (body as ActividadBody).nombre = sanitizeStr(body.nombre);
+    if ("descripcion" in body && (body as ActividadBody).descripcion)
+      (body as ActividadBody).descripcion = sanitizeStr((body as ActividadBody).descripcion, 500);
 
     switch (body.tipo) {
-      case "habitacion":
-        return handleHabitacion(body);
-      case "actividad":
-        return handleActividad(body);
-      case "cabanya":
-        return handleCabanya(body);
-      case "alquiler":
-        return handleAlquiler(body);
+      case "habitacion": return handleHabitacion(body as HabitacionBody);
+      case "actividad":  return handleActividad(body as ActividadBody);
+      case "cabanya":    return handleCabanya(body as CabanyaBody);
+      case "alquiler":   return handleAlquiler(body as AlquilerBody);
       default:
         return NextResponse.json({ error: "tipo no reconocido" }, { status: 400 });
     }
@@ -142,6 +136,167 @@ export async function POST(req: NextRequest) {
 }
 
 // ── Handlers ──────────────────────────────────────────────────────────────────
+
+async function handleActividad(body: ActividadBody) {
+  const { prisma } = await import("@/lib/prisma");
+  const personas = body.cantidad ?? 1;
+
+  // Create pre-checkout record to track payment
+  const reservaAct = await prisma.reservaActividad.create({
+    data: {
+      actividad_id: body.actividad_id ?? null,
+      actividad_nombre: body.nombre,
+      tipo: "actividad",
+      fecha_inicio: body.fecha_entrada ? new Date(body.fecha_entrada) : null,
+      nombre_cliente: sanitizeStr(body.nombre_cliente) || "Sin nombre",
+      email_cliente: sanitizeStr(body.email_cliente) || "",
+      telefono_cliente: sanitizeStr(body.telefono_cliente) || "",
+      num_adultos: personas,
+      precio_total: body.precio,
+      estado: "PENDIENTE_PAGO",
+    },
+  });
+
+  const session = await getStripe().checkout.sessions.create({
+    mode: "payment",
+    locale: "es",
+    line_items: [{
+      quantity: personas,
+      price_data: {
+        currency: "eur",
+        unit_amount: Math.round((body.precio / personas) * 100),
+        product_data: {
+          name: body.nombre,
+          description: body.descripcion ?? undefined,
+        },
+      },
+    }],
+    metadata: {
+      tipo: "actividad",
+      reserva_actividad_id: reservaAct.id,
+      nombre: body.nombre,
+      cantidad: String(personas),
+    },
+    customer_email: body.email_cliente || undefined,
+    success_url: SUCCESS_URL,
+    cancel_url: CANCEL_URL,
+  });
+
+  await prisma.reservaActividad.update({
+    where: { id: reservaAct.id },
+    data: { stripe_session_id: session.id },
+  });
+
+  return NextResponse.json({ url: session.url });
+}
+
+async function handleCabanya(body: CabanyaBody) {
+  const { prisma } = await import("@/lib/prisma");
+  const dias = body.dias ?? 1;
+  const fechas = body.fecha_entrada && body.fecha_salida
+    ? ` · ${fmtDate(body.fecha_entrada)} → ${fmtDate(body.fecha_salida)}`
+    : body.fecha_entrada ? ` · ${fmtDate(body.fecha_entrada)}` : "";
+  const desc = `${body.personas} persona${body.personas !== 1 ? "s" : ""} · ${dias} día${dias !== 1 ? "s" : ""}${fechas}`;
+
+  const reservaAct = await prisma.reservaActividad.create({
+    data: {
+      actividad_nombre: "La Cabanya",
+      tipo: "cabanya",
+      fecha_inicio: body.fecha_entrada ? new Date(body.fecha_entrada) : null,
+      fecha_fin: body.fecha_salida ? new Date(body.fecha_salida) : null,
+      nombre_cliente: sanitizeStr(body.nombre_cliente) || "Sin nombre",
+      email_cliente: sanitizeStr(body.email_cliente) || "",
+      telefono_cliente: sanitizeStr(body.telefono_cliente) || "",
+      num_adultos: body.personas,
+      precio_total: body.precio,
+      estado: "PENDIENTE_PAGO",
+    },
+  });
+
+  const session = await getStripe().checkout.sessions.create({
+    mode: "payment",
+    locale: "es",
+    line_items: [{
+      quantity: 1,
+      price_data: {
+        currency: "eur",
+        unit_amount: Math.round(body.precio * 100),
+        product_data: {
+          name: "Reserva La Cabanya — Mas Besaura",
+          description: desc,
+        },
+      },
+    }],
+    metadata: {
+      tipo: "cabanya",
+      reserva_actividad_id: reservaAct.id,
+      personas: String(body.personas),
+      dias: String(dias),
+      fecha_entrada: body.fecha_entrada ?? "",
+    },
+    customer_email: body.email_cliente || undefined,
+    success_url: SUCCESS_URL,
+    cancel_url: CANCEL_URL,
+  });
+
+  await prisma.reservaActividad.update({
+    where: { id: reservaAct.id },
+    data: { stripe_session_id: session.id },
+  });
+
+  return NextResponse.json({ url: session.url });
+}
+
+async function handleAlquiler(body: AlquilerBody) {
+  const { prisma } = await import("@/lib/prisma");
+
+  const reservaAct = await prisma.reservaActividad.create({
+    data: {
+      actividad_nombre: "Alquiler Casa",
+      tipo: "alquiler",
+      fecha_inicio: body.fecha_entrada ? new Date(body.fecha_entrada) : null,
+      fecha_fin: body.fecha_salida ? new Date(body.fecha_salida) : null,
+      nombre_cliente: sanitizeStr(body.nombre_cliente) || "Sin nombre",
+      email_cliente: sanitizeStr(body.email_cliente) || "",
+      telefono_cliente: sanitizeStr(body.telefono_cliente) || "",
+      num_adultos: body.personas,
+      precio_total: body.precio,
+      estado: "PENDIENTE_PAGO",
+    },
+  });
+
+  const session = await getStripe().checkout.sessions.create({
+    mode: "payment",
+    locale: "es",
+    line_items: [{
+      quantity: 1,
+      price_data: {
+        currency: "eur",
+        unit_amount: Math.round(body.precio * 100),
+        product_data: {
+          name: "Alquiler de la casa",
+          description: `${body.personas} persona${body.personas !== 1 ? "s" : ""} · ${body.dias} día${body.dias !== 1 ? "s" : ""}`,
+        },
+      },
+    }],
+    metadata: {
+      tipo: "alquiler",
+      reserva_actividad_id: reservaAct.id,
+      personas: String(body.personas),
+      dias: String(body.dias),
+    },
+    customer_email: body.email_cliente || undefined,
+    success_url: SUCCESS_URL,
+    cancel_url: CANCEL_URL,
+  });
+
+  await prisma.reservaActividad.update({
+    where: { id: reservaAct.id },
+    data: { stripe_session_id: session.id },
+  });
+
+  return NextResponse.json({ url: session.url });
+}
 
 async function handleHabitacion(body: HabitacionBody) {
   const noches = body.noches ?? 1;
@@ -160,19 +315,14 @@ async function handleHabitacion(body: HabitacionBody) {
   const session = await getStripe().checkout.sessions.create({
     mode: "payment",
     locale: "es",
-    line_items: [
-      {
-        quantity: 1,
-        price_data: {
-          currency: "eur",
-          unit_amount: Math.round(body.precio * 100),
-          product_data: {
-            name: body.nombre,
-            description: descripcion,
-          },
-        },
+    line_items: [{
+      quantity: 1,
+      price_data: {
+        currency: "eur",
+        unit_amount: Math.round(body.precio * 100),
+        product_data: { name: body.nombre, description: descripcion },
       },
-    ],
+    }],
     metadata: {
       tipo: "habitacion",
       nombre: body.nombre,
@@ -186,7 +336,6 @@ async function handleHabitacion(body: HabitacionBody) {
     cancel_url: CANCEL_URL,
   });
 
-  // If a reserva_id was passed, persist the stripe session id
   if (body.reserva_id) {
     const { prisma } = await import("@/lib/prisma");
     await prisma.reserva.update({
@@ -197,107 +346,6 @@ async function handleHabitacion(body: HabitacionBody) {
 
   return NextResponse.json({ url: session.url });
 }
-
-async function handleActividad(body: ActividadBody) {
-  const session = await getStripe().checkout.sessions.create({
-    mode: "payment",
-    locale: "es",
-    line_items: [
-      {
-        quantity: body.cantidad ?? 1,
-        price_data: {
-          currency: "eur",
-          unit_amount: Math.round(body.precio * 100),
-          product_data: {
-            name: body.nombre,
-            description: body.descripcion ?? undefined,
-          },
-        },
-      },
-    ],
-    metadata: {
-      tipo: "actividad",
-      nombre: body.nombre,
-      descripcion: body.descripcion ?? "",
-      cantidad: String(body.cantidad ?? 1),
-    },
-    success_url: SUCCESS_URL,
-    cancel_url: CANCEL_URL,
-  });
-
-  return NextResponse.json({ url: session.url });
-}
-
-async function handleCabanya(body: CabanyaBody) {
-  const dias = body.dias ?? 1;
-  const fechas = body.fecha_entrada && body.fecha_salida
-    ? ` · ${fmtDate(body.fecha_entrada)} → ${fmtDate(body.fecha_salida)}`
-    : body.fecha_entrada ? ` · ${fmtDate(body.fecha_entrada)}` : "";
-  const desc = `${body.personas} persona${body.personas !== 1 ? "s" : ""} · ${dias} día${dias !== 1 ? "s" : ""}${fechas}`;
-
-  const session = await getStripe().checkout.sessions.create({
-    mode: "payment",
-    locale: "es",
-    line_items: [
-      {
-        quantity: 1,
-        price_data: {
-          currency: "eur",
-          unit_amount: Math.round(body.precio * 100),
-          product_data: {
-            name: "Reserva La Cabanya — Mas Besaura",
-            description: desc,
-          },
-        },
-      },
-    ],
-    metadata: {
-      tipo: "cabanya",
-      personas: String(body.personas),
-      dias: String(dias),
-      fecha_entrada: body.fecha_entrada ?? "",
-      fecha_salida: body.fecha_salida ?? "",
-      nombre_cliente: body.nombre_cliente ?? "",
-      email_cliente: body.email_cliente ?? "",
-    },
-    customer_email: body.email_cliente || undefined,
-    success_url: SUCCESS_URL,
-    cancel_url: CANCEL_URL,
-  });
-
-  return NextResponse.json({ url: session.url });
-}
-
-async function handleAlquiler(body: AlquilerBody) {
-  const session = await getStripe().checkout.sessions.create({
-    mode: "payment",
-    locale: "es",
-    line_items: [
-      {
-        quantity: 1,
-        price_data: {
-          currency: "eur",
-          unit_amount: Math.round(body.precio * 100),
-          product_data: {
-            name: "Alquiler de la casa",
-            description: `${body.personas} persona${body.personas !== 1 ? "s" : ""} · ${body.dias} día${body.dias !== 1 ? "s" : ""}`,
-          },
-        },
-      },
-    ],
-    metadata: {
-      tipo: "alquiler",
-      personas: String(body.personas),
-      dias: String(body.dias),
-    },
-    success_url: SUCCESS_URL,
-    cancel_url: CANCEL_URL,
-  });
-
-  return NextResponse.json({ url: session.url });
-}
-
-// ── Legacy handler (original reserva_id flow) ─────────────────────────────────
 
 async function handleLegacyReserva(reserva_id: string) {
   const { prisma } = await import("@/lib/prisma");
@@ -312,19 +360,13 @@ async function handleLegacyReserva(reserva_id: string) {
   if (!reserva) {
     return NextResponse.json({ error: "Reserva no encontrada" }, { status: 404 });
   }
-
   if (reserva.estado !== "PENDIENTE_PAGO") {
-    return NextResponse.json(
-      { error: "Esta reserva ya no está disponible" },
-      { status: 409 }
-    );
+    return NextResponse.json({ error: "Esta reserva ya no está disponible" }, { status: 409 });
   }
 
   const noches = Math.round(
     (reserva.fecha_salida.getTime() - reserva.fecha_entrada.getTime()) / 86400000
   );
-
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? SITE_URL;
 
   const lineItems: Stripe.Checkout.SessionCreateParams["line_items"] = [
     {
@@ -343,14 +385,12 @@ async function handleLegacyReserva(reserva_id: string) {
       price_data: {
         currency: "eur",
         unit_amount: Math.round(Number(rc.precio_aplicado) * 100),
-        product_data: {
-          name: rc.complemento.nombre,
-          description: rc.complemento.descripcion,
-        },
+        product_data: { name: rc.complemento.nombre, description: rc.complemento.descripcion },
       },
     })),
   ];
 
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? SITE_URL;
   const session = await getStripe().checkout.sessions.create({
     mode: "payment",
     line_items: lineItems,
@@ -370,12 +410,8 @@ async function handleLegacyReserva(reserva_id: string) {
   return NextResponse.json({ url: session.url });
 }
 
-// ── Helpers ───────────────────────────────────────────────────────────────────
-
 function fmtDate(iso: string) {
   return new Date(iso).toLocaleDateString("es-ES", {
-    day: "numeric",
-    month: "short",
-    year: "numeric",
+    day: "numeric", month: "short", year: "numeric",
   });
 }

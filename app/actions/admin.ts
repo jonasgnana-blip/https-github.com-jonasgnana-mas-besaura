@@ -21,36 +21,64 @@ async function requireAdmin() {
 export async function adminGetStats() {
   await requireAdmin();
 
-  const [total, confirmadas, pendientes, ingresos, proximas] = await Promise.all([
+  const now = new Date();
+
+  const [
+    totalAloj, confirmadasAloj, pendientesAloj, ingresosAloj, proximasAloj,
+    totalAct,  confirmadasAct,  pendientesAct,  ingresosAct,  proximasAct,
+  ] = await Promise.all([
+    // Alojamiento
     prisma.reserva.count(),
     prisma.reserva.count({ where: { estado: EstadoReserva.CONFIRMADA } }),
     prisma.reserva.count({ where: { estado: EstadoReserva.PENDIENTE_PAGO } }),
-    prisma.reserva.aggregate({
-      where: { estado: EstadoReserva.CONFIRMADA },
-      _sum: { precio_total: true },
-    }),
+    prisma.reserva.aggregate({ where: { estado: EstadoReserva.CONFIRMADA }, _sum: { precio_total: true } }),
     prisma.reserva.findMany({
-      where: {
-        estado: EstadoReserva.CONFIRMADA,
-        fecha_entrada: { gte: new Date() },
-      },
+      where: { estado: EstadoReserva.CONFIRMADA, fecha_entrada: { gte: now } },
       orderBy: { fecha_entrada: "asc" },
       take: 5,
-      select: {
-        id: true,
-        nombre_cliente: true,
-        fecha_entrada: true,
-        fecha_salida: true,
-        precio_total: true,
-      },
+      select: { id: true, nombre_cliente: true, fecha_entrada: true, fecha_salida: true, precio_total: true },
+    }),
+    // Actividades / Cabanya / Alquiler
+    prisma.reservaActividad.count(),
+    prisma.reservaActividad.count({ where: { estado: EstadoReserva.CONFIRMADA } }),
+    prisma.reservaActividad.count({ where: { estado: EstadoReserva.PENDIENTE_PAGO } }),
+    prisma.reservaActividad.aggregate({ where: { estado: EstadoReserva.CONFIRMADA }, _sum: { precio_total: true } }),
+    prisma.reservaActividad.findMany({
+      where: { estado: EstadoReserva.CONFIRMADA, fecha_inicio: { gte: now } },
+      orderBy: { fecha_inicio: "asc" },
+      take: 5,
+      select: { id: true, nombre_cliente: true, fecha_inicio: true, fecha_fin: true, precio_total: true, tipo: true, actividad_nombre: true },
     }),
   ]);
 
+  // Merge and sort "próximas" by date
+  const proximasAlojMapped = proximasAloj.map(r => ({
+    id: r.id,
+    nombre_cliente: r.nombre_cliente,
+    fecha_entrada: r.fecha_entrada,
+    fecha_salida: r.fecha_salida,
+    precio_total: r.precio_total,
+    tipo_reserva: "alojamiento" as const,
+    etiqueta: null as string | null,
+  }));
+  const proximasActMapped = proximasAct.map(r => ({
+    id: r.id,
+    nombre_cliente: r.nombre_cliente,
+    fecha_entrada: r.fecha_inicio ?? now,
+    fecha_salida: r.fecha_fin ?? r.fecha_inicio ?? now,
+    precio_total: r.precio_total,
+    tipo_reserva: r.tipo as string,
+    etiqueta: r.actividad_nombre,
+  }));
+  const proximas = [...proximasAlojMapped, ...proximasActMapped]
+    .sort((a, b) => new Date(a.fecha_entrada).getTime() - new Date(b.fecha_entrada).getTime())
+    .slice(0, 8);
+
   return {
-    total,
-    confirmadas,
-    pendientes,
-    ingresos: Number(ingresos._sum.precio_total ?? 0),
+    total: totalAloj + totalAct,
+    confirmadas: confirmadasAloj + confirmadasAct,
+    pendientes: pendientesAloj + pendientesAct,
+    ingresos: Number(ingresosAloj._sum.precio_total ?? 0) + Number(ingresosAct._sum.precio_total ?? 0),
     proximas,
   };
 }

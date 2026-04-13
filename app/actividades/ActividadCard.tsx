@@ -94,6 +94,10 @@ export function ActividadReserva({
               precio: total,
               descripcion,
               cantidad: personas,
+              fecha_entrada: selectedDate,
+              nombre_cliente: guestNombre,
+              email_cliente: guestEmail,
+              telefono_cliente: guestTelefono,
             };
 
       const res = await fetch("/api/checkout", {
