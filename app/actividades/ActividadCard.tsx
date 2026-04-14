@@ -23,21 +23,14 @@ function formatDateES(iso: string) {
 // ── ActividadReserva (unified for ALL activity types) ─────────────────────────
 
 type ActividadReservaProps = {
-  /** Activity name shown in Stripe checkout */
   nombre: string;
-  /** Price per person / per unit */
   precio: number;
-  /** Short description passed to Stripe */
   descripcion?: string;
-  /** Dates to block in the calendar */
   unavailableDates?: DateRange[];
-  /**
-   * cabanya  → sends { tipo:"cabanya", ... }
-   * actividad → sends { tipo:"actividad", ... }
-   */
   tipoPago?: "actividad" | "cabanya";
-  /** Label for the open button, e.g. "Reservar — 45€/persona" */
   btnLabel?: string;
+  /** If true, no date picker is shown (tipo_reserva="simple") */
+  sinFecha?: boolean;
 };
 
 export function ActividadReserva({
@@ -47,6 +40,7 @@ export function ActividadReserva({
   unavailableDates = [],
   tipoPago = "actividad",
   btnLabel,
+  sinFecha = false,
 }: ActividadReservaProps) {
   const { lang } = useLanguage();
   const tr = getT(lang);
@@ -69,7 +63,7 @@ export function ActividadReserva({
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!selectedDate) {
+    if (!sinFecha && !selectedDate) {
       setError(tr.act_card_error_fecha);
       return;
     }
@@ -129,7 +123,7 @@ export function ActividadReserva({
           tr.act_card_cerrar
         ) : (
           <>
-            <CalendarDays size={14} />
+            {!sinFecha && <CalendarDays size={14} />}
             {btnLabel ?? defaultLabel}
           </>
         )}
@@ -145,22 +139,24 @@ export function ActividadReserva({
           onSubmit={handleSubmit}
           className="flex flex-col gap-5 border border-[#E8DCC8] rounded-2xl p-5 bg-[#FAFAF6]"
         >
-          {/* ── Calendar ── */}
-          <SingleDatePicker
-            unavailableDates={unavailableDates}
-            selected={selectedDate}
-            onSelect={setSelectedDate}
-            label={tr.act_card_fecha_label}
-          />
-
-          {/* Selected date badge */}
-          {selectedDate && (
-            <div className="flex items-center gap-2 bg-[#4A6741]/8 rounded-xl px-3 py-2">
-              <CalendarDays size={13} className="text-[#4A6741] shrink-0" />
-              <span className="text-xs text-[#4A6741] font-medium">
-                {formatDateES(selectedDate)}
-              </span>
-            </div>
+          {/* ── Calendar (only when date is required) ── */}
+          {!sinFecha && (
+            <>
+              <SingleDatePicker
+                unavailableDates={unavailableDates}
+                selected={selectedDate}
+                onSelect={setSelectedDate}
+                label={tr.act_card_fecha_label}
+              />
+              {selectedDate && (
+                <div className="flex items-center gap-2 bg-[#4A6741]/8 rounded-xl px-3 py-2">
+                  <CalendarDays size={13} className="text-[#4A6741] shrink-0" />
+                  <span className="text-xs text-[#4A6741] font-medium">
+                    {formatDateES(selectedDate)}
+                  </span>
+                </div>
+              )}
+            </>
           )}
 
           {/* ── Persons counter ── */}

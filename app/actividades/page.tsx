@@ -101,6 +101,7 @@ export default async function ActividadesPage() {
                   descripcion={act.descripcion}
                   unavailableDates={unavailableDates}
                   tipoPago={act.tipo_reserva === "cabanya" ? "cabanya" : "actividad"}
+                  sinFecha={act.tipo_reserva === "simple"}
                 />
               );
             };

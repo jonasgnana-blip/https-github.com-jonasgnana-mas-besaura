@@ -16,7 +16,7 @@ export async function GET(req: NextRequest) {
   if (error || !code) {
     console.error("[google-callback] OAuth error:", error);
     return NextResponse.redirect(
-      `${baseUrl}/admin/configuracion?gcal=error&msg=${encodeURIComponent(error ?? "no_code")}`
+      `${baseUrl}/admin?gcal=error&msg=${encodeURIComponent(error ?? "no_code")}`
     );
   }
 
@@ -31,12 +31,12 @@ export async function GET(req: NextRequest) {
       await storeRefreshToken(tokens.refresh_token);
     }
 
-    return NextResponse.redirect(`${baseUrl}/admin/configuracion?gcal=ok`);
+    return NextResponse.redirect(`${baseUrl}/admin?gcal=ok`);
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
     console.error("[google-callback] Token exchange error:", msg);
     return NextResponse.redirect(
-      `${baseUrl}/admin/configuracion?gcal=error&msg=${encodeURIComponent(msg)}`
+      `${baseUrl}/admin?gcal=error&msg=${encodeURIComponent(msg)}`
     );
   }
 }
