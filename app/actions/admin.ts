@@ -112,6 +112,27 @@ export async function adminUpdateReservaEstado(
   });
 }
 
+export async function adminGetReservasActividades(filtro?: EstadoReserva | "TODAS") {
+  await requireAdmin();
+
+  return prisma.reservaActividad.findMany({
+    where: filtro && filtro !== "TODAS" ? { estado: filtro } : undefined,
+    orderBy: { createdAt: "desc" },
+  });
+}
+
+export async function adminUpdateReservaActividadEstado(
+  id: string,
+  estado: EstadoReserva
+) {
+  await requireAdmin();
+
+  return prisma.reservaActividad.update({
+    where: { id },
+    data: { estado },
+  });
+}
+
 // ── Bloqueos manuales ─────────────────────────────────────────────────────────
 
 export async function adminGetBloqueos() {

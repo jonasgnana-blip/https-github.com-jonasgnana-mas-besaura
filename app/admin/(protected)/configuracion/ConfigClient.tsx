@@ -6,7 +6,7 @@ import {
   adminUpdateComplemento,
   adminUpsertSistemaConfig,
 } from "@/app/actions/admin";
-import { Save, Loader2, CalendarCheck, CalendarX, ChevronDown, ChevronUp } from "lucide-react";
+import { Save, Loader2, ChevronDown, ChevronUp } from "lucide-react";
 import ImageUpload from "@/app/components/ImageUpload";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
@@ -126,10 +126,6 @@ const INPUT = "w-full px-3 py-2.5 rounded-xl border border-[#E8DCC8] bg-[#FAFAF6
 export default function ConfigClient({
   habitaciones: initialHabs,
   complementos: initialComps,
-  gcalConnected,
-  gcalStatus,
-  gcalMsg,
-  fbPixelIdInicial,
   espaciosInicial,
   cabanyaInicial,
   sliderInicial,
@@ -138,10 +134,6 @@ export default function ConfigClient({
 }: {
   habitaciones: Habitacion[];
   complementos: Complemento[];
-  gcalConnected: boolean;
-  gcalStatus?: string;
-  gcalMsg?: string;
-  fbPixelIdInicial?: string;
   espaciosInicial: EspaciosCfg;
   cabanyaInicial: CabanyaCfg;
   sliderInicial: SliderCfg;
@@ -156,7 +148,6 @@ export default function ConfigClient({
   const [espacios, setEspacios] = useState<EspaciosCfg>(espaciosInicial);
   const [cabanya, setCabanya]   = useState<CabanyaCfg>(cabanyaInicial);
   const [slider,  setSlider]    = useState<SliderCfg>(sliderInicial);
-  const [pixelId, setPixelId]   = useState(fbPixelIdInicial ?? "");
   const [estanciaEs, setEstanciaEs] = useState(estanciaTextoEsInicial);
   const [estanciaCa, setEstanciaCa] = useState(estanciaTextoCaInicial);
 
@@ -166,7 +157,6 @@ export default function ConfigClient({
   const [savedEspacios, setSavedEspacios] = useState(false);
   const [savedCabanya,  setSavedCabanya]  = useState(false);
   const [savedSlider,   setSavedSlider]   = useState(false);
-  const [savedPixel,    setSavedPixel]    = useState(false);
   const [savedEstancia, setSavedEstancia] = useState(false);
 
   // ── Save helpers ───────────────────────────────────────────────────────────
@@ -234,13 +224,6 @@ export default function ConfigClient({
         adminUpsertSistemaConfig("slider_foto_5", slider.foto5),
       ]);
       flag(setSavedSlider);
-    });
-  }
-
-  function savePixel() {
-    startTransition(async () => {
-      await adminUpsertSistemaConfig("fb_pixel_id", pixelId.trim());
-      flag(setSavedPixel);
     });
   }
 
@@ -432,42 +415,7 @@ export default function ConfigClient({
         </div>
       </Section>
 
-      {/* ── 6. GOOGLE CALENDAR ── */}
-      <Section title="Google Calendar" defaultOpen={false}>
-        <div className="bg-white rounded-2xl border border-[#E8DCC8] p-6 flex items-center justify-between gap-6 flex-wrap">
-          <div className="flex items-center gap-4">
-            <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${gcalConnected ? "bg-green-100" : "bg-[#F0EAD6]"}`}>
-              {gcalConnected
-                ? <CalendarCheck size={20} className="text-green-600" />
-                : <CalendarX size={20} className="text-[#8B6914]" />}
-            </div>
-            <div>
-              <div className="text-sm font-medium text-[#2C1810]">
-                {gcalConnected ? "Conectado a Google Calendar" : "No conectado"}
-              </div>
-              <div className="text-xs text-[#2C1810]/50 mt-0.5">
-                {gcalConnected
-                  ? "Las reservas confirmadas se crean automáticamente en masbesaura@gmail.com"
-                  : "Conecta para crear eventos automáticos en cada reserva confirmada"}
-              </div>
-            </div>
-          </div>
-          {gcalStatus === "error" && (
-            <div className="text-xs text-red-600 bg-red-50 px-3 py-2 rounded-lg max-w-xs break-all">
-              {gcalMsg ? `Error: ${gcalMsg}` : "Error al conectar. Inténtalo de nuevo."}
-            </div>
-          )}
-          {gcalStatus === "ok" && !gcalConnected && (
-            <div className="text-xs text-green-700 bg-green-50 px-3 py-2 rounded-lg">¡Conectado correctamente!</div>
-          )}
-          <a href="/api/admin/google-auth"
-            className={`shrink-0 px-5 py-2 rounded-full text-sm font-medium transition-colors ${gcalConnected ? "bg-[#F0EAD6] text-[#2C1810] hover:bg-[#E8DCC8]" : "bg-[#4A6741] text-[#F0EAD6] hover:bg-[#3A5432]"}`}>
-            {gcalConnected ? "Reconectar" : "Conectar con Google"}
-          </a>
-        </div>
-      </Section>
-
-      {/* ── 7. ESTANCIA ── */}
+      {/* ── 6. ESTANCIA ── */}
       <Section title="Estancia" subtitle="Texto de sugerencias y condiciones de la página /estancia." defaultOpen={false}>
         <div className="bg-white rounded-2xl border border-[#E8DCC8] p-6 space-y-5">
           <p className="text-xs text-[#2C1810]/40">
@@ -495,20 +443,6 @@ export default function ConfigClient({
         </div>
       </Section>
 
-      {/* ── 8. FACEBOOK PIXEL ── */}
-      <Section title="Facebook Pixel" defaultOpen={false}>
-        <div className="bg-white rounded-2xl border border-[#E8DCC8] p-6">
-          <FieldRow label="Pixel ID">
-            <input type="text" value={pixelId} onChange={e => setPixelId(e.target.value)}
-              placeholder="Ej: 1234567890123456"
-              className={INPUT + " max-w-sm"} />
-          </FieldRow>
-          <p className="text-xs text-[#2C1810]/40 my-3 max-w-lg">
-            También añade <code className="bg-[#F0EAD6] px-1 py-0.5 rounded text-[#2C1810]/70">NEXT_PUBLIC_FB_PIXEL_ID</code> en las variables de entorno de Vercel.
-          </p>
-          <SaveBtn onClick={savePixel} saving={isPending} saved={savedPixel} label="Guardar Pixel ID" />
-        </div>
-      </Section>
     </div>
   );
 }

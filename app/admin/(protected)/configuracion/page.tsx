@@ -1,25 +1,16 @@
 import {
   adminGetHabitaciones,
   adminGetComplementos,
-  adminGetSistemaConfig,
 } from "@/app/actions/admin";
-import { getStoredRefreshToken } from "@/lib/googleCalendar";
 import { prisma } from "@/lib/prisma";
 import ConfigClient from "./ConfigClient";
 
 export const dynamic = "force-dynamic";
 
-export default async function AdminConfigPage({
-  searchParams,
-}: {
-  searchParams: Promise<{ gcal?: string; msg?: string }>;
-}) {
-  const params = await searchParams;
-  const [habitacionesAll, complementos, refreshToken, pixelConfig, espaciosCfgs] = await Promise.all([
+export default async function AdminConfigPage() {
+  const [habitacionesAll, complementos, espaciosCfgs] = await Promise.all([
     adminGetHabitaciones(),
     adminGetComplementos(),
-    getStoredRefreshToken(),
-    adminGetSistemaConfig("fb_pixel_id"),
     prisma.sistemaConfig.findMany({
       where: {
         clave: {
@@ -57,10 +48,6 @@ export default async function AdminConfigPage({
         tipo_cobro: c.tipo_cobro,
         activo: c.activo,
       }))}
-      gcalConnected={!!refreshToken}
-      gcalStatus={params.gcal}
-      gcalMsg={params.msg}
-      fbPixelIdInicial={pixelConfig?.valor ?? ""}
       espaciosInicial={{
         salonImg:     cfg["espacio_salon_img"]    ?? "",
         habsImg:      cfg["espacio_habs_img"]     ?? "",

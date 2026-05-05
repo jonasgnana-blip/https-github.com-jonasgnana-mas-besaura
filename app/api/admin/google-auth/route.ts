@@ -7,7 +7,7 @@ export async function GET(req: NextRequest) {
   const store = await cookies();
   const token = store.get(SESSION_COOKIE)?.value;
   if (!token || !(await verifySessionToken(token))) {
-    return NextResponse.json({ error: "No autorizado" }, { status: 401 });
+    return NextResponse.redirect(new URL("/admin/login", req.url));
   }
 
   // Use GOOGLE_REDIRECT_URI if set, otherwise fall back to NEXT_PUBLIC_APP_URL.

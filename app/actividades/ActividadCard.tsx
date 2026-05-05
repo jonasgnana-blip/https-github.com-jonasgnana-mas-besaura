@@ -222,7 +222,7 @@ export function ActividadReserva({
           {/* ── Submit ── */}
           <button
             type="submit"
-            disabled={loading || !selectedDate}
+            disabled={loading || (!sinFecha && !selectedDate)}
             className="flex items-center justify-center gap-2 px-6 py-2.5 rounded-full bg-[#4A6741] text-[#F0EAD6] text-sm font-medium hover:bg-[#3A5432] transition-colors disabled:opacity-60"
           >
             {loading && <Loader2 size={14} className="animate-spin" />}

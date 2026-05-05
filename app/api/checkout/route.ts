@@ -167,7 +167,7 @@ async function handleActividad(body: ActividadBody) {
         unit_amount: Math.round((body.precio / personas) * 100),
         product_data: {
           name: body.nombre,
-          description: body.descripcion ?? undefined,
+          description: body.descripcion || undefined,
         },
       },
     }],
