@@ -137,6 +137,27 @@ export async function adminUpdateReservaActividadEstado(
   });
 }
 
+export async function adminDeleteReserva(id: string) {
+  await requireAdmin();
+  // Only allow deleting CANCELADA or EXPIRADA reservations
+  const r = await prisma.reserva.findUnique({ where: { id }, select: { estado: true } });
+  if (!r) throw new Error("Reserva no encontrada");
+  if (r.estado !== EstadoReserva.CANCELADA && r.estado !== EstadoReserva.EXPIRADA) {
+    throw new Error("Solo se pueden eliminar reservas canceladas o expiradas");
+  }
+  return prisma.reserva.delete({ where: { id } });
+}
+
+export async function adminDeleteReservaActividad(id: string) {
+  await requireAdmin();
+  const r = await prisma.reservaActividad.findUnique({ where: { id }, select: { estado: true } });
+  if (!r) throw new Error("Reserva no encontrada");
+  if (r.estado !== EstadoReserva.CANCELADA && r.estado !== EstadoReserva.EXPIRADA) {
+    throw new Error("Solo se pueden eliminar reservas canceladas o expiradas");
+  }
+  return prisma.reservaActividad.delete({ where: { id } });
+}
+
 // ── Bloqueos manuales ─────────────────────────────────────────────────────────
 
 export async function adminGetBloqueos() {

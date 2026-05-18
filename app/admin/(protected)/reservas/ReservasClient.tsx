@@ -1,8 +1,13 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { adminUpdateReservaEstado, adminUpdateReservaActividadEstado } from "@/app/actions/admin";
-import { CheckCircle, XCircle, Clock, ChevronDown, ChevronUp } from "lucide-react";
+import {
+  adminUpdateReservaEstado,
+  adminUpdateReservaActividadEstado,
+  adminDeleteReserva,
+  adminDeleteReservaActividad,
+} from "@/app/actions/admin";
+import { CheckCircle, XCircle, Clock, Trash2, ChevronDown, ChevronUp } from "lucide-react";
 
 const EstadoReserva = {
   CONFIRMADA: "CONFIRMADA",
@@ -113,6 +118,20 @@ export default function ReservasClient({
         await adminUpdateReservaActividadEstado(item.id, estado);
         setActividades((prev) => prev.map((a) => (a.id === item.id ? { ...a, estado } : a)));
       }
+    });
+  }
+
+  function handleDelete(item: AnyReserva) {
+    if (!confirm(`¿Eliminar definitivamente la reserva de ${item.nombre_cliente}? Esta acción no se puede deshacer.`)) return;
+    startTransition(async () => {
+      if (item.source === "alojamiento") {
+        await adminDeleteReserva(item.id);
+        setReservas((prev) => prev.filter((r) => r.id !== item.id));
+      } else {
+        await adminDeleteReservaActividad(item.id);
+        setActividades((prev) => prev.filter((a) => a.id !== item.id));
+      }
+      if (expanded === item.id) setExpanded(null);
     });
   }
 
@@ -278,6 +297,15 @@ export default function ReservasClient({
                         >
                           WhatsApp
                         </a>
+                        {(r.estado === "CANCELADA" || r.estado === "EXPIRADA") && (
+                          <ActionBtn
+                            onClick={() => handleDelete(r)}
+                            disabled={isPending}
+                            color="red"
+                            icon={<Trash2 size={14} />}
+                            label="Eliminar"
+                          />
+                        )}
                       </div>
                     </div>
                   )}
