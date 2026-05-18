@@ -21,6 +21,7 @@ import {
   X,
 } from "lucide-react";
 import ImageUpload from "@/app/components/ImageUpload";
+import RichEditor from "@/app/components/RichEditor";
 
 type Sesion = {
   id: string;
@@ -556,14 +557,11 @@ export default function ActividadesClient({
                 <label className="block text-xs text-[#2C1810]/60 mb-1.5">
                   Descripción *
                 </label>
-                <textarea
-                  rows={3}
-                  required
+                <RichEditor
                   value={form.descripcion}
-                  onChange={(e) =>
-                    setForm((f) => ({ ...f, descripcion: e.target.value }))
-                  }
-                  className="w-full border border-[#E8DCC8] rounded-xl px-3 py-2 text-sm text-[#2C1810] focus:outline-none focus:border-[#4A6741] resize-none"
+                  onChange={(v) => setForm((f) => ({ ...f, descripcion: v }))}
+                  placeholder="Describe la actividad… (puedes añadir negritas, cursivas y enlaces)"
+                  rows={4}
                 />
               </div>
               <Field

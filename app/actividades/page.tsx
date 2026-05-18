@@ -207,9 +207,20 @@ export default async function ActividadesPage() {
                 >
                   {act.titulo}
                 </h2>
-                <p className="text-[#2C1810]/70 leading-relaxed mb-4 text-sm">
-                  {act.descripcion}
-                </p>
+                {/* Render as HTML if the description contains tags, plain text otherwise */}
+                {act.descripcion.includes("<") ? (
+                  <div
+                    className="text-[#2C1810]/70 leading-relaxed mb-4 text-sm
+                      [&_a]:text-[#4A6741] [&_a]:underline [&_a]:break-words
+                      [&_ul]:list-disc [&_ul]:pl-5 [&_ul]:my-2
+                      [&_strong]:font-semibold [&_em]:italic"
+                    dangerouslySetInnerHTML={{ __html: act.descripcion }}
+                  />
+                ) : (
+                  <p className="text-[#2C1810]/70 leading-relaxed mb-4 text-sm whitespace-pre-line">
+                    {act.descripcion}
+                  </p>
+                )}
                 {act.precio_texto && (
                   <p className="text-[#2C1810]/60 text-sm mb-6">
                     <span className="font-medium text-[#2C1810]">

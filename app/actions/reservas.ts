@@ -195,7 +195,7 @@ export async function getUnavailableDatesCabanya(
 ): Promise<DateRange[]> {
   const now = new Date();
 
-  const [reservas, sesionesBlockeadas] = await Promise.all([
+  const [reservas, sesionesBlockeadas, bloqueosManual] = await Promise.all([
     prisma.reservaActividad.findMany({
       where: {
         tipo: "cabanya",
@@ -203,7 +203,7 @@ export async function getUnavailableDatesCabanya(
           { estado: EstadoReserva.CONFIRMADA },
           {
             estado: EstadoReserva.PENDIENTE_PAGO,
-            createdAt: { gt: new Date(now.getTime() - 30 * 60 * 1000) }, // 30 min window
+            createdAt: { gt: new Date(now.getTime() - 30 * 60 * 1000) },
           },
         ],
         fecha_inicio: { not: null },
@@ -214,6 +214,11 @@ export async function getUnavailableDatesCabanya(
     prisma.sesionActividad.findMany({
       where: { actividad_id, activa: false },
       select: { fecha: true },
+    }),
+    // La Cabanya is a real Habitacion (id="la-cabanya") so BloqueoManual works
+    prisma.bloqueoManual.findMany({
+      where: { habitacion_id: "la-cabanya" },
+      select: { fecha_inicio: true, fecha_fin: true },
     }),
   ]);
 
@@ -232,5 +237,10 @@ export async function getUnavailableDatesCabanya(
     return { entrada, salida: next.toISOString().split("T")[0] };
   });
 
-  return [...reservaRanges, ...blockedDays];
+  const manualRanges: DateRange[] = bloqueosManual.map((b) => ({
+    entrada: b.fecha_inicio.toISOString().split("T")[0],
+    salida: b.fecha_fin.toISOString().split("T")[0],
+  }));
+
+  return [...reservaRanges, ...blockedDays, ...manualRanges];
 }
