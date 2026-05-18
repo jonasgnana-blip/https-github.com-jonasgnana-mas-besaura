@@ -171,6 +171,41 @@ export async function adminDeleteBloqueo(id: string) {
   return prisma.bloqueoManual.delete({ where: { id } });
 }
 
+// Bloquea las 4 habitaciones/sala a la vez (casa completa)
+const CASA_RESOURCE_IDS = ["artemisa", "selene", "hecate", "la-cabanya"] as const;
+
+export async function adminBloquearCasaCompleta(data: {
+  fecha_inicio: string;
+  fecha_fin: string;
+  motivo?: string;
+}) {
+  await requireAdmin();
+  return prisma.$transaction(
+    CASA_RESOURCE_IDS.map((hab_id) =>
+      prisma.bloqueoManual.create({
+        data: {
+          habitacion_id: hab_id,
+          fecha_inicio: new Date(data.fecha_inicio),
+          fecha_fin: new Date(data.fecha_fin),
+          motivo: data.motivo ?? null,
+        },
+      })
+    )
+  );
+}
+
+// Elimina todos los bloqueos de las 4 habitaciones/sala para un rango dado
+export async function adminDeleteBloqueoCasa(fechaInicio: string, fechaFin: string) {
+  await requireAdmin();
+  return prisma.bloqueoManual.deleteMany({
+    where: {
+      habitacion_id: { in: [...CASA_RESOURCE_IDS] },
+      fecha_inicio: new Date(fechaInicio),
+      fecha_fin: new Date(fechaFin),
+    },
+  });
+}
+
 // ── Habitaciones / precios ────────────────────────────────────────────────────
 
 export async function adminGetHabitaciones() {
