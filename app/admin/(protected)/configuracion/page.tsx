@@ -25,7 +25,9 @@ export default async function AdminConfigPage() {
       },
     }),
   ]);
-  const habitaciones = habitacionesAll.slice(0, 3);
+  // Show only the 3 booking rooms (not la-cabanya or mas-besaura-casa)
+  const ROOM_IDS = ["artemisa", "selene", "hecate"];
+  const habitaciones = habitacionesAll.filter((h) => ROOM_IDS.includes(h.id));
   const cfg = Object.fromEntries(espaciosCfgs.map(c => [c.clave, c.valor]));
 
   return (

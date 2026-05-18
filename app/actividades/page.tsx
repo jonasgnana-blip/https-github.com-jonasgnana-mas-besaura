@@ -1,11 +1,12 @@
 import type { Metadata } from "next";
 import NavBar from "@/app/components/NavBar";
 import { ActividadReserva, ComidaCaseraReserva } from "./ActividadCard";
-import { getUnavailableDates, getBlockedDatesActividad } from "@/app/actions/reservas";
+import { getBlockedDatesActividad, getUnavailableDatesCabanya } from "@/app/actions/reservas";
 import type { DateRange } from "@/app/actions/reservas";
 import { prisma } from "@/lib/prisma";
 import ActividadesHero from "./ActividadesHero";
 import ActividadesFooter from "./ActividadesFooter";
+import ShareButtons from "@/app/components/ShareButtons";
 
 export const dynamic = "force-dynamic";
 
@@ -30,6 +31,22 @@ export const metadata: Metadata = {
   },
 };
 
+/** Converts any YouTube/Vimeo URL to its embed form. Returns null if unrecognized. */
+function toEmbedUrl(url: string): string | null {
+  if (!url) return null;
+  // Already an embed URL
+  if (url.includes("/embed/") || url.includes("player.vimeo.com")) return url;
+  // YouTube: youtu.be/ID or youtube.com/watch?v=ID
+  const ytShort = url.match(/youtu\.be\/([\w-]+)/);
+  if (ytShort) return `https://www.youtube.com/embed/${ytShort[1]}`;
+  const ytLong = url.match(/youtube\.com\/watch\?v=([\w-]+)/);
+  if (ytLong) return `https://www.youtube.com/embed/${ytLong[1]}`;
+  // Vimeo: vimeo.com/ID
+  const vm = url.match(/vimeo\.com\/(\d+)/);
+  if (vm) return `https://player.vimeo.com/video/${vm[1]}`;
+  return null;
+}
+
 export default async function ActividadesPage() {
   const actividades = await prisma.actividad.findMany({
     where: { activa: true },
@@ -37,22 +54,66 @@ export default async function ActividadesPage() {
   });
 
   // Fetch unavailable dates for every activity in parallel
-  const unavailableDatesCabanya = await getUnavailableDates("la-cabanya");
-
   const blockedDatesMap: Record<string, DateRange[]> = {};
   await Promise.all(
     actividades.map(async (act) => {
-      if (act.tipo_reserva === "cabanya") {
-        blockedDatesMap[act.id] = unavailableDatesCabanya;
-      } else {
-        blockedDatesMap[act.id] = await getBlockedDatesActividad(act.id);
-      }
+      blockedDatesMap[act.id] =
+        act.tipo_reserva === "cabanya"
+          ? await getUnavailableDatesCabanya(act.id)
+          : await getBlockedDatesActividad(act.id);
     })
   );
+
+  // Build JSON-LD for activities (ItemList + individual TouristAttraction)
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "ItemList",
+    name: "Actividades — Mas Besaura",
+    description: "Experiencias en la naturaleza y el alma en Mas Besaura, Vidrà (Girona).",
+    url: "https://masbesaura.com/actividades",
+    itemListElement: actividades.map((act, idx) => ({
+      "@type": "ListItem",
+      position: idx + 1,
+      item: {
+        "@type": "TouristAttraction",
+        name: act.titulo,
+        description: act.descripcion,
+        url: `https://masbesaura.com/actividades#${act.id}`,
+        image: act.imagen_url
+          ? act.imagen_url.startsWith("http")
+            ? act.imagen_url
+            : `https://masbesaura.com${act.imagen_url}`
+          : "https://masbesaura.com/images/hero4.jpg",
+        offers: {
+          "@type": "Offer",
+          price: String(Number(act.precio_base)),
+          priceCurrency: "EUR",
+          availability: act.activa
+            ? "https://schema.org/InStock"
+            : "https://schema.org/SoldOut",
+        },
+        touristType: act.categoria ?? "Actividad natural y terapéutica",
+        location: {
+          "@type": "Place",
+          name: "Mas Besaura",
+          address: {
+            "@type": "PostalAddress",
+            addressLocality: "Vidrà",
+            addressRegion: "Girona",
+            addressCountry: "ES",
+          },
+        },
+      },
+    })),
+  };
 
   return (
     <div className="min-h-screen bg-[#FAFAF6]">
       <NavBar />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
 
       {/* ─── HERO ─── */}
       <section className="relative h-[50vh] flex items-end overflow-hidden pt-16">
@@ -106,17 +167,30 @@ export default async function ActividadesPage() {
               );
             };
 
-            const imageBlock = act.imagen_url ? (
-              <div
-                className={`aspect-[4/3] rounded-2xl overflow-hidden ${
-                  !isEven ? "order-1 md:order-2" : ""
-                }`}
-              >
-                <img
-                  src={act.imagen_url}
-                  alt={act.titulo}
-                  className="w-full h-full object-cover"
-                />
+            const embedUrl = act.video_url ? toEmbedUrl(act.video_url) : null;
+
+            const imageBlock = (act.imagen_url || embedUrl) ? (
+              <div className={`flex flex-col gap-4 ${!isEven ? "order-1 md:order-2" : ""}`}>
+                {act.imagen_url && (
+                  <div className="aspect-[4/3] rounded-2xl overflow-hidden">
+                    <img
+                      src={act.imagen_url}
+                      alt={act.titulo}
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                )}
+                {embedUrl && (
+                  <div className="aspect-video rounded-2xl overflow-hidden">
+                    <iframe
+                      src={embedUrl}
+                      title={`Vídeo: ${act.titulo}`}
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                      allowFullScreen
+                      className="w-full h-full"
+                    />
+                  </div>
+                )}
               </div>
             ) : null;
 
@@ -144,11 +218,17 @@ export default async function ActividadesPage() {
                   </p>
                 )}
                 <BookingBlock />
+                <div className="mt-6 pt-5 border-t border-[#E8DCC8]">
+                  <ShareButtons
+                    url={`https://masbesaura.com/actividades#${act.id}`}
+                    title={act.titulo + " — Mas Besaura"}
+                  />
+                </div>
               </div>
             );
 
             return (
-              <div key={act.id}>
+              <div key={act.id} id={act.id}>
                 <div className="grid md:grid-cols-2 gap-10 items-center">
                   {isEven ? (
                     <>

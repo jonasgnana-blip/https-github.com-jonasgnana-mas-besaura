@@ -1,8 +1,12 @@
 import { adminGetStats, adminGetSistemaConfig } from "@/app/actions/admin";
 import { getStoredRefreshToken } from "@/lib/googleCalendar";
-import { TrendingUp, Calendar, Clock, Euro, Download } from "lucide-react";
+import {
+  TrendingUp, Calendar, Clock, Euro, Download,
+  BookOpen, Zap, Ban, Settings, Mail, Phone,
+} from "lucide-react";
 import BackupButton from "./BackupButton";
 import { GcalCard, PixelCard } from "./DashboardWidgets";
+import Link from "next/link";
 
 export const dynamic = "force-dynamic";
 
@@ -31,6 +35,13 @@ export default async function AdminDashboard({
     { label: "Ingresos confirmados", value: `${stats.ingresos.toLocaleString("es-ES")} €`, icon: <Euro size={20} className="text-[#4A6741]" />, bg: "bg-[#4A6741]/8" },
   ];
 
+  const quickLinks = [
+    { label: "Reservas",     href: "/admin/reservas",     icon: <BookOpen size={16} /> },
+    { label: "Actividades",  href: "/admin/actividades",  icon: <Zap size={16} /> },
+    { label: "Bloqueos",     href: "/admin/bloqueos",     icon: <Ban size={16} /> },
+    { label: "Configuración",href: "/admin/configuracion",icon: <Settings size={16} /> },
+  ];
+
   return (
     <div className="p-8">
       <div className="mb-8">
@@ -38,6 +49,20 @@ export default async function AdminDashboard({
           Dashboard
         </h1>
         <p className="text-sm text-[#2C1810]/50 mt-1">Panel de administración de Mas Besaura.</p>
+      </div>
+
+      {/* Quick links */}
+      <div className="flex flex-wrap gap-2 mb-8">
+        {quickLinks.map(({ label, href, icon }) => (
+          <Link
+            key={href}
+            href={href}
+            className="flex items-center gap-2 px-4 py-2 rounded-full bg-white border border-[#E8DCC8] text-sm text-[#2C1810] hover:bg-[#F0EAD6] transition-colors"
+          >
+            <span className="text-[#4A6741]">{icon}</span>
+            {label}
+          </Link>
+        ))}
       </div>
 
       {/* Stat cards */}
@@ -53,7 +78,7 @@ export default async function AdminDashboard({
         ))}
       </div>
 
-      {/* Tools row: Google Calendar + Pixel + Backup */}
+      {/* Tools row: Google Calendar + Pixel */}
       <div className="grid md:grid-cols-2 gap-5 mb-6">
         <GcalCard
           connected={gcalConnected}
@@ -78,9 +103,14 @@ export default async function AdminDashboard({
 
       {/* Próximas llegadas */}
       <div className="bg-white rounded-2xl border border-[#E8DCC8] p-6">
-        <h2 className="text-xl text-[#2C1810] mb-5" style={{ fontFamily: "var(--font-playfair), Georgia, serif" }}>
-          Próximas llegadas
-        </h2>
+        <div className="flex items-center justify-between mb-5">
+          <h2 className="text-xl text-[#2C1810]" style={{ fontFamily: "var(--font-playfair), Georgia, serif" }}>
+            Próximas llegadas
+          </h2>
+          <Link href="/admin/reservas" className="text-xs text-[#4A6741] hover:underline">
+            Ver todas →
+          </Link>
+        </div>
 
         {stats.proximas.length === 0 ? (
           <p className="text-sm text-[#2C1810]/40 py-4 text-center">No hay llegadas próximas confirmadas.</p>
@@ -103,22 +133,43 @@ export default async function AdminDashboard({
               const label = badgeLabels[r.tipo_reserva] ?? r.tipo_reserva;
 
               return (
-                <div key={r.id} className="flex items-center justify-between py-3 gap-3">
-                  <div className="min-w-0 flex-1">
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full uppercase tracking-wide shrink-0 ${badge}`}>
-                        {label}
-                      </span>
-                      <span className="text-sm font-medium text-[#2C1810] truncate">{r.nombre_cliente}</span>
+                <div key={r.id} className="py-3 gap-3">
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full uppercase tracking-wide shrink-0 ${badge}`}>
+                          {label}
+                        </span>
+                        <span className="text-sm font-medium text-[#2C1810] truncate">{r.nombre_cliente}</span>
+                      </div>
+                      <div className="text-xs text-[#2C1810]/50 mt-1">
+                        {r.etiqueta && <span className="mr-2 text-[#4A6741]">{r.etiqueta}</span>}
+                        {fmt(new Date(r.fecha_entrada))}
+                        {r.fecha_salida && r.fecha_salida !== r.fecha_entrada && ` → ${fmt(new Date(r.fecha_salida))}`}
+                      </div>
                     </div>
-                    <div className="text-xs text-[#2C1810]/50 mt-1">
-                      {r.etiqueta && <span className="mr-2 text-[#4A6741]">{r.etiqueta}</span>}
-                      {fmt(new Date(r.fecha_entrada))}
-                      {r.fecha_salida && r.fecha_salida !== r.fecha_entrada && ` → ${fmt(new Date(r.fecha_salida))}`}
+                    <div className="text-sm font-semibold text-[#4A6741] shrink-0">
+                      {Number(r.precio_total).toLocaleString("es-ES")} €
                     </div>
                   </div>
-                  <div className="text-sm font-semibold text-[#4A6741] shrink-0">
-                    {Number(r.precio_total).toLocaleString("es-ES")} €
+                  {/* Contact row */}
+                  <div className="flex items-center gap-4 mt-1.5 flex-wrap">
+                    <a
+                      href={`mailto:${r.email_cliente}`}
+                      className="flex items-center gap-1 text-xs text-[#2C1810]/50 hover:text-[#4A6741] transition-colors"
+                    >
+                      <Mail size={11} />
+                      {r.email_cliente}
+                    </a>
+                    {r.telefono_cliente && (
+                      <a
+                        href={`tel:${r.telefono_cliente}`}
+                        className="flex items-center gap-1 text-xs text-[#2C1810]/50 hover:text-[#4A6741] transition-colors"
+                      >
+                        <Phone size={11} />
+                        {r.telefono_cliente}
+                      </a>
+                    )}
                   </div>
                 </div>
               );

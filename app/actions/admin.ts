@@ -36,7 +36,7 @@ export async function adminGetStats() {
       where: { estado: EstadoReserva.CONFIRMADA, fecha_entrada: { gte: now } },
       orderBy: { fecha_entrada: "asc" },
       take: 5,
-      select: { id: true, nombre_cliente: true, fecha_entrada: true, fecha_salida: true, precio_total: true },
+      select: { id: true, nombre_cliente: true, email_cliente: true, telefono_cliente: true, fecha_entrada: true, fecha_salida: true, precio_total: true },
     }),
     // Actividades / Cabanya / Alquiler
     prisma.reservaActividad.count(),
@@ -47,7 +47,7 @@ export async function adminGetStats() {
       where: { estado: EstadoReserva.CONFIRMADA, fecha_inicio: { gte: now } },
       orderBy: { fecha_inicio: "asc" },
       take: 5,
-      select: { id: true, nombre_cliente: true, fecha_inicio: true, fecha_fin: true, precio_total: true, tipo: true, actividad_nombre: true },
+      select: { id: true, nombre_cliente: true, email_cliente: true, telefono_cliente: true, fecha_inicio: true, fecha_fin: true, precio_total: true, tipo: true, actividad_nombre: true },
     }),
   ]);
 
@@ -55,6 +55,8 @@ export async function adminGetStats() {
   const proximasAlojMapped = proximasAloj.map(r => ({
     id: r.id,
     nombre_cliente: r.nombre_cliente,
+    email_cliente: r.email_cliente,
+    telefono_cliente: r.telefono_cliente,
     fecha_entrada: r.fecha_entrada,
     fecha_salida: r.fecha_salida,
     precio_total: r.precio_total,
@@ -64,6 +66,8 @@ export async function adminGetStats() {
   const proximasActMapped = proximasAct.map(r => ({
     id: r.id,
     nombre_cliente: r.nombre_cliente,
+    email_cliente: r.email_cliente,
+    telefono_cliente: r.telefono_cliente,
     fecha_entrada: r.fecha_inicio ?? now,
     fecha_salida: r.fecha_fin ?? r.fecha_inicio ?? now,
     precio_total: r.precio_total,
@@ -246,6 +250,7 @@ export async function adminCreateActividad(data: {
   max_personas?: number;
   duracion?: string;
   imagen_url?: string;
+  video_url?: string;
   tipo_reserva?: string;
   categoria?: string;
   precio_texto?: string;
@@ -267,6 +272,7 @@ export async function adminUpdateActividad(id: string, data: Partial<{
   max_personas: number;
   duracion: string;
   imagen_url: string;
+  video_url: string;
   activa: boolean;
   tipo_reserva: string;
   categoria: string;

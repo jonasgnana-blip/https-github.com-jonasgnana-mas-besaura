@@ -184,3 +184,53 @@ export async function getBlockedDatesActividad(
     return { entrada, salida };
   });
 }
+
+// ── getUnavailableDatesCabanya ────────────────────────────────────────────────
+// Combina: reservas confirmadas/pendientes de tipo cabanya + sesiones bloqueadas
+// (activa: false) de la actividad. Así el calendario de La Cabanya refleja
+// tanto bloqueos manuales del admin como reservas pagadas.
+
+export async function getUnavailableDatesCabanya(
+  actividad_id: string
+): Promise<DateRange[]> {
+  const now = new Date();
+
+  const [reservas, sesionesBlockeadas] = await Promise.all([
+    prisma.reservaActividad.findMany({
+      where: {
+        tipo: "cabanya",
+        OR: [
+          { estado: EstadoReserva.CONFIRMADA },
+          {
+            estado: EstadoReserva.PENDIENTE_PAGO,
+            createdAt: { gt: new Date(now.getTime() - 30 * 60 * 1000) }, // 30 min window
+          },
+        ],
+        fecha_inicio: { not: null },
+        fecha_fin: { not: null },
+      },
+      select: { fecha_inicio: true, fecha_fin: true },
+    }),
+    prisma.sesionActividad.findMany({
+      where: { actividad_id, activa: false },
+      select: { fecha: true },
+    }),
+  ]);
+
+  const reservaRanges: DateRange[] = reservas
+    .filter((r) => r.fecha_inicio && r.fecha_fin)
+    .map((r) => ({
+      entrada: r.fecha_inicio!.toISOString().split("T")[0],
+      salida: r.fecha_fin!.toISOString().split("T")[0],
+    }));
+
+  const blockedDays: DateRange[] = sesionesBlockeadas.map((s) => {
+    const d = new Date(s.fecha);
+    const entrada = d.toISOString().split("T")[0];
+    const next = new Date(d);
+    next.setDate(next.getDate() + 1);
+    return { entrada, salida: next.toISOString().split("T")[0] };
+  });
+
+  return [...reservaRanges, ...blockedDays];
+}

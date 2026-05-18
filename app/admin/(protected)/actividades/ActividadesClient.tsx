@@ -42,6 +42,7 @@ type Actividad = {
   max_personas: number | null;
   duracion: string | null;
   imagen_url: string | null;
+  video_url: string | null;
   activa: boolean;
   tipo_reserva: string;
   categoria: string | null;
@@ -73,6 +74,7 @@ const EMPTY_FORM = {
   precio_base: "",
   duracion: "",
   imagen_url: "",
+  video_url: "",
   tipo_reserva: "simple",
   categoria: "",
   precio_texto: "",
@@ -115,6 +117,7 @@ export default function ActividadesClient({
       precio_base: String(a.precio_base),
       duracion: a.duracion ?? "",
       imagen_url: a.imagen_url ?? "",
+      video_url: a.video_url ?? "",
       tipo_reserva: a.tipo_reserva,
       categoria: a.categoria ?? "",
       precio_texto: a.precio_texto ?? "",
@@ -139,6 +142,7 @@ export default function ActividadesClient({
         precio_base: parseFloat(form.precio_base),
         duracion: form.duracion.trim() || undefined,
         imagen_url: form.imagen_url.trim() || undefined,
+        video_url: form.video_url.trim() || undefined,
         tipo_reserva: form.tipo_reserva,
         categoria: form.categoria.trim() || undefined,
         precio_texto: form.precio_texto.trim() || undefined,
@@ -157,6 +161,7 @@ export default function ActividadesClient({
                   facilitador: payload.facilitador ?? null,
                   duracion: payload.duracion ?? null,
                   imagen_url: payload.imagen_url ?? null,
+                  video_url: payload.video_url ?? null,
                   categoria: payload.categoria ?? null,
                   precio_texto: payload.precio_texto ?? null,
                   orden: payload.orden ?? a.orden,
@@ -177,6 +182,7 @@ export default function ActividadesClient({
             max_personas: created.max_personas ?? null,
             duracion: created.duracion ?? null,
             imagen_url: created.imagen_url ?? null,
+            video_url: created.video_url ?? null,
             activa: created.activa,
             tipo_reserva: created.tipo_reserva,
             categoria: created.categoria ?? null,
@@ -633,6 +639,12 @@ export default function ActividadesClient({
                   className="w-full border border-[#E8DCC8] rounded-xl px-3 py-2 text-xs text-[#2C1810]/70 focus:outline-none focus:border-[#4A6741]"
                 />
               </div>
+              <Field
+                label="Enlace de vídeo (YouTube o Vimeo)"
+                value={form.video_url}
+                onChange={(v) => setForm((f) => ({ ...f, video_url: v }))}
+                placeholder="https://youtube.com/embed/... o https://vimeo.com/..."
+              />
 
               <div className="flex gap-3 pt-2">
                 <button
