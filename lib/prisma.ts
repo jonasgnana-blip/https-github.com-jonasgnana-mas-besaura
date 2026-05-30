@@ -3,7 +3,14 @@ import { PrismaPg } from "@prisma/adapter-pg";
 import { PrismaClient } from "@/app/generated/prisma/client";
 
 function createPrismaClient() {
-  const pool = new Pool({ connectionString: process.env.DATABASE_URL });
+  const pool = new Pool({
+    connectionString: process.env.DATABASE_URL,
+    // Serverless: cap connections to avoid exhausting Supabase's limit
+    // across many concurrent Vercel function instances.
+    max: 2,
+    idleTimeoutMillis: 30_000,
+    connectionTimeoutMillis: 8_000,
+  });
   const adapter = new PrismaPg(pool);
   return new PrismaClient({ adapter });
 }

@@ -490,7 +490,14 @@ function BookingPanel({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ reserva_id: result.reserva_id }),
       });
-      const data = await res.json();
+      let data: { url?: string; error?: string } = {};
+      try {
+        data = await res.json();
+      } catch {
+        setError("Error del servidor. Inténtalo de nuevo en unos segundos.");
+        setLoading(false);
+        return;
+      }
       if (data.url) {
         window.location.href = data.url;
       } else {
@@ -829,7 +836,14 @@ function CabanyaSection({
           fecha: formatDate(selectedDate),
         }),
       });
-      const data = await res.json();
+      let data: { url?: string; error?: string } = {};
+      try {
+        data = await res.json();
+      } catch {
+        setError("Error del servidor. Inténtalo de nuevo en unos segundos.");
+        setLoading(false);
+        return;
+      }
       if (data.url) {
         window.location.href = data.url;
       } else {
