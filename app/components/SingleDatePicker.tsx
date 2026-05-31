@@ -50,12 +50,14 @@ function CalendarMonth({
   month,
   selected,
   unavailableRanges,
+  availableDates,
   onDayClick,
 }: {
   year: number;
   month: number;
   selected: Date | null;
   unavailableRanges: DateRange[];
+  availableDates?: string[]; // whitelist mode: only these dates are enabled
   onDayClick: (d: Date) => void;
 }) {
   const firstDay = new Date(year, month, 1);
@@ -85,7 +87,9 @@ function CalendarMonth({
           const ds = formatDate(date);
           const past = isPast(date);
           const unavail = isUnavailable(date, unavailableRanges);
-          const disabled = past || unavail;
+          // Whitelist mode: only explicitly available dates are enabled
+          const notInWhitelist = availableDates !== undefined && !availableDates.includes(ds);
+          const disabled = past || unavail || notInWhitelist;
           const isSelected = selected && sameDay(date, selected);
 
           const textCol = disabled
@@ -106,7 +110,7 @@ function CalendarMonth({
                   ${bg}
                   ${!isSelected && !disabled ? "hover:bg-[#4A6741]/10 rounded-full" : ""}
                   ${textCol} ${cursor}
-                  ${unavail && !past ? "line-through opacity-40" : ""}
+                  ${(unavail || notInWhitelist) && !past ? "opacity-30" : ""}
                 `}
               >
                 {date.getDate()}
@@ -123,6 +127,7 @@ function CalendarMonth({
 
 type Props = {
   unavailableDates: DateRange[];
+  availableDates?: string[]; // whitelist: if provided, only these dates are selectable
   selected: string | null;
   onSelect: (date: string) => void;
   label?: string;
@@ -130,6 +135,7 @@ type Props = {
 
 export default function SingleDatePicker({
   unavailableDates,
+  availableDates,
   selected,
   onSelect,
   label,
@@ -191,6 +197,7 @@ export default function SingleDatePicker({
           month={viewMonth}
           selected={selectedDate}
           unavailableRanges={unavailableDates}
+          availableDates={availableDates}
           onDayClick={handleDayClick}
         />
 

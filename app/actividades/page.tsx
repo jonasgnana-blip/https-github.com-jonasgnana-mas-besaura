@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import NavBar from "@/app/components/NavBar";
 import { ActividadReserva, ComidaCaseraReserva } from "./ActividadCard";
-import { getBlockedDatesActividad, getUnavailableDatesCabanya } from "@/app/actions/reservas";
+import { getBlockedDatesActividad, getUnavailableDatesCabanya, getActiveSesionesActividad } from "@/app/actions/reservas";
 import type { DateRange } from "@/app/actions/reservas";
 import { prisma } from "@/lib/prisma";
 import ActividadesHero from "./ActividadesHero";
@@ -53,14 +53,21 @@ export default async function ActividadesPage() {
     orderBy: { orden: "asc" },
   });
 
-  // Fetch unavailable dates for every activity in parallel
+  // Fetch unavailable dates and active sessions for every activity in parallel
   const blockedDatesMap: Record<string, DateRange[]> = {};
+  const activeSesionesMap: Record<string, string[]> = {};
+
   await Promise.all(
     actividades.map(async (act) => {
-      blockedDatesMap[act.id] =
-        act.tipo_reserva === "cabanya"
-          ? await getUnavailableDatesCabanya(act.id)
-          : await getBlockedDatesActividad(act.id);
+      if (act.tipo_reserva === "cabanya") {
+        blockedDatesMap[act.id] = await getUnavailableDatesCabanya(act.id);
+      } else {
+        blockedDatesMap[act.id] = await getBlockedDatesActividad(act.id);
+        // For "con_fecha" activities: fetch active session dates for whitelist mode
+        if (act.tipo_reserva === "con_fecha") {
+          activeSesionesMap[act.id] = await getActiveSesionesActividad(act.id);
+        }
+      }
     })
   );
 
@@ -161,6 +168,8 @@ export default async function ActividadesPage() {
                   precio={precio}
                   descripcion={act.descripcion}
                   unavailableDates={unavailableDates}
+                  availableDates={activeSesionesMap[act.id]}
+                  actividadId={act.id}
                   tipoPago={act.tipo_reserva === "cabanya" ? "cabanya" : "actividad"}
                   sinFecha={act.tipo_reserva === "simple"}
                 />

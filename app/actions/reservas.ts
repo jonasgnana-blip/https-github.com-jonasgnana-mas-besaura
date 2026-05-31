@@ -189,6 +189,19 @@ export async function createReserva(
   return { ok: true, reserva_id: reserva.id, precio_total };
 }
 
+// ── getActiveSesionesActividad ────────────────────────────────────────────────
+// Returns YYYY-MM-DD strings for sessions that are active (bookable).
+// Used to whitelist selectable dates in the calendar for "con_fecha" activities.
+
+export async function getActiveSesionesActividad(actividad_id: string): Promise<string[]> {
+  const sesiones = await prisma.sesionActividad.findMany({
+    where: { actividad_id, activa: true },
+    select: { fecha: true },
+    orderBy: { fecha: "asc" },
+  });
+  return sesiones.map((s) => s.fecha.toISOString().split("T")[0]);
+}
+
 // ── getBlockedDatesActividad ──────────────────────────────────────────────────
 // Devuelve las fechas bloqueadas de una actividad (sesiones con activa: false)
 // en formato DateRange (un solo día: entrada = fecha, salida = fecha+1)

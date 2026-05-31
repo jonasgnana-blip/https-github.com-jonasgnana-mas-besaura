@@ -28,6 +28,8 @@ type ActividadReservaProps = {
   precio: number;
   descripcion?: string;
   unavailableDates?: DateRange[];
+  availableDates?: string[];   // whitelist of bookable dates (con_fecha mode)
+  actividadId?: string;        // DB id — used for session blocking on payment
   tipoPago?: "actividad" | "cabanya";
   btnLabel?: string;
   /** If true, no date picker is shown (tipo_reserva="simple") */
@@ -39,6 +41,8 @@ export function ActividadReserva({
   precio,
   descripcion = "",
   unavailableDates = [],
+  availableDates,
+  actividadId,
   tipoPago = "actividad",
   btnLabel,
   sinFecha = false,
@@ -122,6 +126,7 @@ export function ActividadReserva({
               precio: total,
               descripcion,
               cantidad: personas,
+              actividad_id: actividadId,
               fecha_entrada: selectedDate,
               nombre_cliente: guestNombre,
               email_cliente: guestEmail,
@@ -186,6 +191,7 @@ export function ActividadReserva({
             <>
               <SingleDatePicker
                 unavailableDates={unavailableDates}
+                availableDates={availableDates}
                 selected={selectedDate}
                 onSelect={setSelectedDate}
                 label={tr.act_card_fecha_label}

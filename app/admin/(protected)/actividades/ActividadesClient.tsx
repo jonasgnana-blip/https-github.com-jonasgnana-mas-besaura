@@ -82,6 +82,13 @@ const EMPTY_FORM = {
   orden: "",
 };
 
+// Sesión pendiente: fecha a crear al guardar la actividad
+type PendingSesion = { tmpId: string; fecha: string; hora: string };
+
+function todayStr() {
+  return new Date().toISOString().split("T")[0];
+}
+
 const EMPTY_SESION = {
   fecha: "",
   hora: "",
@@ -101,11 +108,59 @@ export default function ActividadesClient({
   const [sesionForms, setSesionForms] = useState<Record<string, typeof EMPTY_SESION>>({});
   const [isPending, startTransition] = useTransition();
 
+  // Inline session management in the modal
+  const [pendingSesiones, setPendingSesiones] = useState<PendingSesion[]>([]);
+  const [newSesionFecha, setNewSesionFecha] = useState("");
+  const [newSesionHora, setNewSesionHora] = useState("");
+  // For edit: sessions already in DB that the user marks for removal
+  const [removeSesionIds, setRemoveSesionIds] = useState<string[]>([]);
+
+  function resetModalSesiones() {
+    setPendingSesiones([]);
+    setNewSesionFecha("");
+    setNewSesionHora("");
+    setRemoveSesionIds([]);
+  }
+
+  function addPendingSesion() {
+    if (!newSesionFecha) return;
+    if (pendingSesiones.some((s) => s.fecha === newSesionFecha)) return; // no duplicates
+    setPendingSesiones((prev) => [
+      ...prev,
+      { tmpId: crypto.randomUUID(), fecha: newSesionFecha, hora: newSesionHora },
+    ]);
+    setNewSesionFecha("");
+    setNewSesionHora("");
+  }
+
+  function removePendingSesion(tmpId: string) {
+    setPendingSesiones((prev) => prev.filter((s) => s.tmpId !== tmpId));
+  }
+
+  function markRemoveSesion(sesionId: string) {
+    setRemoveSesionIds((prev) => [...prev, sesionId]);
+  }
+
+  function unmarkRemoveSesion(sesionId: string) {
+    setRemoveSesionIds((prev) => prev.filter((id) => id !== sesionId));
+  }
+
+  // Active sessions currently in DB for the edit target (minus marked-for-removal)
+  function editActiveSesiones(): Sesion[] {
+    if (!editTarget) return [];
+    return editTarget.sesiones.filter(
+      (s) => s.activa && !removeSesionIds.includes(s.id)
+    );
+  }
+
+  const showSesionesSection = form.tipo_reserva === "con_fecha" || form.tipo_reserva === "cabanya";
+
   // ── Create / Edit modal ────────────────────────────────────────────────────
 
   function openCreate() {
     setEditTarget(null);
     setForm(EMPTY_FORM);
+    resetModalSesiones();
     setShowModal(true);
   }
 
@@ -124,6 +179,7 @@ export default function ActividadesClient({
       precio_texto: a.precio_texto ?? "",
       orden: String(a.orden),
     });
+    resetModalSesiones();
     setShowModal(true);
   }
 
@@ -131,6 +187,7 @@ export default function ActividadesClient({
     setShowModal(false);
     setEditTarget(null);
     setForm(EMPTY_FORM);
+    resetModalSesiones();
   }
 
   function handleSubmit(e: React.FormEvent) {
@@ -152,26 +209,55 @@ export default function ActividadesClient({
 
       if (editTarget) {
         await adminUpdateActividad(editTarget.id, payload);
+
+        // Apply session changes: delete removed, create new pending
+        await Promise.all([
+          ...removeSesionIds.map((id) => adminDeleteSesion(id)),
+          ...pendingSesiones.map((s) =>
+            adminCreateSesion({ actividad_id: editTarget.id, fecha: s.fecha, hora: s.hora || undefined })
+          ),
+        ]);
+
         setActividades((prev) =>
-          prev.map((a) =>
-            a.id === editTarget.id
-              ? {
-                  ...a,
-                  ...payload,
-                  precio_base: Number(payload.precio_base),
-                  facilitador: payload.facilitador ?? null,
-                  duracion: payload.duracion ?? null,
-                  imagen_url: payload.imagen_url ?? null,
-                  video_url: payload.video_url ?? null,
-                  categoria: payload.categoria ?? null,
-                  precio_texto: payload.precio_texto ?? null,
-                  orden: payload.orden ?? a.orden,
-                }
-              : a
-          )
+          prev.map((a) => {
+            if (a.id !== editTarget.id) return a;
+            const updatedSesiones = [
+              ...a.sesiones.filter((s) => !removeSesionIds.includes(s.id)),
+              ...pendingSesiones.map((s) => ({
+                id: s.tmpId, // temp id, will be replaced on next reload
+                actividad_id: editTarget.id,
+                fecha: new Date(s.fecha).toISOString(),
+                hora: s.hora || null,
+                plazas_max: null,
+                activa: true,
+                createdAt: new Date().toISOString(),
+              })),
+            ];
+            return {
+              ...a,
+              ...payload,
+              precio_base: Number(payload.precio_base),
+              facilitador: payload.facilitador ?? null,
+              duracion: payload.duracion ?? null,
+              imagen_url: payload.imagen_url ?? null,
+              video_url: payload.video_url ?? null,
+              categoria: payload.categoria ?? null,
+              precio_texto: payload.precio_texto ?? null,
+              orden: payload.orden ?? a.orden,
+              sesiones: updatedSesiones,
+            };
+          })
         );
       } else {
         const created = await adminCreateActividad(payload);
+
+        // Create pending sessions for the new activity
+        const createdSesiones = await Promise.all(
+          pendingSesiones.map((s) =>
+            adminCreateSesion({ actividad_id: created.id, fecha: s.fecha, hora: s.hora || undefined })
+          )
+        );
+
         setActividades((prev) => [
           {
             id: created.id,
@@ -190,7 +276,15 @@ export default function ActividadesClient({
             precio_texto: created.precio_texto ?? null,
             orden: created.orden,
             createdAt: created.createdAt.toISOString(),
-            sesiones: [],
+            sesiones: createdSesiones.map((s) => ({
+              id: s.id,
+              actividad_id: s.actividad_id,
+              fecha: s.fecha.toISOString(),
+              hora: s.hora ?? null,
+              plazas_max: s.plazas_max ?? null,
+              activa: s.activa,
+              createdAt: s.createdAt.toISOString(),
+            })),
           },
           ...prev,
         ]);
@@ -643,6 +737,94 @@ export default function ActividadesClient({
                 onChange={(v) => setForm((f) => ({ ...f, video_url: v }))}
                 placeholder="https://youtube.com/embed/... o https://vimeo.com/..."
               />
+
+              {/* ── Fechas disponibles (con_fecha / cabanya) ── */}
+              {showSesionesSection && (
+                <div className="pt-2 border-t border-[#E8DCC8]">
+                  <p className="text-xs font-medium text-[#2C1810]/60 uppercase tracking-wide mb-3">
+                    Fechas disponibles para reserva
+                  </p>
+
+                  {/* Existing sessions in DB (edit mode) */}
+                  {editTarget && editActiveSesiones().length > 0 && (
+                    <div className="flex flex-wrap gap-1.5 mb-3">
+                      {editActiveSesiones().map((s) => (
+                        <span
+                          key={s.id}
+                          className="flex items-center gap-1 text-xs bg-[#4A6741]/10 text-[#4A6741] px-2.5 py-1 rounded-full"
+                        >
+                          {fmt(s.fecha)}
+                          {s.hora && <span className="opacity-60"> {s.hora}</span>}
+                          <button
+                            type="button"
+                            onClick={() => markRemoveSesion(s.id)}
+                            className="ml-0.5 text-[#4A6741]/50 hover:text-red-500 transition-colors"
+                          >
+                            ×
+                          </button>
+                        </span>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Pending new sessions */}
+                  {pendingSesiones.length > 0 && (
+                    <div className="flex flex-wrap gap-1.5 mb-3">
+                      {pendingSesiones.map((s) => (
+                        <span
+                          key={s.tmpId}
+                          className="flex items-center gap-1 text-xs bg-[#8B6914]/10 text-[#8B6914] px-2.5 py-1 rounded-full"
+                        >
+                          {s.fecha}
+                          {s.hora && <span className="opacity-60"> {s.hora}</span>}
+                          <button
+                            type="button"
+                            onClick={() => removePendingSesion(s.tmpId)}
+                            className="ml-0.5 text-[#8B6914]/50 hover:text-red-500 transition-colors"
+                          >
+                            ×
+                          </button>
+                        </span>
+                      ))}
+                    </div>
+                  )}
+
+                  {editActiveSesiones().length === 0 && pendingSesiones.length === 0 && (
+                    <p className="text-xs text-[#2C1810]/35 mb-3">Sin fechas añadidas todavía.</p>
+                  )}
+
+                  {/* Add date row */}
+                  <div className="flex gap-2 items-end">
+                    <div className="flex-1">
+                      <label className="block text-[10px] text-[#2C1810]/40 mb-1">Fecha</label>
+                      <input
+                        type="date"
+                        value={newSesionFecha}
+                        min={todayStr()}
+                        onChange={(e) => setNewSesionFecha(e.target.value)}
+                        className="w-full border border-[#E8DCC8] rounded-xl px-2.5 py-1.5 text-sm text-[#2C1810] bg-white focus:outline-none focus:border-[#4A6741]"
+                      />
+                    </div>
+                    <div className="w-24">
+                      <label className="block text-[10px] text-[#2C1810]/40 mb-1">Hora (opc.)</label>
+                      <input
+                        type="time"
+                        value={newSesionHora}
+                        onChange={(e) => setNewSesionHora(e.target.value)}
+                        className="w-full border border-[#E8DCC8] rounded-xl px-2.5 py-1.5 text-sm text-[#2C1810] bg-white focus:outline-none focus:border-[#4A6741]"
+                      />
+                    </div>
+                    <button
+                      type="button"
+                      onClick={addPendingSesion}
+                      disabled={!newSesionFecha}
+                      className="flex items-center gap-1 px-3 py-1.5 rounded-xl bg-[#4A6741] text-[#F0EAD6] text-xs font-medium hover:bg-[#3d5636] transition-colors disabled:opacity-40"
+                    >
+                      <Plus size={12} /> Añadir
+                    </button>
+                  </div>
+                </div>
+              )}
 
               <div className="flex gap-3 pt-2">
                 <button

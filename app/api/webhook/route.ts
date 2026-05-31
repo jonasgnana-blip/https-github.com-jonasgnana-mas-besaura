@@ -229,4 +229,21 @@ async function handleReservaActividad(
   });
 
   console.log(`[webhook] ReservaActividad ${reserva_actividad_id} CONFIRMADA · tipo=${ra.tipo}`);
+
+  // Block the matching session so the date becomes unavailable for new bookings
+  if (ra.actividad_id && ra.fecha_inicio) {
+    const dayStart = new Date(ra.fecha_inicio);
+    dayStart.setUTCHours(0, 0, 0, 0);
+    const dayEnd = new Date(dayStart);
+    dayEnd.setUTCDate(dayEnd.getUTCDate() + 1);
+
+    prisma.sesionActividad.updateMany({
+      where: {
+        actividad_id: ra.actividad_id,
+        activa: true,
+        fecha: { gte: dayStart, lt: dayEnd },
+      },
+      data: { activa: false },
+    }).catch((e) => console.error("[webhook] bloquear sesión:", e));
+  }
 }
