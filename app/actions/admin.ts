@@ -400,3 +400,49 @@ export async function adminUpsertSistemaConfig(clave: string, valor: string) {
   revalidatePath("/");
   return result;
 }
+
+// ── Códigos de descuento ───────────────────────────────────────────────────────
+
+export async function adminGetCodigos() {
+  await requireAdmin();
+  return prisma.codigoDescuento.findMany({ orderBy: { createdAt: "desc" } });
+}
+
+export async function adminCreateCodigo(data: {
+  codigo: string;
+  tipo: string;
+  valor: number;
+  descripcion?: string;
+  usos_max?: number;
+  expira_en?: string;
+}) {
+  await requireAdmin();
+  return prisma.codigoDescuento.create({
+    data: {
+      codigo: data.codigo.trim().toUpperCase(),
+      tipo: data.tipo,
+      valor: data.valor,
+      descripcion: data.descripcion ?? null,
+      usos_max: data.usos_max ?? null,
+      expira_en: data.expira_en ? new Date(data.expira_en) : null,
+    },
+  });
+}
+
+export async function adminToggleCodigo(id: string, activo: boolean) {
+  await requireAdmin();
+  return prisma.codigoDescuento.update({ where: { id }, data: { activo } });
+}
+
+export async function adminDeleteCodigo(id: string) {
+  await requireAdmin();
+  return prisma.codigoDescuento.delete({ where: { id } });
+}
+
+export async function adminIncrementCodigoUso(codigo: string) {
+  await requireAdmin();
+  return prisma.codigoDescuento.update({
+    where: { codigo },
+    data: { usos_actual: { increment: 1 } },
+  });
+}

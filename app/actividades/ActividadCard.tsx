@@ -1,9 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import { Loader2, ChevronRight, CalendarDays } from "lucide-react";
+import { Loader2, ChevronRight, CalendarDays, Tag, CheckCircle, XCircle } from "lucide-react";
 import SingleDatePicker from "@/app/components/SingleDatePicker";
-import type { DateRange } from "@/app/actions/reservas";
+import type { DateRange, DescuentoResult } from "@/app/actions/reservas";
+import { validateCodigoDescuento } from "@/app/actions/reservas";
 import { useLanguage } from "@/lib/LanguageContext";
 import { getT } from "@/lib/i18n";
 
@@ -54,7 +55,39 @@ export function ActividadReserva({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  const total = precio * personas;
+  // Discount code
+  const [codigoInput, setCodigoInput] = useState("");
+  const [codigoValidando, setCodigoValidando] = useState(false);
+  const [descuento, setDescuento] = useState<DescuentoResult & { ok: true } | null>(null);
+  const [codigoError, setCodigoError] = useState("");
+
+  async function handleValidarCodigo() {
+    if (!codigoInput.trim()) return;
+    setCodigoValidando(true);
+    setCodigoError("");
+    setDescuento(null);
+    const result = await validateCodigoDescuento(codigoInput);
+    setCodigoValidando(false);
+    if (result.ok) {
+      setDescuento(result);
+    } else {
+      setCodigoError(result.error);
+    }
+  }
+
+  function handleRemoveCodigo() {
+    setDescuento(null);
+    setCodigoInput("");
+    setCodigoError("");
+  }
+
+  const subtotal = precio * personas;
+  const descuentoAmount = descuento
+    ? descuento.tipo === "porcentaje"
+      ? Math.round((subtotal * descuento.valor) / 100 * 100) / 100
+      : Math.min(descuento.valor, subtotal)
+    : 0;
+  const total = Math.max(0, subtotal - descuentoAmount);
 
   const defaultLabel =
     tipoPago === "cabanya"
@@ -81,6 +114,7 @@ export function ActividadReserva({
               nombre_cliente: guestNombre,
               email_cliente: guestEmail,
               telefono_cliente: guestTelefono,
+              codigo_descuento: descuento ? codigoInput.trim().toUpperCase() : undefined,
             }
           : {
               tipo: "actividad",
@@ -92,6 +126,7 @@ export function ActividadReserva({
               nombre_cliente: guestNombre,
               email_cliente: guestEmail,
               telefono_cliente: guestTelefono,
+              codigo_descuento: descuento ? codigoInput.trim().toUpperCase() : undefined,
             };
 
       const res = await fetch("/api/checkout", {
@@ -194,6 +229,56 @@ export function ActividadReserva({
                 <span className="font-medium text-[#4A6741]">{total}€</span>
               </span>
             </div>
+          </div>
+
+          {/* ── Discount code ── */}
+          <div className="flex flex-col gap-2">
+            {!descuento ? (
+              <div className="flex gap-2 items-center">
+                <div className="relative flex-1">
+                  <Tag size={12} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#2C1810]/30" />
+                  <input
+                    type="text"
+                    value={codigoInput}
+                    onChange={(e) => { setCodigoInput(e.target.value.toUpperCase()); setCodigoError(""); }}
+                    onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), handleValidarCodigo())}
+                    placeholder="Código de descuento"
+                    className="w-full pl-8 pr-3 py-2 rounded-xl border border-[#E8DCC8] bg-white text-[#2C1810] text-xs font-mono tracking-wider placeholder:font-sans placeholder:tracking-normal placeholder:text-[#2C1810]/30 focus:outline-none focus:border-[#4A6741]"
+                  />
+                </div>
+                <button
+                  type="button"
+                  onClick={handleValidarCodigo}
+                  disabled={!codigoInput.trim() || codigoValidando}
+                  className="px-3 py-2 rounded-xl border border-[#E8DCC8] bg-white text-xs font-medium text-[#2C1810]/70 hover:bg-[#F0EAD6] transition-colors disabled:opacity-40"
+                >
+                  {codigoValidando ? <Loader2 size={12} className="animate-spin" /> : "Aplicar"}
+                </button>
+              </div>
+            ) : (
+              <div className="flex items-center justify-between bg-[#4A6741]/8 border border-[#4A6741]/20 rounded-xl px-3 py-2">
+                <div className="flex items-center gap-2">
+                  <CheckCircle size={13} className="text-[#4A6741] shrink-0" />
+                  <span className="text-xs font-medium text-[#4A6741]">
+                    {codigoInput.toUpperCase()} — {descuento.tipo === "porcentaje" ? `-${descuento.valor}%` : `-${descuento.valor}€`}
+                    {descuento.descripcion && <span className="text-[#4A6741]/60 ml-1">({descuento.descripcion})</span>}
+                  </span>
+                </div>
+                <button type="button" onClick={handleRemoveCodigo} className="text-[#2C1810]/30 hover:text-red-500 transition-colors">
+                  <XCircle size={14} />
+                </button>
+              </div>
+            )}
+            {codigoError && (
+              <p className="text-xs text-red-600 flex items-center gap-1">
+                <XCircle size={11} /> {codigoError}
+              </p>
+            )}
+            {descuento && subtotal !== total && (
+              <div className="text-xs text-[#2C1810]/50 text-right">
+                Subtotal: {subtotal}€ — Descuento: -{descuentoAmount}€
+              </div>
+            )}
           </div>
 
           {/* ── Contact fields ── */}

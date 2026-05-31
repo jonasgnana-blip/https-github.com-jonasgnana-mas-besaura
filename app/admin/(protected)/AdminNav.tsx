@@ -9,6 +9,7 @@ import {
   Settings,
   LogOut,
   Calendar,
+  Tag,
 } from "lucide-react";
 
 const NAV = [
@@ -16,6 +17,7 @@ const NAV = [
   { href: "/admin/reservas", label: "Reservas", icon: CalendarDays },
   { href: "/admin/actividades", label: "Actividades", icon: Calendar },
   { href: "/admin/bloqueos", label: "Bloquear fechas", icon: BanIcon },
+  { href: "/admin/codigos", label: "Códigos descuento", icon: Tag },
   { href: "/admin/configuracion", label: "Configuración", icon: Settings },
 ];
 

@@ -38,6 +38,14 @@ export async function POST(req: NextRequest) {
     const session = event.data.object as Stripe.Checkout.Session;
     const meta = session.metadata ?? {};
 
+    // Increment discount code usage if one was applied
+    if (meta.codigo_descuento) {
+      prisma.codigoDescuento.update({
+        where: { codigo: meta.codigo_descuento },
+        data: { usos_actual: { increment: 1 } },
+      }).catch((e) => console.error("[webhook] incrementar código descuento:", e));
+    }
+
     // ── Alojamiento (legacy Reserva) ──────────────────────────────────────────
     if (meta.reserva_id) {
       await handleReservaAlojamiento(session, meta.reserva_id);

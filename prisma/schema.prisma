@@ -142,6 +142,22 @@ model SesionActividad {
   @@map("sesiones_actividades")
 }
 
+model CodigoDescuento {
+  id           String    @id @default(cuid())
+  codigo       String    @unique
+  tipo         String    // "porcentaje" | "fijo"
+  valor        Decimal   @db.Decimal(10, 2)
+  activo       Boolean   @default(true)
+  usos_max     Int?
+  usos_actual  Int       @default(0)
+  expira_en    DateTime?
+  descripcion  String?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  @@map("codigos_descuento")
+}
+
 model ReservaActividad {
   id                String           @id @default(cuid())
   sesion_id         String?

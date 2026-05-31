@@ -42,6 +42,7 @@ type ActividadBody = {
   descripcion?: string;
   actividad_id?: string;
   fecha_entrada?: string;
+  codigo_descuento?: string;
 } & ClienteInfo;
 
 type CabanyaBody = {
@@ -51,6 +52,7 @@ type CabanyaBody = {
   dias?: number;
   fecha_entrada?: string;
   fecha_salida?: string;
+  codigo_descuento?: string;
 } & ClienteInfo;
 
 type AlquilerBody = {
@@ -85,6 +87,27 @@ function isValidDias(d: unknown): d is number {
 function sanitizeStr(s: unknown, maxLen = 200): string {
   if (typeof s !== "string") return "";
   return s.replace(/[<>]/g, "").slice(0, maxLen);
+}
+
+// ── Discount helper ───────────────────────────────────────────────────────────
+
+async function resolveDescuento(codigo: string | undefined) {
+  if (!codigo) return null;
+  const { prisma } = await import("@/lib/prisma");
+  const code = await prisma.codigoDescuento.findUnique({
+    where: { codigo: codigo.trim().toUpperCase() },
+  });
+  if (!code || !code.activo) return null;
+  if (code.expira_en && code.expira_en < new Date()) return null;
+  if (code.usos_max !== null && code.usos_actual >= code.usos_max) return null;
+  return code;
+}
+
+function applyDescuento(precioBase: number, code: { tipo: string; valor: { toNumber(): number } } | null): number {
+  if (!code) return precioBase;
+  const v = code.valor.toNumber();
+  if (code.tipo === "porcentaje") return Math.max(0, Math.round((precioBase * (1 - v / 100)) * 100) / 100);
+  return Math.max(0, precioBase - v);
 }
 
 // ── Main handler ──────────────────────────────────────────────────────────────
@@ -141,7 +164,9 @@ async function handleActividad(body: ActividadBody) {
   const { prisma } = await import("@/lib/prisma");
   const personas = body.cantidad ?? 1;
 
-  // Create pre-checkout record to track payment
+  const codigoCode = await resolveDescuento(body.codigo_descuento);
+  const precioConDescuento = applyDescuento(body.precio, codigoCode);
+
   const reservaAct = await prisma.reservaActividad.create({
     data: {
       actividad_id: body.actividad_id ?? null,
@@ -152,21 +177,25 @@ async function handleActividad(body: ActividadBody) {
       email_cliente: sanitizeStr(body.email_cliente) || "",
       telefono_cliente: sanitizeStr(body.telefono_cliente) || "",
       num_adultos: personas,
-      precio_total: body.precio,
+      precio_total: precioConDescuento,
       estado: "PENDIENTE_PAGO",
     },
   });
+
+  const descLabel = codigoCode
+    ? ` (${body.codigo_descuento}: ${codigoCode.tipo === "porcentaje" ? `-${codigoCode.valor}%` : `-${codigoCode.valor}€`})`
+    : "";
 
   const session = await getStripe().checkout.sessions.create({
     mode: "payment",
     locale: "es",
     line_items: [{
-      quantity: personas,
+      quantity: 1,
       price_data: {
         currency: "eur",
-        unit_amount: Math.round((body.precio / personas) * 100),
+        unit_amount: Math.round(precioConDescuento * 100),
         product_data: {
-          name: body.nombre,
+          name: `${body.nombre} × ${personas}${descLabel}`,
           description: body.descripcion || undefined,
         },
       },
@@ -176,6 +205,7 @@ async function handleActividad(body: ActividadBody) {
       reserva_actividad_id: reservaAct.id,
       nombre: body.nombre,
       cantidad: String(personas),
+      ...(codigoCode ? { codigo_descuento: body.codigo_descuento! } : {}),
     },
     customer_email: body.email_cliente || undefined,
     success_url: SUCCESS_URL,
@@ -198,6 +228,9 @@ async function handleCabanya(body: CabanyaBody) {
     : body.fecha_entrada ? ` · ${fmtDate(body.fecha_entrada)}` : "";
   const desc = `${body.personas} persona${body.personas !== 1 ? "s" : ""} · ${dias} día${dias !== 1 ? "s" : ""}${fechas}`;
 
+  const codigoCodeC = await resolveDescuento(body.codigo_descuento);
+  const precioConDescuentoC = applyDescuento(body.precio, codigoCodeC);
+
   const reservaAct = await prisma.reservaActividad.create({
     data: {
       actividad_nombre: "La Cabanya",
@@ -208,7 +241,7 @@ async function handleCabanya(body: CabanyaBody) {
       email_cliente: sanitizeStr(body.email_cliente) || "",
       telefono_cliente: sanitizeStr(body.telefono_cliente) || "",
       num_adultos: body.personas,
-      precio_total: body.precio,
+      precio_total: precioConDescuentoC,
       estado: "PENDIENTE_PAGO",
     },
   });
@@ -220,10 +253,10 @@ async function handleCabanya(body: CabanyaBody) {
       quantity: 1,
       price_data: {
         currency: "eur",
-        unit_amount: Math.round(body.precio * 100),
+        unit_amount: Math.round(precioConDescuentoC * 100),
         product_data: {
           name: "Reserva La Cabanya — Mas Besaura",
-          description: desc,
+          description: desc + (codigoCodeC ? ` (${body.codigo_descuento})` : ""),
         },
       },
     }],
@@ -233,6 +266,7 @@ async function handleCabanya(body: CabanyaBody) {
       personas: String(body.personas),
       dias: String(dias),
       fecha_entrada: body.fecha_entrada ?? "",
+      ...(codigoCodeC ? { codigo_descuento: body.codigo_descuento! } : {}),
     },
     customer_email: body.email_cliente || undefined,
     success_url: SUCCESS_URL,

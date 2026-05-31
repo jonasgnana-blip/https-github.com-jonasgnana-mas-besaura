@@ -30,6 +30,33 @@ export async function getComplementos() {
   });
 }
 
+// ── validateCodigoDescuento ───────────────────────────────────────────────────
+// Public — no auth required. Returns validated discount info or an error.
+
+export type DescuentoResult =
+  | { ok: true; tipo: "porcentaje" | "fijo"; valor: number; descripcion: string | null }
+  | { ok: false; error: string };
+
+export async function validateCodigoDescuento(raw: string): Promise<DescuentoResult> {
+  const codigo = raw.trim().toUpperCase();
+  if (!codigo) return { ok: false, error: "Introduce un código" };
+
+  const code = await prisma.codigoDescuento.findUnique({ where: { codigo } });
+
+  if (!code)                                          return { ok: false, error: "Código no válido" };
+  if (!code.activo)                                   return { ok: false, error: "Código desactivado" };
+  if (code.expira_en && code.expira_en < new Date())  return { ok: false, error: "Código expirado" };
+  if (code.usos_max !== null && code.usos_actual >= code.usos_max)
+                                                      return { ok: false, error: "Código agotado" };
+
+  return {
+    ok: true,
+    tipo: code.tipo as "porcentaje" | "fijo",
+    valor: Number(code.valor),
+    descripcion: code.descripcion,
+  };
+}
+
 // ── getUnavailableDates ───────────────────────────────────────────────────────
 // Devuelve rangos de fechas ocupadas (CONFIRMADA o PENDIENTE_PAGO no expirado)
 
