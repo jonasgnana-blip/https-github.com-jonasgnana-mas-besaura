@@ -214,7 +214,14 @@ export default async function ActividadesPage() {
                   className="text-2xl md:text-3xl text-[#2C1810] mb-4"
                   style={{ fontFamily: "var(--font-playfair), Georgia, serif" }}
                 >
-                  {act.titulo}
+                  <a
+                    href={`https://masbesaura.com/actividades#${act.id}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="hover:text-[#4A6741] transition-colors"
+                  >
+                    {act.titulo}
+                  </a>
                 </h2>
                 {/* Render as HTML if the description contains tags, plain text otherwise */}
                 {act.descripcion.includes("<") ? (
