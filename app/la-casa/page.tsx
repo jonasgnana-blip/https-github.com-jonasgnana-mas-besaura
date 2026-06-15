@@ -33,8 +33,8 @@ export const revalidate = 0; // always fresh — admin changes show immediately
 export default async function LaCasa() {
   const [habitaciones, unavailDates, espacioConfigs] = await Promise.all([
     prisma.habitacion.findMany({
+      where: { id: { in: ["artemisa", "selene", "hecate"] } },
       orderBy: { nombre: "asc" },
-      take: 3,
       select: { id: true, nombre: true, descripcion: true, capacidad: true, imagenes: true },
     }),
     getUnavailableDates("la-cabanya"),
