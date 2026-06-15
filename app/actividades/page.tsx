@@ -215,7 +215,7 @@ export default async function ActividadesPage() {
                   style={{ fontFamily: "var(--font-playfair), Georgia, serif" }}
                 >
                   <a
-                    href={`https://masbesaura.com/actividades#${act.id}`}
+                    href={`/actividades/${act.id}`}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="hover:text-[#4A6741] transition-colors"
@@ -247,7 +247,7 @@ export default async function ActividadesPage() {
                 <BookingBlock />
                 <div className="mt-6 pt-5 border-t border-[#E8DCC8]">
                   <ShareButtons
-                    url={`https://masbesaura.com/actividades#${act.id}`}
+                    url={`https://masbesaura.com/actividades/${act.id}`}
                     title={act.titulo + " — Mas Besaura"}
                   />
                 </div>
