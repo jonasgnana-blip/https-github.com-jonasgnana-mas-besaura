@@ -1051,12 +1051,7 @@ export default function AlojamientoCliente({
   };
 
   const HABITACIONES: HabitacionData[] = HABITACIONES_BASE.map((base) => {
-    // Match by name fragment only — "hecate" matches "Hécate" via normalize
-    const baseNorm = base.id.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-    const db = habitacionesDB.find(h => {
-      const hNorm = (h.nombre ?? "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-      return hNorm.includes(baseNorm);
-    });
+    const db = habitacionesDB.find(h => h.id === base.id);
     return {
       ...base,
       nombre:      db?.nombre      || base.nombre,
