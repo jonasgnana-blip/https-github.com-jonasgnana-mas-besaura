@@ -41,3 +41,11 @@ yarn-error.log*
 next-env.d.ts
 
 /app/generated/prisma
+
+# Documentos locales
+*.pdf
+*.zip
+Docs/
+Facturas/
+MAS\ BESAURA\ Proyecto/
+masbesaura_web.html
