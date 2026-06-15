@@ -38,6 +38,25 @@ type EspaciosCfg = {
 type CabanyaCfg = { foto1: string; foto2: string };
 type SliderCfg  = { foto1: string; foto2: string; foto3: string; foto4: string; foto5: string };
 
+type PaginaInicioCfg = {
+  heroSubtitleEs: string; heroSubtitleCa: string;
+  propositoTitleEs: string; propositoTitleCa: string;
+  propositoP1Es: string; propositoP1Ca: string;
+  propositoP2Es: string; propositoP2Ca: string;
+};
+type PaginaAlojamientoCfg = {
+  heroSubtitleEs: string; heroSubtitleCa: string;
+  roomsTitleEs: string; roomsTitleCa: string;
+};
+type PaginaAlquilerCfg = {
+  heroTitleEs: string; heroTitleCa: string;
+  heroSubtitleEs: string; heroSubtitleCa: string;
+  descripcionEs: string; descripcionCa: string;
+  precioTextoEs: string; precioTextoCa: string;
+  politicaEs: string; politicaCa: string;
+  incluyeEs: string; incluyeCa: string;
+};
+
 // ── Reusable sub-components ───────────────────────────────────────────────────
 
 function Section({
@@ -131,6 +150,9 @@ export default function ConfigClient({
   sliderInicial,
   estanciaTextoEsInicial,
   estanciaTextoCaInicial,
+  paginaInicio: paginaInicioInicial,
+  paginaAlojamiento: paginaAlojamientoInicial,
+  paginaAlquiler: paginaAlquilerInicial,
 }: {
   habitaciones: Habitacion[];
   complementos: Complemento[];
@@ -139,6 +161,9 @@ export default function ConfigClient({
   sliderInicial: SliderCfg;
   estanciaTextoEsInicial: string;
   estanciaTextoCaInicial: string;
+  paginaInicio: PaginaInicioCfg;
+  paginaAlojamiento: PaginaAlojamientoCfg;
+  paginaAlquiler: PaginaAlquilerCfg;
 }) {
   const [isPending, startTransition] = useTransition();
 
@@ -150,14 +175,20 @@ export default function ConfigClient({
   const [slider,  setSlider]    = useState<SliderCfg>(sliderInicial);
   const [estanciaEs, setEstanciaEs] = useState(estanciaTextoEsInicial);
   const [estanciaCa, setEstanciaCa] = useState(estanciaTextoCaInicial);
+  const [pagInicio,     setPagInicio]     = useState<PaginaInicioCfg>(paginaInicioInicial);
+  const [pagAloj,       setPagAloj]       = useState<PaginaAlojamientoCfg>(paginaAlojamientoInicial);
+  const [pagAlquiler,   setPagAlquiler]   = useState<PaginaAlquilerCfg>(paginaAlquilerInicial);
 
   // ── Save flags ─────────────────────────────────────────────────────────────
-  const [savedHab,      setSavedHab]      = useState<string | null>(null);
-  const [savedComp,     setSavedComp]     = useState<string | null>(null);
-  const [savedEspacios, setSavedEspacios] = useState(false);
-  const [savedCabanya,  setSavedCabanya]  = useState(false);
-  const [savedSlider,   setSavedSlider]   = useState(false);
-  const [savedEstancia, setSavedEstancia] = useState(false);
+  const [savedHab,       setSavedHab]       = useState<string | null>(null);
+  const [savedComp,      setSavedComp]      = useState<string | null>(null);
+  const [savedEspacios,  setSavedEspacios]  = useState(false);
+  const [savedCabanya,   setSavedCabanya]   = useState(false);
+  const [savedSlider,    setSavedSlider]    = useState(false);
+  const [savedEstancia,  setSavedEstancia]  = useState(false);
+  const [savedPagInicio,   setSavedPagInicio]   = useState(false);
+  const [savedPagAloj,     setSavedPagAloj]     = useState(false);
+  const [savedPagAlquiler, setSavedPagAlquiler] = useState(false);
 
   // ── Save helpers ───────────────────────────────────────────────────────────
 
@@ -234,6 +265,54 @@ export default function ConfigClient({
         adminUpsertSistemaConfig("estancia_texto_ca", estanciaCa),
       ]);
       flag(setSavedEstancia);
+    });
+  }
+
+  function savePagInicio() {
+    startTransition(async () => {
+      await Promise.all([
+        adminUpsertSistemaConfig("page_home_hero_subtitle_es",   pagInicio.heroSubtitleEs),
+        adminUpsertSistemaConfig("page_home_hero_subtitle_ca",   pagInicio.heroSubtitleCa),
+        adminUpsertSistemaConfig("page_home_proposito_title_es", pagInicio.propositoTitleEs),
+        adminUpsertSistemaConfig("page_home_proposito_title_ca", pagInicio.propositoTitleCa),
+        adminUpsertSistemaConfig("page_home_proposito_p1_es",    pagInicio.propositoP1Es),
+        adminUpsertSistemaConfig("page_home_proposito_p1_ca",    pagInicio.propositoP1Ca),
+        adminUpsertSistemaConfig("page_home_proposito_p2_es",    pagInicio.propositoP2Es),
+        adminUpsertSistemaConfig("page_home_proposito_p2_ca",    pagInicio.propositoP2Ca),
+      ]);
+      flag(setSavedPagInicio);
+    });
+  }
+
+  function savePagAloj() {
+    startTransition(async () => {
+      await Promise.all([
+        adminUpsertSistemaConfig("page_aloj_hero_subtitle_es", pagAloj.heroSubtitleEs),
+        adminUpsertSistemaConfig("page_aloj_hero_subtitle_ca", pagAloj.heroSubtitleCa),
+        adminUpsertSistemaConfig("page_aloj_rooms_title_es",   pagAloj.roomsTitleEs),
+        adminUpsertSistemaConfig("page_aloj_rooms_title_ca",   pagAloj.roomsTitleCa),
+      ]);
+      flag(setSavedPagAloj);
+    });
+  }
+
+  function savePagAlquiler() {
+    startTransition(async () => {
+      await Promise.all([
+        adminUpsertSistemaConfig("page_alquiler_hero_title_es",    pagAlquiler.heroTitleEs),
+        adminUpsertSistemaConfig("page_alquiler_hero_title_ca",    pagAlquiler.heroTitleCa),
+        adminUpsertSistemaConfig("page_alquiler_hero_subtitle_es", pagAlquiler.heroSubtitleEs),
+        adminUpsertSistemaConfig("page_alquiler_hero_subtitle_ca", pagAlquiler.heroSubtitleCa),
+        adminUpsertSistemaConfig("page_alquiler_descripcion_es",   pagAlquiler.descripcionEs),
+        adminUpsertSistemaConfig("page_alquiler_descripcion_ca",   pagAlquiler.descripcionCa),
+        adminUpsertSistemaConfig("page_alquiler_precio_texto_es",  pagAlquiler.precioTextoEs),
+        adminUpsertSistemaConfig("page_alquiler_precio_texto_ca",  pagAlquiler.precioTextoCa),
+        adminUpsertSistemaConfig("page_alquiler_politica_es",      pagAlquiler.politicaEs),
+        adminUpsertSistemaConfig("page_alquiler_politica_ca",      pagAlquiler.politicaCa),
+        adminUpsertSistemaConfig("page_alquiler_incluye_es",       pagAlquiler.incluyeEs),
+        adminUpsertSistemaConfig("page_alquiler_incluye_ca",       pagAlquiler.incluyeCa),
+      ]);
+      flag(setSavedPagAlquiler);
     });
   }
 
@@ -412,6 +491,151 @@ export default function ConfigClient({
               </div>
             </div>
           ))}
+        </div>
+      </Section>
+
+      {/* ── 7. PÁGINAS ── */}
+      <Section title="Páginas" subtitle="Edita los textos principales de cada página pública." defaultOpen={false}>
+        <div className="space-y-8">
+
+          {/* ── Inicio ── */}
+          <div className="bg-white rounded-2xl border border-[#E8DCC8] p-6 space-y-5">
+            <h3 className="text-base font-semibold text-[#2C1810]">Inicio</h3>
+            <p className="text-xs text-[#2C1810]/40">Deja en blanco para usar el texto por defecto.</p>
+
+            <div className="grid sm:grid-cols-2 gap-4">
+              <FieldRow label="Subtítulo hero (ES)">
+                <input type="text" value={pagInicio.heroSubtitleEs} className={INPUT}
+                  onChange={e => setPagInicio(p => ({ ...p, heroSubtitleEs: e.target.value }))} />
+              </FieldRow>
+              <FieldRow label="Subtítulo hero (CA)">
+                <input type="text" value={pagInicio.heroSubtitleCa} className={INPUT}
+                  onChange={e => setPagInicio(p => ({ ...p, heroSubtitleCa: e.target.value }))} />
+              </FieldRow>
+              <FieldRow label="Título propósito (ES)">
+                <input type="text" value={pagInicio.propositoTitleEs} className={INPUT}
+                  onChange={e => setPagInicio(p => ({ ...p, propositoTitleEs: e.target.value }))} />
+              </FieldRow>
+              <FieldRow label="Título propósito (CA)">
+                <input type="text" value={pagInicio.propositoTitleCa} className={INPUT}
+                  onChange={e => setPagInicio(p => ({ ...p, propositoTitleCa: e.target.value }))} />
+              </FieldRow>
+            </div>
+            <FieldRow label="Párrafo propósito 1 (ES)">
+              <textarea rows={3} value={pagInicio.propositoP1Es} className={INPUT + " resize-y"}
+                onChange={e => setPagInicio(p => ({ ...p, propositoP1Es: e.target.value }))} />
+            </FieldRow>
+            <FieldRow label="Párrafo propósito 1 (CA)">
+              <textarea rows={3} value={pagInicio.propositoP1Ca} className={INPUT + " resize-y"}
+                onChange={e => setPagInicio(p => ({ ...p, propositoP1Ca: e.target.value }))} />
+            </FieldRow>
+            <FieldRow label="Párrafo propósito 2 (ES)">
+              <textarea rows={3} value={pagInicio.propositoP2Es} className={INPUT + " resize-y"}
+                onChange={e => setPagInicio(p => ({ ...p, propositoP2Es: e.target.value }))} />
+            </FieldRow>
+            <FieldRow label="Párrafo propósito 2 (CA)">
+              <textarea rows={3} value={pagInicio.propositoP2Ca} className={INPUT + " resize-y"}
+                onChange={e => setPagInicio(p => ({ ...p, propositoP2Ca: e.target.value }))} />
+            </FieldRow>
+            <SaveBtn onClick={savePagInicio} saving={isPending} saved={savedPagInicio} label="Guardar Inicio" />
+          </div>
+
+          {/* ── Alojamiento ── */}
+          <div className="bg-white rounded-2xl border border-[#E8DCC8] p-6 space-y-5">
+            <h3 className="text-base font-semibold text-[#2C1810]">Alojamiento</h3>
+            <p className="text-xs text-[#2C1810]/40">Deja en blanco para usar el texto por defecto.</p>
+            <div className="grid sm:grid-cols-2 gap-4">
+              <FieldRow label="Subtítulo hero (ES)">
+                <input type="text" value={pagAloj.heroSubtitleEs} className={INPUT}
+                  onChange={e => setPagAloj(p => ({ ...p, heroSubtitleEs: e.target.value }))} />
+              </FieldRow>
+              <FieldRow label="Subtítulo hero (CA)">
+                <input type="text" value={pagAloj.heroSubtitleCa} className={INPUT}
+                  onChange={e => setPagAloj(p => ({ ...p, heroSubtitleCa: e.target.value }))} />
+              </FieldRow>
+              <FieldRow label="Título sección habitaciones (ES)">
+                <input type="text" value={pagAloj.roomsTitleEs} className={INPUT}
+                  onChange={e => setPagAloj(p => ({ ...p, roomsTitleEs: e.target.value }))} />
+              </FieldRow>
+              <FieldRow label="Título sección habitaciones (CA)">
+                <input type="text" value={pagAloj.roomsTitleCa} className={INPUT}
+                  onChange={e => setPagAloj(p => ({ ...p, roomsTitleCa: e.target.value }))} />
+              </FieldRow>
+            </div>
+            <SaveBtn onClick={savePagAloj} saving={isPending} saved={savedPagAloj} label="Guardar Alojamiento" />
+          </div>
+
+          {/* ── Alquiler ── */}
+          <div className="bg-white rounded-2xl border border-[#E8DCC8] p-6 space-y-5">
+            <h3 className="text-base font-semibold text-[#2C1810]">Alquiler</h3>
+            <p className="text-xs text-[#2C1810]/40">Deja en blanco para usar el texto por defecto.</p>
+
+            <div className="grid sm:grid-cols-2 gap-4">
+              <FieldRow label="Título hero (ES)">
+                <input type="text" value={pagAlquiler.heroTitleEs} className={INPUT}
+                  onChange={e => setPagAlquiler(p => ({ ...p, heroTitleEs: e.target.value }))} />
+              </FieldRow>
+              <FieldRow label="Título hero (CA)">
+                <input type="text" value={pagAlquiler.heroTitleCa} className={INPUT}
+                  onChange={e => setPagAlquiler(p => ({ ...p, heroTitleCa: e.target.value }))} />
+              </FieldRow>
+              <FieldRow label="Subtítulo hero (ES)">
+                <input type="text" value={pagAlquiler.heroSubtitleEs} className={INPUT}
+                  onChange={e => setPagAlquiler(p => ({ ...p, heroSubtitleEs: e.target.value }))} />
+              </FieldRow>
+              <FieldRow label="Subtítulo hero (CA)">
+                <input type="text" value={pagAlquiler.heroSubtitleCa} className={INPUT}
+                  onChange={e => setPagAlquiler(p => ({ ...p, heroSubtitleCa: e.target.value }))} />
+              </FieldRow>
+            </div>
+
+            <FieldRow label="Descripción principal (ES)">
+              <textarea rows={4} value={pagAlquiler.descripcionEs} className={INPUT + " resize-y"}
+                onChange={e => setPagAlquiler(p => ({ ...p, descripcionEs: e.target.value }))} />
+            </FieldRow>
+            <FieldRow label="Descripción principal (CA)">
+              <textarea rows={4} value={pagAlquiler.descripcionCa} className={INPUT + " resize-y"}
+                onChange={e => setPagAlquiler(p => ({ ...p, descripcionCa: e.target.value }))} />
+            </FieldRow>
+            <FieldRow label="Texto bajo el precio (ES)">
+              <textarea rows={2} value={pagAlquiler.precioTextoEs} className={INPUT + " resize-y"}
+                onChange={e => setPagAlquiler(p => ({ ...p, precioTextoEs: e.target.value }))} />
+            </FieldRow>
+            <FieldRow label="Texto bajo el precio (CA)">
+              <textarea rows={2} value={pagAlquiler.precioTextoCa} className={INPUT + " resize-y"}
+                onChange={e => setPagAlquiler(p => ({ ...p, precioTextoCa: e.target.value }))} />
+            </FieldRow>
+
+            <div className="border-t border-[#E8DCC8] pt-4">
+              <p className="text-xs font-medium text-[#2C1810]/60 mb-3">Qué incluye — una línea por ítem, formato: <code className="bg-[#F0EAD6] px-1 rounded">Título :: Descripción</code></p>
+              <FieldRow label="Qué incluye (ES)">
+                <textarea rows={7} value={pagAlquiler.incluyeEs} className={INPUT + " resize-y font-mono text-xs"}
+                  placeholder={"Alojamiento :: 3 habitaciones de 4 plazas cada una\nPensión Completa :: Comida saludable..."}
+                  onChange={e => setPagAlquiler(p => ({ ...p, incluyeEs: e.target.value }))} />
+              </FieldRow>
+              <FieldRow label="Qué incluye (CA)">
+                <textarea rows={7} value={pagAlquiler.incluyeCa} className={INPUT + " resize-y font-mono text-xs"}
+                  placeholder={"Allotjament :: 3 habitacions de 4 places cadascuna\n..."}
+                  onChange={e => setPagAlquiler(p => ({ ...p, incluyeCa: e.target.value }))} />
+              </FieldRow>
+            </div>
+
+            <div className="border-t border-[#E8DCC8] pt-4">
+              <p className="text-xs font-medium text-[#2C1810]/60 mb-3">Política de cancelación — una línea por punto</p>
+              <FieldRow label="Política (ES)">
+                <textarea rows={4} value={pagAlquiler.politicaEs} className={INPUT + " resize-y"}
+                  placeholder={"Reserva con el 50% del importe total.\nDevolución íntegra hasta 2 meses antes."}
+                  onChange={e => setPagAlquiler(p => ({ ...p, politicaEs: e.target.value }))} />
+              </FieldRow>
+              <FieldRow label="Política (CA)">
+                <textarea rows={4} value={pagAlquiler.politicaCa} className={INPUT + " resize-y"}
+                  onChange={e => setPagAlquiler(p => ({ ...p, politicaCa: e.target.value }))} />
+              </FieldRow>
+            </div>
+
+            <SaveBtn onClick={savePagAlquiler} saving={isPending} saved={savedPagAlquiler} label="Guardar Alquiler" />
+          </div>
+
         </div>
       </Section>
 

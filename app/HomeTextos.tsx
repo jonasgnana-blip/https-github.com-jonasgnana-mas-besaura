@@ -13,10 +13,12 @@ import {
 } from "lucide-react";
 import { useLanguage } from "@/lib/LanguageContext";
 import { getT } from "@/lib/i18n";
+import { useContentKey } from "@/lib/SiteContentContext";
 
 export function HomeHeroTextos() {
   const { lang } = useLanguage();
   const tx = getT(lang);
+  const heroSubtitle = useContentKey("page_home_hero_subtitle", lang, tx.home_hero_subtitle);
 
   return (
     <div className="relative z-10 text-center px-6 max-w-3xl">
@@ -32,7 +34,7 @@ export function HomeHeroTextos() {
         Besaura
       </h1>
       <p className="text-[#E8DCC8] text-lg md:text-xl leading-relaxed mb-10 font-light max-w-xl mx-auto">
-        {tx.home_hero_subtitle}
+        {heroSubtitle}
       </p>
       <div className="flex flex-col sm:flex-row gap-4 justify-center">
         <Link
@@ -66,6 +68,9 @@ export function HomeHeroScroll() {
 export function HomeProposito() {
   const { lang } = useLanguage();
   const tx = getT(lang);
+  const propTitle = useContentKey("page_home_proposito_title", lang, tx.home_proposito_title);
+  const propP1    = useContentKey("page_home_proposito_p1",    lang, tx.home_proposito_p1);
+  const propP2    = useContentKey("page_home_proposito_p2",    lang, tx.home_proposito_p2);
 
   const features = [
     {
@@ -91,13 +96,13 @@ export function HomeProposito() {
         className="text-4xl md:text-5xl text-[#2C1810] leading-tight mb-6"
         style={{ fontFamily: "var(--font-playfair), Georgia, serif" }}
       >
-        {tx.home_proposito_title}
+        {propTitle}
       </h2>
       <p className="text-[#2C1810]/70 leading-relaxed mb-4">
-        {tx.home_proposito_p1}
+        {propP1}
       </p>
       <p className="text-[#2C1810]/70 leading-relaxed mb-8">
-        {tx.home_proposito_p2}
+        {propP2}
       </p>
       <div className="flex flex-col gap-4 pt-6 border-t border-[#E8DCC8]">
         {features.map(({ icon, label }) => (

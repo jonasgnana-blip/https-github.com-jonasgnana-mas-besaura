@@ -1,6 +1,10 @@
 import type { Metadata } from "next";
 import HeroSlider from "./components/HeroSlider";
 import NavBar from "./components/NavBar";
+import { SiteContentProvider } from "@/lib/SiteContentContext";
+import { prisma } from "@/lib/prisma";
+
+export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
   title: "Mas Besaura — Casa Rural · Actividades · Retiros en Vidrà, Girona",
@@ -31,8 +35,19 @@ import {
   HomeFooter,
 } from "./HomeTextos";
 
-export default function Home() {
+const PAGE_KEYS = [
+  "page_home_hero_subtitle_es","page_home_hero_subtitle_ca",
+  "page_home_proposito_title_es","page_home_proposito_title_ca",
+  "page_home_proposito_p1_es","page_home_proposito_p1_ca",
+  "page_home_proposito_p2_es","page_home_proposito_p2_ca",
+];
+
+export default async function Home() {
+  const rows = await prisma.sistemaConfig.findMany({ where: { clave: { in: PAGE_KEYS } } });
+  const content = Object.fromEntries(rows.map((r) => [r.clave, r.valor]));
+
   return (
+  <SiteContentProvider content={content}>
     <div className="min-h-screen">
       <NavBar />
 
@@ -83,5 +98,6 @@ export default function Home() {
       {/* ─── FOOTER ─── */}
       <HomeFooter />
     </div>
+  </SiteContentProvider>
   );
 }

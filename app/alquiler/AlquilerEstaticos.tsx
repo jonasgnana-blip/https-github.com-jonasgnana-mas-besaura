@@ -3,6 +3,7 @@
 import { Check, Clock, Users, PawPrint, Volume2, Sparkles, CalendarX } from "lucide-react";
 import { useLanguage } from "@/lib/LanguageContext";
 import { getT } from "@/lib/i18n";
+import { useContentKey } from "@/lib/SiteContentContext";
 
 // Traducciones específicas de la página estática de alquiler
 const INCLUYE_ES = [
@@ -40,6 +41,8 @@ const POLITICA_CA = [
 export function AlquilerHeroTextos() {
   const { lang } = useLanguage();
   const isCA = lang === "ca";
+  const heroTitle    = useContentKey("page_alquiler_hero_title",    lang, isCA ? "Lloguer Casa per a Retirs"  : "Alquiler Casa para Retiros");
+  const heroSubtitle = useContentKey("page_alquiler_hero_subtitle", lang, isCA ? "El teu espai per crear junts" : "Tu espacio para crear juntos");
   return (
     <>
       <p className="text-[#C4A882] text-sm tracking-[0.2em] uppercase font-medium mb-2">
@@ -49,10 +52,10 @@ export function AlquilerHeroTextos() {
         className="text-5xl md:text-6xl text-[#F0EAD6]"
         style={{ fontFamily: "var(--font-playfair), Georgia, serif" }}
       >
-        {isCA ? "Lloguer Casa per a Retirs" : "Alquiler Casa para Retiros"}
+        {heroTitle}
       </h1>
       <p className="text-[#E8DCC8]/80 text-lg mt-3 font-light">
-        {isCA ? "El teu espai per crear junts" : "Tu espacio para crear juntos"}
+        {heroSubtitle}
       </p>
     </>
   );
@@ -61,6 +64,12 @@ export function AlquilerHeroTextos() {
 export function AlquilerDescripcion() {
   const { lang } = useLanguage();
   const isCA = lang === "ca";
+  const descripcion  = useContentKey("page_alquiler_descripcion",  lang,
+    isCA ? "Lloga la casa per a les teves activitats professionals o trobades en grup. Tres habitacions de 4 places cadascuna. Possibilitat de càmping."
+         : "Alquila la casa para tus actividades profesionales o encuentros en grupo. Tres habitaciones de 4 plazas cada una. Posibilidad de camping.");
+  const precioTexto  = useContentKey("page_alquiler_precio_texto",  lang,
+    isCA ? "Inclou allotjament, pensió completa, sala exterior i interior. Menjar saludable amb productes de proximitat. Opció vegetariana."
+         : "Incluye alojamiento, pensión completa, sala exterior e interior. Comida saludable con productos de proximidad. Opción vegetariana.");
   return (
     <div className="max-w-3xl mx-auto text-center">
       <p className="text-[#4A6741] text-sm tracking-[0.2em] uppercase font-medium mb-4">
@@ -72,32 +81,31 @@ export function AlquilerDescripcion() {
       >
         {isCA ? "Un espai íntegre per a tu i el teu grup" : "Un espacio íntegro para ti y tu grupo"}
       </h2>
-      <p className="text-[#2C1810]/70 leading-relaxed mb-4">
-        {isCA
-          ? "Lloga la casa per a les teves activitats professionals o trobades en grup. Tres habitacions de 4 places cadascuna. Possibilitat de càmping."
-          : "Alquila la casa para tus actividades profesionales o encuentros en grupo. Tres habitaciones de 4 plazas cada una. Posibilidad de camping."}
-      </p>
+      <p className="text-[#2C1810]/70 leading-relaxed mb-4">{descripcion}</p>
       <p className="text-[#2C1810] text-2xl font-medium mt-8 mb-2">
-        80€/{isCA ? "persona" : "persona"}/dia
+        80€/persona/dia
       </p>
-      <p className="text-[#2C1810]/60 text-sm mb-4">
-        {isCA
-          ? "Inclou allotjament, pensió completa, sala exterior i interior."
-          : "Incluye alojamiento, pensión completa, sala exterior e interior."}
-      </p>
-      <p className="text-[#2C1810]/60 text-sm">
-        {isCA
-          ? "Menjar saludable amb productes de proximitat. Opció vegetariana."
-          : "Comida saludable con productos de proximidad. Opción vegetariana."}
-      </p>
+      <p className="text-[#2C1810]/60 text-sm mt-2">{precioTexto}</p>
     </div>
   );
+}
+
+function parseIncluye(raw: string): { titulo: string; desc: string }[] {
+  return raw.split("\n").map(l => l.trim()).filter(Boolean).map(l => {
+    const sep = l.indexOf("::");
+    return sep > -1
+      ? { titulo: l.slice(0, sep).trim(), desc: l.slice(sep + 2).trim() }
+      : { titulo: l, desc: "" };
+  });
 }
 
 export function AlquilerIncluyeSection() {
   const { lang } = useLanguage();
   const isCA = lang === "ca";
-  const items = isCA ? INCLUYE_CA : INCLUYE_ES;
+  const defaultItems = isCA ? INCLUYE_CA : INCLUYE_ES;
+  const defaultRaw = defaultItems.map(i => `${i.titulo} :: ${i.desc}`).join("\n");
+  const raw = useContentKey("page_alquiler_incluye", lang, defaultRaw);
+  const items = parseIncluye(raw);
   return (
     <div className="max-w-5xl mx-auto">
       <div className="text-center mb-12">
@@ -142,7 +150,9 @@ export function AlquilerIncluyeSection() {
 export function AlquilerPoliticaSection() {
   const { lang } = useLanguage();
   const isCA = lang === "ca";
-  const items = isCA ? POLITICA_CA : POLITICA_ES;
+  const defaultPolitica = (isCA ? POLITICA_CA : POLITICA_ES).join("\n");
+  const raw = useContentKey("page_alquiler_politica", lang, defaultPolitica);
+  const items = raw.split("\n").map(l => l.trim()).filter(Boolean);
   return (
     <div className="max-w-3xl mx-auto">
       <div className="text-center mb-10">

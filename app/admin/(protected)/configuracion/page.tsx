@@ -20,6 +20,21 @@ export default async function AdminConfigPage() {
             "cabanya_foto_1","cabanya_foto_2",
             "slider_foto_1","slider_foto_2","slider_foto_3","slider_foto_4","slider_foto_5",
             "estancia_texto_es","estancia_texto_ca",
+            // Página: Inicio
+            "page_home_hero_subtitle_es","page_home_hero_subtitle_ca",
+            "page_home_proposito_title_es","page_home_proposito_title_ca",
+            "page_home_proposito_p1_es","page_home_proposito_p1_ca",
+            "page_home_proposito_p2_es","page_home_proposito_p2_ca",
+            // Página: Alojamiento
+            "page_aloj_hero_subtitle_es","page_aloj_hero_subtitle_ca",
+            "page_aloj_rooms_title_es","page_aloj_rooms_title_ca",
+            // Página: Alquiler
+            "page_alquiler_hero_title_es","page_alquiler_hero_title_ca",
+            "page_alquiler_hero_subtitle_es","page_alquiler_hero_subtitle_ca",
+            "page_alquiler_descripcion_es","page_alquiler_descripcion_ca",
+            "page_alquiler_precio_texto_es","page_alquiler_precio_texto_ca",
+            "page_alquiler_politica_es","page_alquiler_politica_ca",
+            "page_alquiler_incluye_es","page_alquiler_incluye_ca",
           ],
         },
       },
@@ -71,6 +86,36 @@ export default async function AdminConfigPage() {
       }}
       estanciaTextoEsInicial={cfg["estancia_texto_es"] ?? ""}
       estanciaTextoCaInicial={cfg["estancia_texto_ca"] ?? ""}
+      paginaInicio={{
+        heroSubtitleEs: cfg["page_home_hero_subtitle_es"] ?? "",
+        heroSubtitleCa: cfg["page_home_hero_subtitle_ca"] ?? "",
+        propositoTitleEs: cfg["page_home_proposito_title_es"] ?? "",
+        propositoTitleCa: cfg["page_home_proposito_title_ca"] ?? "",
+        propositoP1Es: cfg["page_home_proposito_p1_es"] ?? "",
+        propositoP1Ca: cfg["page_home_proposito_p1_ca"] ?? "",
+        propositoP2Es: cfg["page_home_proposito_p2_es"] ?? "",
+        propositoP2Ca: cfg["page_home_proposito_p2_ca"] ?? "",
+      }}
+      paginaAlojamiento={{
+        heroSubtitleEs: cfg["page_aloj_hero_subtitle_es"] ?? "",
+        heroSubtitleCa: cfg["page_aloj_hero_subtitle_ca"] ?? "",
+        roomsTitleEs: cfg["page_aloj_rooms_title_es"] ?? "",
+        roomsTitleCa: cfg["page_aloj_rooms_title_ca"] ?? "",
+      }}
+      paginaAlquiler={{
+        heroTitleEs: cfg["page_alquiler_hero_title_es"] ?? "",
+        heroTitleCa: cfg["page_alquiler_hero_title_ca"] ?? "",
+        heroSubtitleEs: cfg["page_alquiler_hero_subtitle_es"] ?? "",
+        heroSubtitleCa: cfg["page_alquiler_hero_subtitle_ca"] ?? "",
+        descripcionEs: cfg["page_alquiler_descripcion_es"] ?? "",
+        descripcionCa: cfg["page_alquiler_descripcion_ca"] ?? "",
+        precioTextoEs: cfg["page_alquiler_precio_texto_es"] ?? "",
+        precioTextoCa: cfg["page_alquiler_precio_texto_ca"] ?? "",
+        politicaEs: cfg["page_alquiler_politica_es"] ?? "",
+        politicaCa: cfg["page_alquiler_politica_ca"] ?? "",
+        incluyeEs: cfg["page_alquiler_incluye_es"] ?? "",
+        incluyeCa: cfg["page_alquiler_incluye_ca"] ?? "",
+      }}
     />
   );
 }

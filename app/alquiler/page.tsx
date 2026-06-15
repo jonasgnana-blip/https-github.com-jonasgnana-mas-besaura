@@ -12,6 +12,8 @@ import {
 } from "./AlquilerEstaticos";
 import { getUnavailableDates } from "@/app/actions/reservas";
 import { Phone, MapPin } from "lucide-react";
+import { SiteContentProvider } from "@/lib/SiteContentContext";
+import { prisma } from "@/lib/prisma";
 
 export const dynamic = "force-dynamic";
 
@@ -36,13 +38,25 @@ export const metadata: Metadata = {
   },
 };
 
+const ALQUILER_KEYS = [
+  "page_alquiler_hero_title_es","page_alquiler_hero_title_ca",
+  "page_alquiler_hero_subtitle_es","page_alquiler_hero_subtitle_ca",
+  "page_alquiler_descripcion_es","page_alquiler_descripcion_ca",
+  "page_alquiler_precio_texto_es","page_alquiler_precio_texto_ca",
+  "page_alquiler_politica_es","page_alquiler_politica_ca",
+  "page_alquiler_incluye_es","page_alquiler_incluye_ca",
+];
+
 export default async function AlquilerPage() {
-  const [datesCabanya, datesCasa] = await Promise.all([
+  const [datesCabanya, datesCasa, pageRows] = await Promise.all([
     getUnavailableDates("la-cabanya"),
     getUnavailableDates("mas-besaura-casa"),
+    prisma.sistemaConfig.findMany({ where: { clave: { in: ALQUILER_KEYS } } }),
   ]);
+  const pageContent = Object.fromEntries(pageRows.map((r) => [r.clave, r.valor]));
 
   return (
+    <SiteContentProvider content={pageContent}>
     <div className="min-h-screen bg-[#FAFAF6]">
       <NavBar />
 
@@ -142,5 +156,6 @@ export default async function AlquilerPage() {
         </div>
       </footer>
     </div>
+    </SiteContentProvider>
   );
 }

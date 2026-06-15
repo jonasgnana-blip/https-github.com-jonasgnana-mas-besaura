@@ -3,6 +3,7 @@ import NavBar from "@/app/components/NavBar";
 import AlojamientoCliente from "./AlojamientoCliente";
 import { getComplementos, getUnavailableDates } from "@/app/actions/reservas";
 import { prisma } from "@/lib/prisma";
+import { SiteContentProvider } from "@/lib/SiteContentContext";
 
 export const dynamic = "force-dynamic";
 
@@ -26,8 +27,13 @@ export const metadata: Metadata = {
   },
 };
 
+const ALOJ_KEYS = [
+  "page_aloj_hero_subtitle_es","page_aloj_hero_subtitle_ca",
+  "page_aloj_rooms_title_es","page_aloj_rooms_title_ca",
+];
+
 export default async function AlojamientoPage() {
-  const [compls, datesArtemisa, datesSelene, datesHecate, datesCabanya, habitacionesDB] =
+  const [compls, datesArtemisa, datesSelene, datesHecate, datesCabanya, habitacionesDB, pageRows] =
     await Promise.all([
       getComplementos(),
       getUnavailableDates("artemisa"),
@@ -38,9 +44,12 @@ export default async function AlojamientoPage() {
         where: { id: { in: ["artemisa", "selene", "hecate"] } },
         select: { id: true, nombre: true, descripcion: true, capacidad: true, imagenes: true, precio_desayuno: true, precio_media_pension: true },
       }),
+      prisma.sistemaConfig.findMany({ where: { clave: { in: ALOJ_KEYS } } }),
     ]);
+  const pageContent = Object.fromEntries(pageRows.map((r) => [r.clave, r.valor]));
 
   return (
+    <SiteContentProvider content={pageContent}>
     <div className="min-h-screen bg-[#FAFAF6]">
       <NavBar />
       <AlojamientoCliente
@@ -60,5 +69,6 @@ export default async function AlojamientoPage() {
         }))}
       />
     </div>
+    </SiteContentProvider>
   );
 }

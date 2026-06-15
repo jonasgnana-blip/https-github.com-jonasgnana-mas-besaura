@@ -1,0 +1,1130 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mas Besaura — Comunidad de Nueva Era</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Jost:wght@200;300;400&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --cream: #F5F0E8;
+    --parchment: #EDE5D4;
+    --earth: #8B7355;
+    --forest: #3D5A3E;
+    --sage: #7A9E7E;
+    --gold: #C8A96E;
+    --amber: #B8860B;
+    --charcoal: #2C2416;
+    --mist: #F8F5EE;
+    --light-sage: #D4E4D5;
+  }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: 'Jost', sans-serif;
+    background: var(--cream);
+    color: var(--charcoal);
+    font-weight: 300;
+    line-height: 1.8;
+    overflow-x: hidden;
+  }
+
+  /* ── NAV ── */
+  nav {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 100;
+    padding: 1.5rem 4rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    mix-blend-mode: multiply;
+  }
+  .nav-logo {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.1rem;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: var(--charcoal);
+    font-weight: 400;
+    text-decoration: none;
+  }
+  .nav-links {
+    display: flex;
+    gap: 2.5rem;
+    list-style: none;
+  }
+  .nav-links a {
+    font-size: 0.72rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--charcoal);
+    text-decoration: none;
+    font-weight: 300;
+    opacity: 0.7;
+    transition: opacity 0.3s;
+  }
+  .nav-links a:hover { opacity: 1; }
+
+  /* ── HERO ── */
+  .hero {
+    min-height: 100vh;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    position: relative;
+    overflow: hidden;
+  }
+  .hero-visual {
+    background: var(--forest);
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+  }
+  .hero-mandala {
+    position: absolute;
+    width: 480px;
+    height: 480px;
+    opacity: 0.12;
+    animation: rotateSlow 60s linear infinite;
+  }
+  @keyframes rotateSlow {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+  }
+  .hero-text-over {
+    position: relative;
+    z-index: 2;
+    text-align: center;
+    color: var(--cream);
+    padding: 2rem;
+  }
+  .hero-symbol {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 5rem;
+    font-style: italic;
+    font-weight: 300;
+    line-height: 1;
+    display: block;
+    margin-bottom: 1rem;
+    color: var(--gold);
+  }
+  .hero-place {
+    font-size: 0.65rem;
+    letter-spacing: 0.4em;
+    text-transform: uppercase;
+    opacity: 0.6;
+  }
+  .hero-content {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 8rem 6rem 4rem 5rem;
+    background: var(--mist);
+  }
+  .hero-eyebrow {
+    font-size: 0.65rem;
+    letter-spacing: 0.35em;
+    text-transform: uppercase;
+    color: var(--sage);
+    margin-bottom: 2rem;
+    font-weight: 400;
+  }
+  .hero-headline {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 3.8rem;
+    line-height: 1.15;
+    font-weight: 300;
+    color: var(--charcoal);
+    margin-bottom: 2rem;
+  }
+  .hero-headline em {
+    font-style: italic;
+    color: var(--forest);
+  }
+  .hero-body {
+    font-size: 1rem;
+    color: #5A5040;
+    max-width: 420px;
+    margin-bottom: 3rem;
+    line-height: 2;
+  }
+  .hero-cta {
+    display: inline-flex;
+    align-items: center;
+    gap: 1rem;
+    font-size: 0.7rem;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: var(--forest);
+    text-decoration: none;
+    font-weight: 400;
+    border-bottom: 1px solid var(--sage);
+    padding-bottom: 0.4rem;
+    transition: gap 0.3s, border-color 0.3s;
+  }
+  .hero-cta:hover { gap: 1.5rem; border-color: var(--forest); }
+  .hero-divider {
+    position: absolute;
+    right: -1px;
+    top: 0;
+    width: 80px;
+    height: 100%;
+    background: var(--mist);
+    clip-path: polygon(40% 0, 100% 0, 100% 100%, 0% 100%);
+  }
+
+  /* ── INVOCACIÓN ── */
+  .invocation {
+    background: var(--charcoal);
+    padding: 5rem 4rem;
+    text-align: center;
+  }
+  .invocation-text {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.5rem;
+    font-style: italic;
+    font-weight: 300;
+    color: var(--gold);
+    letter-spacing: 0.02em;
+    line-height: 1.8;
+    max-width: 600px;
+    margin: 0 auto 1rem;
+  }
+  .invocation-attr {
+    font-size: 0.65rem;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.35);
+  }
+
+  /* ── PROPÓSITO ── */
+  .proposito {
+    padding: 8rem 4rem;
+    display: grid;
+    grid-template-columns: 1fr 2fr;
+    gap: 6rem;
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+  .section-label {
+    font-size: 0.62rem;
+    letter-spacing: 0.4em;
+    text-transform: uppercase;
+    color: var(--sage);
+    font-weight: 400;
+    padding-top: 0.5rem;
+  }
+  .proposito-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 2.5rem;
+  }
+  .proposito-item {
+    padding: 2.5rem 0;
+    border-top: 1px solid var(--gold);
+  }
+  .proposito-icon {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 2rem;
+    color: var(--gold);
+    font-style: italic;
+    display: block;
+    margin-bottom: 1rem;
+  }
+  .proposito-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.4rem;
+    font-weight: 600;
+    color: var(--charcoal);
+    margin-bottom: 0.8rem;
+  }
+  .proposito-desc {
+    font-size: 0.88rem;
+    color: #6B5E48;
+    line-height: 1.9;
+  }
+
+  /* ── MARCO ESPIRITUAL ── */
+  .marco {
+    background: var(--forest);
+    padding: 8rem 4rem;
+    position: relative;
+    overflow: hidden;
+  }
+  .marco-bg {
+    position: absolute;
+    right: -100px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 600px;
+    height: 600px;
+    opacity: 0.06;
+  }
+  .marco-inner {
+    max-width: 1200px;
+    margin: 0 auto;
+    position: relative;
+    z-index: 2;
+  }
+  .marco-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    margin-bottom: 5rem;
+  }
+  .marco-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 3rem;
+    font-weight: 300;
+    color: var(--cream);
+    line-height: 1.2;
+  }
+  .marco-title em { font-style: italic; color: var(--gold); }
+  .marco-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.5px;
+    background: rgba(255,255,255,0.08);
+  }
+  .marco-card {
+    background: rgba(61, 90, 62, 0.6);
+    padding: 3rem 2.5rem;
+    transition: background 0.4s;
+    cursor: default;
+  }
+  .marco-card:hover { background: rgba(61, 90, 62, 0.9); }
+  .marco-num {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 3.5rem;
+    font-weight: 300;
+    color: rgba(200, 169, 110, 0.3);
+    line-height: 1;
+    margin-bottom: 1.5rem;
+  }
+  .marco-card-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.3rem;
+    font-weight: 400;
+    color: var(--cream);
+    margin-bottom: 1rem;
+  }
+  .marco-card-text {
+    font-size: 0.85rem;
+    color: rgba(245, 240, 232, 0.65);
+    line-height: 1.9;
+  }
+
+  /* ── ACTIVIDADES ── */
+  .actividades {
+    padding: 8rem 4rem;
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+  .actividades-header {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 4rem;
+    margin-bottom: 5rem;
+    align-items: end;
+  }
+  .section-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 3rem;
+    font-weight: 300;
+    line-height: 1.2;
+    color: var(--charcoal);
+  }
+  .section-title em { font-style: italic; color: var(--forest); }
+  .section-body {
+    font-size: 0.95rem;
+    color: #6B5E48;
+    line-height: 2;
+    align-self: end;
+  }
+  .actividades-list {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 0;
+    border: 1px solid var(--parchment);
+  }
+  .actividad-item {
+    padding: 3rem 1.8rem;
+    border-right: 1px solid var(--parchment);
+    position: relative;
+    overflow: hidden;
+    cursor: default;
+    transition: background 0.4s;
+  }
+  .actividad-item:last-child { border-right: none; }
+  .actividad-item::before {
+    content: '';
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 0;
+    background: var(--light-sage);
+    transition: height 0.4s ease;
+    z-index: 0;
+  }
+  .actividad-item:hover::before { height: 100%; }
+  .actividad-content { position: relative; z-index: 1; }
+  .actividad-num {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 0.75rem;
+    color: var(--gold);
+    letter-spacing: 0.2em;
+    margin-bottom: 2rem;
+    display: block;
+    font-weight: 400;
+  }
+  .actividad-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.15rem;
+    font-weight: 600;
+    color: var(--charcoal);
+    margin-bottom: 1rem;
+    line-height: 1.3;
+  }
+  .actividad-desc {
+    font-size: 0.8rem;
+    color: #7A6E5F;
+    line-height: 1.8;
+  }
+
+  /* ── ECONOMÍA ── */
+  .economia {
+    background: var(--parchment);
+    padding: 8rem 4rem;
+  }
+  .economia-inner {
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+  .economia-top {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6rem;
+    margin-bottom: 5rem;
+    align-items: end;
+  }
+  .fases {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 2rem;
+    margin-top: 4rem;
+  }
+  .fase {
+    position: relative;
+    padding: 2.5rem 2rem;
+    background: white;
+    border-left: 3px solid var(--sage);
+  }
+  .fase-year {
+    font-size: 0.62rem;
+    letter-spacing: 0.35em;
+    text-transform: uppercase;
+    color: var(--sage);
+    margin-bottom: 1rem;
+    font-weight: 400;
+    display: block;
+  }
+  .fase-name {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.4rem;
+    font-weight: 600;
+    color: var(--charcoal);
+    margin-bottom: 1rem;
+  }
+  .fase-items {
+    list-style: none;
+    font-size: 0.82rem;
+    color: #6B5E48;
+    line-height: 2;
+  }
+  .fase-items li::before {
+    content: '·  ';
+    color: var(--gold);
+  }
+  .ingresos-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+  }
+  .ingreso {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 1.2rem;
+    background: white;
+    font-size: 0.82rem;
+  }
+  .ingreso-name { color: var(--charcoal); font-weight: 300; }
+  .ingreso-stars { color: var(--gold); letter-spacing: 0.1em; font-size: 0.7rem; }
+
+  /* ── CITA ── */
+  .cita-section {
+    padding: 8rem 4rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+  }
+  .cita-line {
+    position: absolute;
+    top: 50%;
+    left: 4rem;
+    right: 4rem;
+    height: 1px;
+    background: var(--parchment);
+  }
+  .cita-box {
+    background: var(--cream);
+    padding: 4rem 5rem;
+    max-width: 700px;
+    position: relative;
+    z-index: 1;
+    text-align: center;
+    border: 1px solid var(--parchment);
+  }
+  .cita-mark {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 5rem;
+    color: var(--gold);
+    line-height: 0.5;
+    display: block;
+    margin-bottom: 1.5rem;
+    font-style: italic;
+    opacity: 0.5;
+  }
+  .cita-text {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.4rem;
+    font-style: italic;
+    font-weight: 300;
+    color: var(--charcoal);
+    line-height: 1.8;
+    margin-bottom: 1.5rem;
+  }
+  .cita-source {
+    font-size: 0.65rem;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: var(--sage);
+  }
+
+  /* ── VISIBILIZACIÓN ── */
+  .visibilizacion {
+    background: var(--charcoal);
+    padding: 8rem 4rem;
+  }
+  .visib-inner {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8rem;
+    align-items: start;
+  }
+  .visib-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 3rem;
+    font-weight: 300;
+    color: var(--cream);
+    line-height: 1.2;
+    margin-bottom: 2rem;
+  }
+  .visib-title em { font-style: italic; color: var(--gold); }
+  .visib-body { font-size: 0.9rem; color: rgba(245,240,232,0.6); line-height: 2; margin-bottom: 3rem; }
+  .visib-channels { display: flex; flex-direction: column; gap: 0; }
+  .channel {
+    display: flex;
+    align-items: center;
+    gap: 2rem;
+    padding: 1.5rem 0;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+  }
+  .channel-icon {
+    width: 40px;
+    height: 40px;
+    border: 1px solid rgba(200, 169, 110, 0.3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+  .channel-icon svg { width: 18px; height: 18px; stroke: var(--gold); fill: none; }
+  .channel-title {
+    font-size: 0.82rem;
+    font-weight: 400;
+    color: var(--cream);
+    margin-bottom: 0.2rem;
+    letter-spacing: 0.05em;
+  }
+  .channel-desc { font-size: 0.75rem; color: rgba(245,240,232,0.45); }
+  .estrategia-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    padding-top: 1.5rem;
+  }
+  .estrategia-item {
+    padding: 2rem;
+    border: 1px solid rgba(255,255,255,0.06);
+    position: relative;
+    overflow: hidden;
+    transition: border-color 0.3s;
+  }
+  .estrategia-item:hover { border-color: rgba(200, 169, 110, 0.3); }
+  .est-label {
+    font-size: 0.62rem;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 0.8rem;
+    display: block;
+    font-weight: 400;
+  }
+  .est-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.1rem;
+    color: var(--cream);
+    font-weight: 400;
+    margin-bottom: 0.6rem;
+  }
+  .est-desc { font-size: 0.75rem; color: rgba(245,240,232,0.45); line-height: 1.7; }
+
+  /* ── INVITACIÓN ── */
+  .invitacion {
+    padding: 10rem 4rem;
+    text-align: center;
+    background: var(--mist);
+    position: relative;
+    overflow: hidden;
+  }
+  .invit-mandala {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 700px;
+    height: 700px;
+    opacity: 0.04;
+  }
+  .invit-inner { position: relative; z-index: 1; }
+  .invit-eyebrow {
+    font-size: 0.65rem;
+    letter-spacing: 0.4em;
+    text-transform: uppercase;
+    color: var(--sage);
+    margin-bottom: 2rem;
+    font-weight: 400;
+  }
+  .invit-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 4.5rem;
+    font-weight: 300;
+    color: var(--charcoal);
+    line-height: 1.1;
+    margin-bottom: 2rem;
+  }
+  .invit-title em { font-style: italic; color: var(--forest); }
+  .invit-body {
+    font-size: 1rem;
+    color: #6B5E48;
+    max-width: 500px;
+    margin: 0 auto 4rem;
+    line-height: 2;
+  }
+  .invit-actions {
+    display: flex;
+    gap: 2rem;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+  .btn-primary {
+    display: inline-block;
+    padding: 1rem 3rem;
+    background: var(--forest);
+    color: var(--cream);
+    text-decoration: none;
+    font-size: 0.7rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    font-weight: 400;
+    transition: background 0.3s;
+  }
+  .btn-primary:hover { background: var(--charcoal); }
+  .btn-secondary {
+    display: inline-block;
+    padding: 1rem 3rem;
+    border: 1px solid var(--earth);
+    color: var(--earth);
+    text-decoration: none;
+    font-size: 0.7rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    font-weight: 400;
+    transition: all 0.3s;
+  }
+  .btn-secondary:hover { background: var(--earth); color: var(--cream); }
+
+  /* ── FOOTER ── */
+  footer {
+    background: var(--charcoal);
+    padding: 4rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .footer-logo {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1rem;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: var(--cream);
+    font-weight: 400;
+    font-style: italic;
+  }
+  .footer-links {
+    display: flex;
+    gap: 2rem;
+    list-style: none;
+  }
+  .footer-links a {
+    font-size: 0.65rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: rgba(245,240,232,0.4);
+    text-decoration: none;
+    font-weight: 300;
+    transition: color 0.3s;
+  }
+  .footer-links a:hover { color: var(--gold); }
+  .footer-copy {
+    font-size: 0.7rem;
+    color: rgba(245,240,232,0.25);
+    letter-spacing: 0.1em;
+  }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 900px) {
+    nav { padding: 1.5rem 2rem; }
+    .nav-links { display: none; }
+    .hero { grid-template-columns: 1fr; min-height: auto; }
+    .hero-visual { min-height: 50vh; }
+    .hero-content { padding: 5rem 2rem 4rem; }
+    .hero-headline { font-size: 2.5rem; }
+    .proposito { grid-template-columns: 1fr; gap: 2rem; padding: 5rem 2rem; }
+    .proposito-grid { grid-template-columns: 1fr; }
+    .marco { padding: 5rem 2rem; }
+    .marco-grid { grid-template-columns: 1fr; }
+    .marco-header { flex-direction: column; gap: 2rem; align-items: start; }
+    .marco-title { font-size: 2rem; }
+    .actividades { padding: 5rem 2rem; }
+    .actividades-header { grid-template-columns: 1fr; gap: 2rem; }
+    .actividades-list { grid-template-columns: 1fr; }
+    .actividad-item { border-right: none; border-bottom: 1px solid var(--parchment); }
+    .economia { padding: 5rem 2rem; }
+    .economia-top { grid-template-columns: 1fr; gap: 2rem; }
+    .fases { grid-template-columns: 1fr; }
+    .ingresos-grid { grid-template-columns: 1fr; }
+    .visibilizacion { padding: 5rem 2rem; }
+    .visib-inner { grid-template-columns: 1fr; gap: 4rem; }
+    .estrategia-grid { grid-template-columns: 1fr; }
+    .invitacion { padding: 6rem 2rem; }
+    .invit-title { font-size: 2.8rem; }
+    footer { flex-direction: column; gap: 2rem; text-align: center; padding: 3rem 2rem; }
+    .footer-links { flex-wrap: wrap; justify-content: center; }
+  }
+
+  /* Scroll fade-in */
+  .reveal {
+    opacity: 0;
+    transform: translateY(30px);
+    transition: opacity 0.8s ease, transform 0.8s ease;
+  }
+  .reveal.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <a href="#" class="nav-logo">Mas Besaura</a>
+  <ul class="nav-links">
+    <li><a href="#proposito">Propósito</a></li>
+    <li><a href="#actividades">Actividades</a></li>
+    <li><a href="#economia">Sostenibilidad</a></li>
+    <li><a href="#invitacion">Conectar</a></li>
+  </ul>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-visual">
+    <!-- Mandala SVG -->
+    <svg class="hero-mandala" viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg">
+      <g transform="translate(200,200)">
+        <circle r="190" fill="none" stroke="#F5F0E8" stroke-width="0.5"/>
+        <circle r="150" fill="none" stroke="#F5F0E8" stroke-width="0.5"/>
+        <circle r="100" fill="none" stroke="#F5F0E8" stroke-width="0.5"/>
+        <circle r="50" fill="none" stroke="#F5F0E8" stroke-width="0.5"/>
+        <circle r="20" fill="none" stroke="#F5F0E8" stroke-width="0.5"/>
+        <g id="petal">
+          <ellipse cx="0" cy="-120" rx="12" ry="40" fill="none" stroke="#F5F0E8" stroke-width="0.5"/>
+        </g>
+        <use href="#petal" transform="rotate(30)"/>
+        <use href="#petal" transform="rotate(60)"/>
+        <use href="#petal" transform="rotate(90)"/>
+        <use href="#petal" transform="rotate(120)"/>
+        <use href="#petal" transform="rotate(150)"/>
+        <use href="#petal" transform="rotate(180)"/>
+        <use href="#petal" transform="rotate(210)"/>
+        <use href="#petal" transform="rotate(240)"/>
+        <use href="#petal" transform="rotate(270)"/>
+        <use href="#petal" transform="rotate(300)"/>
+        <use href="#petal" transform="rotate(330)"/>
+        <polygon points="0,-170 15,-90 80,-50 15,-10 0,70 -15,-10 -80,-50 -15,-90" fill="none" stroke="#F5F0E8" stroke-width="0.5"/>
+        <polygon points="0,170 15,90 80,50 15,10 0,-70 -15,10 -80,50 -15,90" fill="none" stroke="#F5F0E8" stroke-width="0.5"/>
+      </g>
+    </svg>
+    <div class="hero-text-over">
+      <span class="hero-symbol">✦</span>
+      <p class="hero-place">Girona · Catalunya · España</p>
+    </div>
+    <div class="hero-divider"></div>
+  </div>
+  <div class="hero-content">
+    <p class="hero-eyebrow">Comunidad de Nueva Era</p>
+    <h1 class="hero-headline">Un espacio de<br><em>servicio, amor</em><br>y autosuficiencia</h1>
+    <p class="hero-body">Mas Besaura es una finca-comunidad donde la vida espiritual y la vida cotidiana se integran como una sola práctica — reflejo de Shambala en la Tierra.</p>
+    <a href="#proposito" class="hero-cta">Descubrir el proyecto →</a>
+  </div>
+</section>
+
+<!-- INVOCACIÓN -->
+<div class="invocation">
+  <p class="invocation-text">"Que la Luz, el Amor y el Poder restablezcan el Plan en la Tierra."</p>
+  <p class="invocation-attr">La Gran Invocación · Alice A. Bailey</p>
+</div>
+
+<!-- PROPÓSITO -->
+<section class="proposito reveal" id="proposito">
+  <div>
+    <p class="section-label">Propósito</p>
+  </div>
+  <div class="proposito-grid">
+    <div class="proposito-item">
+      <span class="proposito-icon">✦</span>
+      <h3 class="proposito-title">Demostración</h3>
+      <p class="proposito-desc">Un modelo replicable de comunidad autosuficiente, espiritual y económicamente viable. No una teoría — una demostración viva.</p>
+    </div>
+    <div class="proposito-item">
+      <span class="proposito-icon">◈</span>
+      <h3 class="proposito-title">Servicio</h3>
+      <p class="proposito-desc">Nodo del Nuevo Grupo de Servidores del Mundo. Al servicio de la humanidad desde la buena voluntad y el amor grupal.</p>
+    </div>
+    <div class="proposito-item">
+      <span class="proposito-icon">○</span>
+      <h3 class="proposito-title">Irradiación</h3>
+      <p class="proposito-desc">Transmitir Luz, Amor y Voluntad de Bien — principios del Plan de Shambala — a todos los que llegan y a la conciencia colectiva.</p>
+    </div>
+  </div>
+</section>
+
+<!-- MARCO ESPIRITUAL -->
+<section class="marco" id="marco">
+  <div class="marco-inner">
+    <div class="marco-header">
+      <h2 class="marco-title">Marco <em>espiritual</em><br>y filosófico</h2>
+      <p style="font-size:0.85rem; color:rgba(245,240,232,0.5); max-width:300px; line-height:2;">Tres corrientes de sabiduría perenne que convergen en un mismo llamado: servir al Plan Divino.</p>
+    </div>
+    <div class="marco-grid reveal">
+      <div class="marco-card">
+        <div class="marco-num">I</div>
+        <h3 class="marco-card-title">Las Enseñanzas de Jesús</h3>
+        <p class="marco-card-text">Amor, servicio y unidad como práctica concreta. El servicio como forma suprema de expresión espiritual. La sanación de cuerpo, mente y alma como vocación colectiva.</p>
+      </div>
+      <div class="marco-card">
+        <div class="marco-num">II</div>
+        <h3 class="marco-card-title">Shambala</h3>
+        <p class="marco-card-text">El centro espiritual del planeta según el Dr. K. Parvathi Kumar. Vida de sacrificio, silencio y discreción. Irradiación de buena voluntad. Equilibrio de los cinco elementos.</p>
+      </div>
+      <div class="marco-card">
+        <div class="marco-num">III</div>
+        <h3 class="marco-card-title">Nuevo Grupo de Servidores</h3>
+        <p class="marco-card-text">Alice A. Bailey: el grupo de hombres y mujeres que trabajan para realizar el Plan Divino. Sin dogma ni jerarquía. La buena voluntad como herramienta de transformación.</p>
+      </div>
+    </div>
+  </div>
+  <!-- BG mandala -->
+  <svg class="marco-bg" viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg">
+    <g transform="translate(200,200)">
+      <circle r="190" fill="none" stroke="white" stroke-width="1"/>
+      <circle r="130" fill="none" stroke="white" stroke-width="0.5"/>
+      <polygon points="0,-150 130,75 -130,75" fill="none" stroke="white" stroke-width="0.5"/>
+      <polygon points="0,150 130,-75 -130,-75" fill="none" stroke="white" stroke-width="0.5"/>
+    </g>
+  </svg>
+</section>
+
+<!-- ACTIVIDADES -->
+<section class="actividades reveal" id="actividades">
+  <div class="actividades-header">
+    <h2 class="section-title">Áreas de<br><em>actividad</em></h2>
+    <p class="section-body">Cinco áreas que generan simultáneamente valor espiritual, comunitario y económico. Cada área es autónoma pero se alimenta de las demás.</p>
+  </div>
+  <div class="actividades-list">
+    <div class="actividad-item">
+      <div class="actividad-content">
+        <span class="actividad-num">01</span>
+        <h3 class="actividad-title">Formación y Crecimiento Personal</h3>
+        <p class="actividad-desc">Retiros de silencio, talleres de psicoterapia y relaciones, inmersiones en permacultura, formación en comunidad consciente.</p>
+      </div>
+    </div>
+    <div class="actividad-item">
+      <div class="actividad-content">
+        <span class="actividad-num">02</span>
+        <h3 class="actividad-title">Sanación y Bienestar</h3>
+        <p class="actividad-desc">Terapia transpersonal, constelaciones familiares, inmersiones de bienestar, acompañamiento a parejas y familias.</p>
+      </div>
+    </div>
+    <div class="actividad-item">
+      <div class="actividad-content">
+        <span class="actividad-num">03</span>
+        <h3 class="actividad-title">Cultura y Arte Sagrado</h3>
+        <p class="actividad-desc">Veladas de música y canto, encuentros interreligiosos, residencias artísticas, celebraciones de ciclos solares y lunares.</p>
+      </div>
+    </div>
+    <div class="actividad-item">
+      <div class="actividad-content">
+        <span class="actividad-num">04</span>
+        <h3 class="actividad-title">Autosuficiencia Regenerativa</h3>
+        <p class="actividad-desc">Huerto ecológico, conservas y plantas medicinales, energía solar, red de intercambio, voluntariado WWOOF.</p>
+      </div>
+    </div>
+    <div class="actividad-item">
+      <div class="actividad-content">
+        <span class="actividad-num">05</span>
+        <h3 class="actividad-title">Red e Irradiación</h3>
+        <p class="actividad-desc">Nodo de red global de Nueva Era. Documentación del modelo, mentoring a proyectos hermanos, presencia internacional.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CITA -->
+<div class="cita-section">
+  <div class="cita-line"></div>
+  <div class="cita-box reveal">
+    <span class="cita-mark">"</span>
+    <p class="cita-text">Estas metas no se alcanzarán mediante la propaganda apoyada por la fuerza, sino por el ejemplo, respaldado por el sacrificio y el amor.</p>
+    <p class="cita-source">Alice A. Bailey</p>
+  </div>
+</div>
+
+<!-- ECONOMÍA -->
+<section class="economia reveal" id="economia">
+  <div class="economia-inner">
+    <div class="economia-top">
+      <div>
+        <p class="section-label" style="margin-bottom:1.5rem;">Sostenibilidad económica</p>
+        <h2 class="section-title">Modelo<br><em>regenerativo</em></h2>
+      </div>
+      <div>
+        <p class="section-body">El dinero como energía vital cristalizada — debe circular con libertad, generosidad y propósito. Nueve líneas de ingresos diversificadas.</p>
+        <div class="ingresos-grid" style="margin-top:2rem;">
+          <div class="ingreso"><span class="ingreso-name">Retiros y Formaciones</span><span class="ingreso-stars">★★★</span></div>
+          <div class="ingreso"><span class="ingreso-name">Sesiones Terapéuticas</span><span class="ingreso-stars">★★★</span></div>
+          <div class="ingreso"><span class="ingreso-name">Formación Online</span><span class="ingreso-stars">★★★</span></div>
+          <div class="ingreso"><span class="ingreso-name">Estancias y Alojamiento</span><span class="ingreso-stars">★★</span></div>
+          <div class="ingreso"><span class="ingreso-name">Productos de la Tierra</span><span class="ingreso-stars">★★</span></div>
+          <div class="ingreso"><span class="ingreso-name">Membresía Comunidad</span><span class="ingreso-stars">★★</span></div>
+          <div class="ingreso"><span class="ingreso-name">Eventos y Encuentros</span><span class="ingreso-stars">★★</span></div>
+          <div class="ingreso"><span class="ingreso-name">Donaciones</span><span class="ingreso-stars">★</span></div>
+          <div class="ingreso"><span class="ingreso-name">Subvenciones EU</span><span class="ingreso-stars">+</span></div>
+        </div>
+      </div>
+    </div>
+    <p class="section-label" style="margin-bottom:2rem;">Hoja de ruta 2025–2027</p>
+    <div class="fases">
+      <div class="fase">
+        <span class="fase-year">2025 · Fase 1</span>
+        <h3 class="fase-name">Consolidación</h3>
+        <ul class="fase-items">
+          <li>Lanzar y renovar web</li>
+          <li>Definir oferta de retiros</li>
+          <li>Lanzar membresía online</li>
+          <li>Iniciar huerto productivo</li>
+          <li>Identidad visual coherente</li>
+          <li>Presencia regular en Instagram</li>
+        </ul>
+      </div>
+      <div class="fase">
+        <span class="fase-year">2026 · Fase 2</span>
+        <h3 class="fase-name">Expansión</h3>
+        <ul class="fase-items">
+          <li>Ampliar capacidad de acogida</li>
+          <li>Desarrollar cursos online</li>
+          <li>Red de colaboradores terapeutas</li>
+          <li>Primer festival anual</li>
+          <li>Conexión con ecoaldeas europeas</li>
+        </ul>
+      </div>
+      <div class="fase">
+        <span class="fase-year">2027 · Fase 3</span>
+        <h3 class="fase-name">Irradiación</h3>
+        <ul class="fase-items">
+          <li>Autosuficiencia energética total</li>
+          <li>Publicación del modelo</li>
+          <li>Mentoría a proyectos hermanos</li>
+          <li>Presencia internacional</li>
+          <li>Ingresos completamente diversificados</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- VISIBILIZACIÓN -->
+<section class="visibilizacion reveal" id="visibilizacion">
+  <div class="visib-inner">
+    <div>
+      <p style="font-size:0.62rem; letter-spacing:0.4em; text-transform:uppercase; color:var(--sage); margin-bottom:2rem; font-weight:400;">Estrategia</p>
+      <h2 class="visib-title">Irradiación,<br>no <em>publicidad</em></h2>
+      <p class="visib-body">Hacer visible la luz para que quienes resuenen con ella puedan encontrarla. La palabra escrita y hablada como herramienta de servicio.</p>
+      <div class="visib-channels">
+        <div class="channel">
+          <div class="channel-icon">
+            <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20M12 2a14.5 14.5 0 0 1 0 20M2 12h20"/></svg>
+          </div>
+          <div>
+            <p class="channel-title">www.masbesaura.com</p>
+            <p class="channel-desc">Web como corazón digital — belleza, paz, profundidad, hospitalidad</p>
+          </div>
+        </div>
+        <div class="channel">
+          <div class="channel-icon">
+            <svg viewBox="0 0 24 24"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1"/></svg>
+          </div>
+          <div>
+            <p class="channel-title">@masbesaura — Instagram</p>
+            <p class="channel-desc">Vida cotidiana · Enseñanzas · Testimonios · Convocatorias</p>
+          </div>
+        </div>
+        <div class="channel">
+          <div class="channel-icon">
+            <svg viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+          </div>
+          <div>
+            <p class="channel-title">Newsletter mensual</p>
+            <p class="channel-desc">Carta de la finca — enseñanza, testimonio y convocatoria</p>
+          </div>
+        </div>
+        <div class="channel">
+          <div class="channel-icon">
+            <svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          </div>
+          <div>
+            <p class="channel-title">Jornadas de puertas abiertas</p>
+            <p class="channel-desc">2–4 al año, gratuitas, para conocer la finca y el proyecto</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div>
+      <p style="font-size:0.62rem; letter-spacing:0.4em; text-transform:uppercase; color:var(--sage); margin-bottom:2rem; font-weight:400;">Estrategia de contenido</p>
+      <div class="estrategia-grid">
+        <div class="estrategia-item">
+          <span class="est-label">Tipo 01</span>
+          <h4 class="est-title">Vida cotidiana</h4>
+          <p class="est-desc">Huerto, cocina, amanecer, trabajo en la tierra. Autenticidad que conecta.</p>
+        </div>
+        <div class="estrategia-item">
+          <span class="est-label">Tipo 02</span>
+          <h4 class="est-title">Enseñanzas</h4>
+          <p class="est-desc">Citas de Jesús, Shambala, Bailey. Reflexiones breves y profundas.</p>
+        </div>
+        <div class="estrategia-item">
+          <span class="est-label">Tipo 03</span>
+          <h4 class="est-title">Testimonios</h4>
+          <p class="est-desc">Experiencias reales de participantes en retiros y talleres.</p>
+        </div>
+        <div class="estrategia-item">
+          <span class="est-label">Tipo 04</span>
+          <h4 class="est-title">Convocatorias</h4>
+          <p class="est-desc">Actividades próximas con imágenes bellas del espacio y la naturaleza.</p>
+        </div>
+        <div class="estrategia-item">
+          <span class="est-label">Tipo 05</span>
+          <h4 class="est-title">Podcast</h4>
+          <p class="est-desc">Reflexiones breves grabadas en la naturaleza de la finca.</p>
+        </div>
+        <div class="estrategia-item">
+          <span class="est-label">Tipo 06</span>
+          <h4 class="est-title">Red hermana</h4>
+          <p class="est-desc">Intercambio con proyectos afines. Presencia en ecoaldeas y encuentros.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- INVITACIÓN -->
+<section class="invitacion" id="invitacion">
+  <svg class="invit-mandala" viewBox="0 0 600 600" xmlns="http://www.w3.org/2000/svg">
+    <g transform="translate(300,300)">
+      <circle r="280" fill="none" stroke="#3D5A3E" stroke-width="1"/>
+      <circle r="200" fill="none" stroke="#3D5A3E" stroke-width="0.5"/>
+      <circle r="120" fill="none" stroke="#3D5A3E" stroke-width="0.5"/>
+      <circle r="60" fill="none" stroke="#3D5A3E" stroke-width="0.5"/>
+      <polygon points="0,-250 216,125 -216,125" fill="none" stroke="#3D5A3E" stroke-width="0.5"/>
+      <polygon points="0,250 216,-125 -216,-125" fill="none" stroke="#3D5A3E" stroke-width="0.5"/>
+      <polygon points="0,-200 173,100 -173,100" fill="none" stroke="#3D5A3E" stroke-width="0.5"/>
+      <polygon points="0,200 173,-100 -173,-100" fill="none" stroke="#3D5A3E" stroke-width="0.5"/>
+    </g>
+  </svg>
+  <div class="invit-inner reveal">
+    <p class="invit-eyebrow">¿Sientes el llamado?</p>
+    <h2 class="invit-title">Eres<br><em>bienvenido</em></h2>
+    <p class="invit-body">Mas Besaura no busca seguidores ni clientes. Busca almas que sientan el llamado a vivir de otra manera — a servir, a crecer, a irradiar.</p>
+    <div class="invit-actions">
+      <a href="https://www.masbesaura.com" class="btn-primary">Visitar la web</a>
+      <a href="https://instagram.com/masbesaura" class="btn-secondary">@masbesaura</a>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <span class="footer-logo">Mas Besaura</span>
+  <ul class="footer-links">
+    <li><a href="#">Girona, Catalunya</a></li>
+    <li><a href="https://www.masbesaura.com">masbesaura.com</a></li>
+    <li><a href="https://instagram.com/masbesaura">Instagram</a></li>
+    <li><a href="#">Contacto</a></li>
+  </ul>
+  <span class="footer-copy">© 2025 Mas Besaura</span>
+</footer>
+
+<script>
+  // Scroll reveal
+  const reveals = document.querySelectorAll('.reveal');
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('visible');
+      }
+    });
+  }, { threshold: 0.1 });
+  reveals.forEach(el => observer.observe(el));
+</script>
+</body>
+</html>

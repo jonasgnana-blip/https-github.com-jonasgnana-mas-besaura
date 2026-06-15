@@ -6,6 +6,7 @@ import { createReserva } from "@/app/actions/reservas";
 import type { DateRange } from "@/app/actions/reservas";
 import { useLanguage } from "@/lib/LanguageContext";
 import { getT } from "@/lib/i18n";
+import { useContentKey } from "@/lib/SiteContentContext";
 
 // ── Types ──────────────────────────────────────────────────────────────────────
 
@@ -1043,6 +1044,8 @@ export default function AlojamientoCliente({
 }: Props) {
   const { lang } = useLanguage();
   const tr = getT(lang);
+  const alojHeroSubtitle = useContentKey("page_aloj_hero_subtitle", lang, tr.aloj_hero_subtitle);
+  const alojRoomsTitle   = useContentKey("page_aloj_rooms_title",   lang, tr.aloj_rooms_title);
 
   const unavailableByRoom: Record<HabitacionKey, DateRange[]> = {
     artemisa: datesArtemisa,
@@ -1086,7 +1089,7 @@ export default function AlojamientoCliente({
             {tr.nav_alojamiento}
           </h1>
           <p className="text-[#E8DCC8]/80 text-lg mt-3 font-light">
-            {tr.aloj_hero_subtitle}
+            {alojHeroSubtitle}
           </p>
         </div>
       </section>
@@ -1102,7 +1105,7 @@ export default function AlojamientoCliente({
               className="text-3xl md:text-4xl text-[#2C1810]"
               style={{ fontFamily: "var(--font-playfair), Georgia, serif" }}
             >
-              {tr.aloj_rooms_title}
+              {alojRoomsTitle}
             </h2>
           </div>
 
