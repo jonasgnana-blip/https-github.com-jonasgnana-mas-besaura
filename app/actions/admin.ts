@@ -244,6 +244,7 @@ export async function adminUpdateHabitacion(
     precio_desayuno?: number;
     precio_media_pension?: number;
     imagenes?: string[];
+    activa?: boolean;
   }
 ) {
   await requireAdmin();

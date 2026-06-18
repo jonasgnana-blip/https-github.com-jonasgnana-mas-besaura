@@ -1,5 +1,4 @@
 import {
-  adminGetHabitaciones,
   adminGetComplementos,
 } from "@/app/actions/admin";
 import { prisma } from "@/lib/prisma";
@@ -8,8 +7,7 @@ import ConfigClient from "./ConfigClient";
 export const dynamic = "force-dynamic";
 
 export default async function AdminConfigPage() {
-  const [habitacionesAll, complementos, espaciosCfgs] = await Promise.all([
-    adminGetHabitaciones(),
+  const [complementos, espaciosCfgs] = await Promise.all([
     adminGetComplementos(),
     prisma.sistemaConfig.findMany({
       where: {
@@ -40,23 +38,10 @@ export default async function AdminConfigPage() {
       },
     }),
   ]);
-  // Show only the 3 booking rooms (not la-cabanya or mas-besaura-casa)
-  const ROOM_IDS = ["artemisa", "selene", "hecate"];
-  const habitaciones = habitacionesAll.filter((h) => ROOM_IDS.includes(h.id));
   const cfg = Object.fromEntries(espaciosCfgs.map(c => [c.clave, c.valor]));
 
   return (
     <ConfigClient
-      habitaciones={habitaciones.map((h) => ({
-        id: h.id,
-        nombre: h.nombre,
-        descripcion: h.descripcion,
-        precio_noche: Number(h.precio_noche),
-        capacidad: h.capacidad,
-        precio_desayuno: h.precio_desayuno != null ? Number(h.precio_desayuno) : null,
-        precio_media_pension: h.precio_media_pension != null ? Number(h.precio_media_pension) : null,
-        imagenes: h.imagenes,
-      }))}
       complementos={complementos.map((c) => ({
         id: c.id,
         nombre: c.nombre,

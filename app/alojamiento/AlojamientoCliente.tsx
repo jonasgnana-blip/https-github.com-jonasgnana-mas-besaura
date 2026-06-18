@@ -1053,8 +1053,9 @@ export default function AlojamientoCliente({
     hecate: datesHecate,
   };
 
-  const HABITACIONES: HabitacionData[] = HABITACIONES_BASE.map((base) => {
-    const db = habitacionesDB.find(h => h.id === base.id);
+  const activeIds = new Set((habitacionesDB ?? []).map(h => h.id));
+  const HABITACIONES: HabitacionData[] = HABITACIONES_BASE.filter(base => !habitacionesDB || activeIds.has(base.id)).map((base) => {
+    const db = habitacionesDB?.find(h => h.id === base.id);
     return {
       ...base,
       nombre:      db?.nombre      || base.nombre,

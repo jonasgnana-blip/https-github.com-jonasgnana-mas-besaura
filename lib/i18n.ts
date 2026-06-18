@@ -70,8 +70,8 @@ const translations = {
 
     // ── Alojamiento page ────────────────────────────────────────────────────
     aloj_hero_subtitle: "Tres habitaciones únicas entre bosques y ríos",
-    aloj_rooms_label: "Las habitaciones",
-    aloj_rooms_title: "Tres diosas que custodian tu descanso",
+    aloj_rooms_label: "El descanso",
+    aloj_rooms_title: "Entre el silencio del valle, el cuidado y la armonía de los hayedos",
     aloj_room_artemisa_desc: "2 camas individuales y una cama doble, con baño. Estufa de pellets. Orientación este.",
     aloj_room_selene_desc: "Habitación con altillo. 2 camas individuales abajo, 2 camas individuales arriba. Estufa de pellets. Orientación norte.",
     aloj_room_hecate_desc: "2 camas individuales y una cama doble. Estufa de pellets. Orientación oeste.",
@@ -306,8 +306,8 @@ const translations = {
 
     // ── Alojamiento page ────────────────────────────────────────────────────
     aloj_hero_subtitle: "Tres habitacions úniques entre boscos i rius",
-    aloj_rooms_label: "Les habitacions",
-    aloj_rooms_title: "Tres deesses que custodien el teu descans",
+    aloj_rooms_label: "El descans",
+    aloj_rooms_title: "Entre el silenci de la vall, la cura i l'harmonia de les fagedes",
     aloj_room_artemisa_desc: "2 llits individuals i un llit doble, amb bany. Estufa de pèl·lets. Orientació est.",
     aloj_room_selene_desc: "Habitació amb altell. 2 llits individuals a baix, 2 llits individuals a dalt. Estufa de pèl·lets. Orientació nord.",
     aloj_room_hecate_desc: "2 llits individuals i un llit doble. Estufa de pèl·lets. Orientació oest.",

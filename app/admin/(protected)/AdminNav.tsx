@@ -10,12 +10,14 @@ import {
   LogOut,
   Calendar,
   Tag,
+  BedDouble,
 } from "lucide-react";
 
 const NAV = [
   { href: "/admin", label: "Dashboard", icon: LayoutDashboard },
   { href: "/admin/reservas", label: "Reservas", icon: CalendarDays },
   { href: "/admin/actividades", label: "Actividades", icon: Calendar },
+  { href: "/admin/habitaciones", label: "Habitaciones", icon: BedDouble },
   { href: "/admin/bloqueos", label: "Bloquear fechas", icon: BanIcon },
   { href: "/admin/codigos", label: "Códigos descuento", icon: Tag },
   { href: "/admin/configuracion", label: "Configuración", icon: Settings },
