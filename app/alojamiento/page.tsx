@@ -32,6 +32,40 @@ const ALOJ_KEYS = [
   "page_aloj_rooms_title_es","page_aloj_rooms_title_ca",
 ];
 
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@type": "LodgingBusiness",
+  name: "Mas Besaura — Alojamiento",
+  url: "https://masbesaura.com/alojamiento",
+  image: "https://masbesaura.com/images/hero3.jpg",
+  address: {
+    "@type": "PostalAddress",
+    addressLocality: "Vidrà",
+    addressRegion: "Girona",
+    addressCountry: "ES",
+  },
+  containsPlace: [
+    {
+      "@type": "HotelRoom",
+      name: "Artemisa",
+      description: "2 camas individuales y una cama doble, con baño. Estufa de pellets. Orientación este.",
+      occupancy: { "@type": "QuantitativeValue", maxValue: 4 },
+    },
+    {
+      "@type": "HotelRoom",
+      name: "Selene",
+      description: "Habitación con altillo. 2 camas individuales abajo, 2 arriba. Estufa de pellets. Orientación norte.",
+      occupancy: { "@type": "QuantitativeValue", maxValue: 4 },
+    },
+    {
+      "@type": "HotelRoom",
+      name: "Hécate",
+      description: "2 camas individuales y una cama doble. Estufa de pellets. Orientación oeste.",
+      occupancy: { "@type": "QuantitativeValue", maxValue: 4 },
+    },
+  ],
+};
+
 export default async function AlojamientoPage() {
   const [compls, datesArtemisa, datesSelene, datesHecate, datesCabanya, habitacionesDB, pageRows] =
     await Promise.all([
@@ -50,6 +84,7 @@ export default async function AlojamientoPage() {
 
   return (
     <SiteContentProvider content={pageContent}>
+    <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
     <div className="min-h-screen bg-[#FAFAF6]">
       <NavBar />
       <AlojamientoCliente

@@ -1,0 +1,65 @@
+# Mas Besaura
+
+> Casa rural de retiros y experiencias en la naturaleza. Vidrà, Girona (Ripollès), Cataluña, España.
+
+Mas Besaura es una casa rural situada en el municipio de Vidrà (Girona), en pleno Ripollès, rodeada de hayedos, ríos salvajes y cascadas. Ofrece alojamiento, actividades en la naturaleza, alquiler íntegro para retiros y grupos, y La Cabanya — una sala exterior de 350 m² con arco de piedra centenario.
+
+## Alojamiento
+
+Tres habitaciones privadas con nombres de diosas:
+
+- **Artemisa** — 2 camas individuales + 1 cama doble, baño privado, estufa de pellets, orientación este.
+- **Selene** — Habitación con altillo. 2 camas individuales abajo + 2 arriba. Estufa de pellets, orientación norte.
+- **Hécate** — 2 camas individuales + 1 cama doble. Estufa de pellets, orientación oeste.
+
+Capacidad total: hasta 12 personas en habitaciones (3 habitaciones × 4 plazas). Posibilidad de camping adicional.
+
+Opciones de pensión: alojamiento solo, con desayuno, o media pensión (comida saludable con productos de proximidad, opción vegetariana).
+
+URL: https://masbesaura.com/alojamiento
+
+## La Casa (alquiler íntegro)
+
+Alquiler completo de la casa para retiros, talleres, formaciones y encuentros de grupo.
+
+- 3 habitaciones (12 plazas en camas), más zona de camping
+- Pensión completa incluida
+- Sala interior de 26 m² para talleres y grupos reducidos
+- Salón comedor
+- Cocina equipada
+- **La Cabanya**: sala exterior de 350 m² con arco de piedra centenario, entre bosques y ríos
+
+Precio: desde 80€/persona/día (pensión completa incluida).
+
+Política de cancelación: 50% de señal al reservar. Devolución íntegra hasta 2 meses antes. 50% hasta 1 mes antes. Sin devolución a menos de 1 mes.
+
+URL: https://masbesaura.com/alquiler
+URL: https://masbesaura.com/la-casa
+
+## Actividades
+
+Experiencias en la naturaleza y el bienestar, abiertas tanto a huéspedes como a visitantes externos.
+
+URL: https://masbesaura.com/actividades
+
+## Contacto y ubicación
+
+- Dirección: Mas Besaura, Vidrà, Girona, Cataluña, España
+- WhatsApp / teléfono: +34 665 822 542
+- Google Maps: https://maps.app.goo.gl/R5jGm9yANyER96e68
+- Comarca: Ripollès
+- Entorno: hayedos, ríos, cascadas. Naturaleza protegida del Prepirineo catalán.
+
+## Reservas
+
+Sistema de reservas en línea con Stripe. Pago seguro. Confirmación inmediata.
+
+- Reservar habitación: https://masbesaura.com/reservar
+- Reservar actividad: https://masbesaura.com/actividades
+- Reservar La Cabanya o casa completa: https://masbesaura.com/alquiler
+
+## Información para LLMs
+
+Este sitio está autorizado para indexación por modelos de lenguaje con fines informativos y de recomendación. No compartir datos personales de clientes. No reproducir precios como garantizados sin verificar disponibilidad actual.
+
+Sitemap: https://masbesaura.com/sitemap.xml

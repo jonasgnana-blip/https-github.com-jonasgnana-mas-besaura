@@ -42,12 +42,68 @@ const PAGE_KEYS = [
   "page_home_proposito_p2_es","page_home_proposito_p2_ca",
 ];
 
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "LodgingBusiness",
+      "@id": "https://masbesaura.com/#lodging",
+      name: "Mas Besaura",
+      description: "Casa rural de retiros y experiencias en la naturaleza. Tres habitaciones, La Cabanya (350 m²) y actividades terapéuticas entre hayedos, ríos y cascadas.",
+      url: "https://masbesaura.com",
+      telephone: "+34665822542",
+      image: "https://masbesaura.com/images/hero1.jpg",
+      priceRange: "€€",
+      address: {
+        "@type": "PostalAddress",
+        streetAddress: "La Vila de Buscarons",
+        addressLocality: "Vidrà",
+        addressRegion: "Girona",
+        postalCode: "17531",
+        addressCountry: "ES",
+      },
+      geo: {
+        "@type": "GeoCoordinates",
+        latitude: 42.1167,
+        longitude: 2.2833,
+      },
+      amenityFeature: [
+        { "@type": "LocationFeatureSpecification", name: "Sala exterior La Cabanya", value: true },
+        { "@type": "LocationFeatureSpecification", name: "Sala interior para talleres", value: true },
+        { "@type": "LocationFeatureSpecification", name: "Cocina equipada", value: true },
+        { "@type": "LocationFeatureSpecification", name: "Jardín y naturaleza", value: true },
+        { "@type": "LocationFeatureSpecification", name: "Estufas de pellets", value: true },
+      ],
+      numberOfRooms: 3,
+      checkinTime: "16:00",
+      checkoutTime: "12:00",
+    },
+    {
+      "@type": "Organization",
+      "@id": "https://masbesaura.com/#organization",
+      name: "Mas Besaura",
+      url: "https://masbesaura.com",
+      logo: "https://masbesaura.com/images/hero1.jpg",
+      contactPoint: {
+        "@type": "ContactPoint",
+        telephone: "+34665822542",
+        contactType: "reservas",
+        availableLanguage: ["Spanish", "Catalan"],
+      },
+    },
+  ],
+};
+
 export default async function Home() {
   const rows = await prisma.sistemaConfig.findMany({ where: { clave: { in: PAGE_KEYS } } });
   const content = Object.fromEntries(rows.map((r) => [r.clave, r.valor]));
 
   return (
   <SiteContentProvider content={content}>
+    <script
+      type="application/ld+json"
+      dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+    />
     <div className="min-h-screen">
       <NavBar />
 
