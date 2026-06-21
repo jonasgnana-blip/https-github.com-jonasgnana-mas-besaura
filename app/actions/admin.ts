@@ -307,6 +307,7 @@ export async function adminCreateActividad(data: {
   max_personas?: number;
   duracion?: string;
   imagen_url?: string;
+  imagenes?: string[];
   video_url?: string;
   tipo_reserva?: string;
   categoria?: string;
@@ -329,6 +330,7 @@ export async function adminUpdateActividad(id: string, data: Partial<{
   max_personas: number;
   duracion: string;
   imagen_url: string;
+  imagenes: string[];
   video_url: string;
   activa: boolean;
   tipo_reserva: string;

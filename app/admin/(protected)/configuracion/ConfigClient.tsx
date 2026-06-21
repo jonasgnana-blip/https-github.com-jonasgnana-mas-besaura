@@ -3,6 +3,7 @@
 import { useState, useTransition } from "react";
 import {
   adminUpdateComplemento,
+  adminUpdateHabitacion,
   adminUpsertSistemaConfig,
 } from "@/app/actions/admin";
 import { Save, Loader2, ChevronDown, ChevronUp, ExternalLink } from "lucide-react";
@@ -10,6 +11,8 @@ import ImageUpload from "@/app/components/ImageUpload";
 import Link from "next/link";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
+
+type HabitacionMin = { id: string; nombre: string; activa: boolean };
 
 type Complemento = {
   id: string;
@@ -132,6 +135,7 @@ const INPUT = "w-full px-3 py-2.5 rounded-xl border border-[#E8DCC8] bg-[#FAFAF6
 // ── Main component ────────────────────────────────────────────────────────────
 
 export default function ConfigClient({
+  habitaciones: initialHabs,
   complementos: initialComps,
   espaciosInicial,
   cabanyaInicial,
@@ -142,6 +146,7 @@ export default function ConfigClient({
   paginaAlojamiento: paginaAlojamientoInicial,
   paginaAlquiler: paginaAlquilerInicial,
 }: {
+  habitaciones: HabitacionMin[];
   complementos: Complemento[];
   espaciosInicial: EspaciosCfg;
   cabanyaInicial: CabanyaCfg;
@@ -155,6 +160,7 @@ export default function ConfigClient({
   const [isPending, startTransition] = useTransition();
 
   // ── State ──────────────────────────────────────────────────────────────────
+  const [habs, setHabs] = useState<HabitacionMin[]>(initialHabs);
   const [comps, setComps]   = useState(initialComps);
   const [espacios, setEspacios] = useState<EspaciosCfg>(espaciosInicial);
   const [cabanya, setCabanya]   = useState<CabanyaCfg>(cabanyaInicial);
@@ -180,6 +186,13 @@ export default function ConfigClient({
   function flag(set: (v: boolean) => void) {
     set(true);
     setTimeout(() => set(false), 2500);
+  }
+
+  function toggleHabitacion(id: string, current: boolean) {
+    startTransition(async () => {
+      await adminUpdateHabitacion(id, { activa: !current });
+      setHabs(prev => prev.map(h => h.id === id ? { ...h, activa: !current } : h));
+    });
   }
 
   function saveComp(id: string) {
@@ -297,19 +310,43 @@ export default function ConfigClient({
         <p className="text-sm text-[#2C1810]/50 mt-1">Gestiona imágenes, precios y textos del sitio.</p>
       </div>
 
-      {/* ── 1. HABITACIONES → enlace a página propia ── */}
-      <div className="mb-6 p-5 bg-[#F0EAD6] rounded-2xl flex items-center justify-between">
-        <div>
-          <p className="text-sm font-medium text-[#2C1810]">Habitaciones</p>
-          <p className="text-xs text-[#2C1810]/50 mt-0.5">Precios, visibilidad e imágenes de las habitaciones.</p>
+      {/* ── 1. HABITACIONES ── */}
+      <div className="mb-6 bg-[#F0EAD6] rounded-2xl p-5">
+        <div className="flex items-center justify-between mb-4">
+          <div>
+            <p className="text-sm font-medium text-[#2C1810]">Habitaciones</p>
+            <p className="text-xs text-[#2C1810]/50 mt-0.5">Activa o desactiva qué habitaciones se muestran en la web.</p>
+          </div>
+          <Link
+            href="/admin/habitaciones"
+            className="flex items-center gap-2 px-3 py-1.5 rounded-full border border-[#2C1810]/20 text-xs text-[#2C1810]/60 hover:bg-[#E8DCC8] transition-colors"
+          >
+            <ExternalLink size={12} />
+            Editar
+          </Link>
         </div>
-        <Link
-          href="/admin/habitaciones"
-          className="flex items-center gap-2 px-4 py-2 rounded-full bg-[#4A6741] text-[#F0EAD6] text-sm font-medium hover:bg-[#3A5432] transition-colors"
-        >
-          <ExternalLink size={14} />
-          Gestionar
-        </Link>
+        <div className="space-y-2">
+          {habs.map(h => (
+            <div key={h.id} className="flex items-center justify-between bg-white rounded-xl px-4 py-2.5 border border-[#E8DCC8]">
+              <div className="flex items-center gap-3">
+                <span className={`w-2 h-2 rounded-full ${h.activa ? "bg-green-500" : "bg-gray-300"}`} />
+                <span className="text-sm text-[#2C1810]">{h.nombre}</span>
+              </div>
+              <button
+                type="button"
+                onClick={() => toggleHabitacion(h.id, h.activa)}
+                disabled={isPending}
+                className={`px-3 py-1 rounded-full text-xs font-medium transition-colors disabled:opacity-50 ${
+                  h.activa
+                    ? "bg-green-100 text-green-700 hover:bg-red-50 hover:text-red-600"
+                    : "bg-gray-100 text-gray-500 hover:bg-green-50 hover:text-green-700"
+                }`}
+              >
+                {h.activa ? "Visible" : "Oculta"}
+              </button>
+            </div>
+          ))}
+        </div>
       </div>
 
       {/* ── 2. ESPACIOS PARA EL ENCUENTRO ── */}

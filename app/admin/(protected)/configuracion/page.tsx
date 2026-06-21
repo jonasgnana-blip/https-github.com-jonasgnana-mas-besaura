@@ -1,5 +1,6 @@
 import {
   adminGetComplementos,
+  adminGetHabitaciones,
 } from "@/app/actions/admin";
 import { prisma } from "@/lib/prisma";
 import ConfigClient from "./ConfigClient";
@@ -7,8 +8,9 @@ import ConfigClient from "./ConfigClient";
 export const dynamic = "force-dynamic";
 
 export default async function AdminConfigPage() {
-  const [complementos, espaciosCfgs] = await Promise.all([
+  const [complementos, habitaciones, espaciosCfgs] = await Promise.all([
     adminGetComplementos(),
+    adminGetHabitaciones(),
     prisma.sistemaConfig.findMany({
       where: {
         clave: {
@@ -42,6 +44,9 @@ export default async function AdminConfigPage() {
 
   return (
     <ConfigClient
+      habitaciones={habitaciones
+        .filter(h => ["artemisa", "selene", "hecate"].includes(h.id))
+        .map(h => ({ id: h.id, nombre: h.nombre, activa: h.activa }))}
       complementos={complementos.map((c) => ({
         id: c.id,
         nombre: c.nombre,

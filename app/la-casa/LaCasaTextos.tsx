@@ -137,58 +137,93 @@ export function LaCasaHabitaciones({ habitaciones: habsDB = [] }: { habitaciones
     };
   });
 
+  if (habitaciones.length === 0) return null;
+
+  const single = habitaciones.length === 1;
+
   return (
-    <section className="py-12 px-6 bg-[#F0EAD6]">
-      <div className="max-w-5xl mx-auto">
-        <div className="text-center mb-12">
-          <p className="text-[#4A6741] text-sm tracking-[0.2em] uppercase font-medium mb-3">
-            {tx.lacasa_rooms_label}
-          </p>
+    <section className={single ? "bg-[#F0EAD6]" : "py-12 px-6 bg-[#F0EAD6]"}>
+      {/* label + optional title */}
+      <div className={single ? "pt-12 pb-8 text-center px-6" : "max-w-5xl mx-auto mb-12 text-center"}>
+        <p className="text-[#4A6741] text-sm tracking-[0.2em] uppercase font-medium mb-3">
+          {tx.lacasa_rooms_label}
+        </p>
+        {tx.lacasa_rooms_title && (
           <h2
             className="text-3xl md:text-4xl text-[#2C1810]"
             style={{ fontFamily: "var(--font-playfair), Georgia, serif" }}
           >
             {tx.lacasa_rooms_title}
           </h2>
-        </div>
-
-        <div className="grid md:grid-cols-3 gap-8">
-          {habitaciones.map((hab) => (
-            <div
-              key={hab.nombre}
-              className="bg-[#FAFAF6] rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-shadow"
-            >
-              <div className="aspect-[4/3] overflow-hidden relative">
-                <img
-                  src={hab.imagen}
-                  alt={hab.nombre}
-                  className="w-full h-full object-cover object-center"
-                  onError={(e) => {
-                    (e.target as HTMLImageElement).src = "/images/hero3.jpg";
-                  }}
-                />
-              </div>
-              <div className="p-6">
-                <div className="flex items-center justify-between mb-3">
-                  <h3
-                    className="text-xl text-[#2C1810]"
-                    style={{ fontFamily: "var(--font-playfair), Georgia, serif" }}
-                  >
-                    {hab.nombre}
-                  </h3>
-                  <span className="text-xs px-2.5 py-1 bg-[#E8DCC8] text-[#2C1810]/60 rounded-full flex items-center gap-1">
-                    <Bed size={11} />
-                    {hab.capacidad}
-                  </span>
-                </div>
-                <p className="text-[#2C1810]/65 text-sm leading-relaxed">
-                  {hab.descripcion}
-                </p>
-              </div>
-            </div>
-          ))}
-        </div>
+        )}
       </div>
+
+      {single ? (
+        /* ─── Full-width hero layout for 1 room ─── */
+        <div>
+          <div className="w-full aspect-[16/7] overflow-hidden">
+            <img
+              src={habitaciones[0].imagen}
+              alt={habitaciones[0].nombre}
+              className="w-full h-full object-cover object-center"
+              onError={(e) => { (e.target as HTMLImageElement).src = "/images/hero3.jpg"; }}
+            />
+          </div>
+          <div className="max-w-3xl mx-auto px-6 py-10">
+            <div className="flex items-center gap-4 mb-4">
+              <h3
+                className="text-2xl md:text-3xl text-[#2C1810]"
+                style={{ fontFamily: "var(--font-playfair), Georgia, serif" }}
+              >
+                {habitaciones[0].nombre}
+              </h3>
+              <span className="text-xs px-2.5 py-1 bg-[#E8DCC8] text-[#2C1810]/60 rounded-full flex items-center gap-1 shrink-0">
+                <Bed size={11} />
+                {habitaciones[0].capacidad}
+              </span>
+            </div>
+            <p className="text-[#2C1810]/65 leading-relaxed">
+              {habitaciones[0].descripcion}
+            </p>
+          </div>
+        </div>
+      ) : (
+        /* ─── Grid layout for 2–3 rooms ─── */
+        <div className="max-w-5xl mx-auto">
+          <div className={`grid gap-8 ${habitaciones.length === 2 ? "md:grid-cols-2" : "md:grid-cols-3"}`}>
+            {habitaciones.map((hab) => (
+              <div
+                key={hab.nombre}
+                className="bg-[#FAFAF6] rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-shadow"
+              >
+                <div className="aspect-[4/3] overflow-hidden relative">
+                  <img
+                    src={hab.imagen}
+                    alt={hab.nombre}
+                    className="w-full h-full object-cover object-center"
+                    onError={(e) => { (e.target as HTMLImageElement).src = "/images/hero3.jpg"; }}
+                  />
+                </div>
+                <div className="p-6">
+                  <div className="flex items-center justify-between mb-3">
+                    <h3
+                      className="text-xl text-[#2C1810]"
+                      style={{ fontFamily: "var(--font-playfair), Georgia, serif" }}
+                    >
+                      {hab.nombre}
+                    </h3>
+                    <span className="text-xs px-2.5 py-1 bg-[#E8DCC8] text-[#2C1810]/60 rounded-full flex items-center gap-1">
+                      <Bed size={11} />
+                      {hab.capacidad}
+                    </span>
+                  </div>
+                  <p className="text-[#2C1810]/65 text-sm leading-relaxed">{hab.descripcion}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
     </section>
   );
 }

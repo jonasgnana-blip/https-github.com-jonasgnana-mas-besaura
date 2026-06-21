@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import NavBar from "@/app/components/NavBar";
+import ImageSlider from "@/app/components/ImageSlider";
 import { ActividadReserva, ComidaCaseraReserva } from "@/app/actividades/ActividadCard";
 import ShareButtons from "@/app/components/ShareButtons";
 import ActividadesFooter from "@/app/actividades/ActividadesFooter";
@@ -48,8 +49,9 @@ export default async function ActividadPage({ params }: { params: { id: string }
   const precio = Number(act.precio_base);
   const embedUrl = act.video_url ? toEmbedUrl(act.video_url) : null;
   const pageUrl = `https://masbesaura.com/actividades/${act.id}`;
+  const allImages = [act.imagen_url, ...(act.imagenes ?? [])].filter((u): u is string => Boolean(u));
 
-  let unavailableDates: { start: string; end: string }[] = [];
+  let unavailableDates: import("@/app/actions/reservas").DateRange[] = [];
   let availableDates: string[] | undefined;
 
   if (act.tipo_reserva === "cabanya") {
@@ -96,15 +98,11 @@ export default async function ActividadPage({ params }: { params: { id: string }
       <NavBar />
 
       {/* ─── HERO ─── */}
-      {act.imagen_url && (
+      {allImages.length > 0 && (
         <section className="relative h-[45vh] flex items-end overflow-hidden pt-16">
           <div className="absolute inset-0">
-            <img
-              src={act.imagen_url}
-              alt={act.titulo}
-              className="w-full h-full object-cover object-center"
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-[#2C1810]/80 via-[#2C1810]/20 to-transparent" />
+            <ImageSlider images={allImages} alt={act.titulo} />
+            <div className="absolute inset-0 bg-gradient-to-t from-[#2C1810]/80 via-[#2C1810]/20 to-transparent pointer-events-none" />
           </div>
           <div className="relative z-10 px-6 pb-12 max-w-4xl mx-auto w-full">
             {act.categoria && (
@@ -123,7 +121,7 @@ export default async function ActividadPage({ params }: { params: { id: string }
       )}
 
       {/* ─── BACK + TITLE (if no hero image) ─── */}
-      {!act.imagen_url && (
+      {allImages.length === 0 && (
         <div className="pt-24 pb-6 px-6 max-w-4xl mx-auto">
           {act.categoria && (
             <p className="text-[#4A6741] text-sm tracking-[0.2em] uppercase font-medium mb-2">

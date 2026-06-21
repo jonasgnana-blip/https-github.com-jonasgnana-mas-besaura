@@ -43,6 +43,7 @@ type Actividad = {
   max_personas: number | null;
   duracion: string | null;
   imagen_url: string | null;
+  imagenes: string[];
   video_url: string | null;
   activa: boolean;
   tipo_reserva: string;
@@ -109,6 +110,7 @@ export default function ActividadesClient({
   const [isPending, startTransition] = useTransition();
 
   // Inline session management in the modal
+  const [modalImagenes, setModalImagenes] = useState<string[]>([]);
   const [pendingSesiones, setPendingSesiones] = useState<PendingSesion[]>([]);
   const [newSesionFecha, setNewSesionFecha] = useState("");
   const [newSesionHora, setNewSesionHora] = useState("");
@@ -160,6 +162,7 @@ export default function ActividadesClient({
   function openCreate() {
     setEditTarget(null);
     setForm(EMPTY_FORM);
+    setModalImagenes([]);
     resetModalSesiones();
     setShowModal(true);
   }
@@ -179,6 +182,7 @@ export default function ActividadesClient({
       precio_texto: a.precio_texto ?? "",
       orden: String(a.orden),
     });
+    setModalImagenes(a.imagenes ?? []);
     resetModalSesiones();
     setShowModal(true);
   }
@@ -187,6 +191,7 @@ export default function ActividadesClient({
     setShowModal(false);
     setEditTarget(null);
     setForm(EMPTY_FORM);
+    setModalImagenes([]);
     resetModalSesiones();
   }
 
@@ -200,6 +205,7 @@ export default function ActividadesClient({
         precio_base: parseFloat(form.precio_base),
         duracion: form.duracion.trim() || undefined,
         imagen_url: form.imagen_url.trim() || undefined,
+        imagenes: modalImagenes,
         video_url: form.video_url.trim() || undefined,
         tipo_reserva: form.tipo_reserva,
         categoria: form.categoria.trim() || undefined,
@@ -269,6 +275,7 @@ export default function ActividadesClient({
             max_personas: created.max_personas ?? null,
             duracion: created.duracion ?? null,
             imagen_url: created.imagen_url ?? null,
+            imagenes: (created as { imagenes?: string[] }).imagenes ?? [],
             video_url: created.video_url ?? null,
             activa: created.activa,
             tipo_reserva: created.tipo_reserva,
@@ -731,6 +738,54 @@ export default function ActividadesClient({
                   className="w-full border border-[#E8DCC8] rounded-xl px-3 py-2 text-xs text-[#2C1810]/70 focus:outline-none focus:border-[#4A6741]"
                 />
               </div>
+
+              {/* Extra images (slider) */}
+              <div>
+                <label className="block text-xs text-[#2C1810]/60 mb-2">
+                  Fotos adicionales (slider)
+                </label>
+                <div className="space-y-2">
+                  {modalImagenes.map((url, i) => (
+                    <div key={i} className="flex items-center gap-2">
+                      {url && (
+                        <img
+                          src={url}
+                          alt={`foto ${i + 1}`}
+                          className="w-12 h-12 object-cover rounded-lg border border-[#E8DCC8] shrink-0"
+                        />
+                      )}
+                      <div className="flex-1 min-w-0">
+                        <ImageUpload
+                          currentUrl={url || null}
+                          onUpload={(newUrl) =>
+                            setModalImagenes((prev) =>
+                              prev.map((u, idx) => (idx === i ? newUrl : u))
+                            )
+                          }
+                          label=""
+                        />
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setModalImagenes((prev) => prev.filter((_, idx) => idx !== i))
+                        }
+                        className="p-1.5 rounded-lg text-[#2C1810]/30 hover:bg-red-50 hover:text-red-500 transition-colors shrink-0"
+                      >
+                        <X size={14} />
+                      </button>
+                    </div>
+                  ))}
+                  <button
+                    type="button"
+                    onClick={() => setModalImagenes((prev) => [...prev, ""])}
+                    className="flex items-center gap-1.5 text-xs text-[#4A6741] hover:text-[#3d5636] transition-colors"
+                  >
+                    <Plus size={13} /> Añadir foto
+                  </button>
+                </div>
+              </div>
+
               <Field
                 label="Enlace de vídeo (YouTube o Vimeo)"
                 value={form.video_url}

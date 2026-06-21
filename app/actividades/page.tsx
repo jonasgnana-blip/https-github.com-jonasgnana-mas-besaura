@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import NavBar from "@/app/components/NavBar";
+import ImageSlider from "@/app/components/ImageSlider";
 import { ActividadReserva, ComidaCaseraReserva } from "./ActividadCard";
 import { getBlockedDatesActividad, getUnavailableDatesCabanya, getActiveSesionesActividad } from "@/app/actions/reservas";
 import type { DateRange } from "@/app/actions/reservas";
@@ -178,15 +179,16 @@ export default async function ActividadesPage() {
 
             const embedUrl = act.video_url ? toEmbedUrl(act.video_url) : null;
 
-            const imageBlock = (act.imagen_url || embedUrl) ? (
+            const allImages = [
+              act.imagen_url,
+              ...((act as unknown as { imagenes?: string[] }).imagenes ?? []),
+            ].filter((u): u is string => Boolean(u));
+
+            const imageBlock = (allImages.length > 0 || embedUrl) ? (
               <div className={`flex flex-col gap-4 ${!isEven ? "order-1 md:order-2" : ""}`}>
-                {act.imagen_url && (
+                {allImages.length > 0 && (
                   <div className="aspect-[4/3] rounded-2xl overflow-hidden">
-                    <img
-                      src={act.imagen_url}
-                      alt={act.titulo}
-                      className="w-full h-full object-cover"
-                    />
+                    <ImageSlider images={allImages} alt={act.titulo} />
                   </div>
                 )}
                 {embedUrl && (
