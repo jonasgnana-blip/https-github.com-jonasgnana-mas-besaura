@@ -177,10 +177,6 @@ export function LaCasaHabitaciones({ habitaciones: habsDB = [] }: { habitaciones
               >
                 {habitaciones[0].nombre}
               </h3>
-              <span className="text-xs px-2.5 py-1 bg-[#E8DCC8] text-[#2C1810]/60 rounded-full flex items-center gap-1 shrink-0">
-                <Bed size={11} />
-                {habitaciones[0].capacidad}
-              </span>
             </div>
             <p className="text-[#2C1810]/65 leading-relaxed">
               {habitaciones[0].descripcion}
@@ -212,10 +208,6 @@ export function LaCasaHabitaciones({ habitaciones: habsDB = [] }: { habitaciones
                     >
                       {hab.nombre}
                     </h3>
-                    <span className="text-xs px-2.5 py-1 bg-[#E8DCC8] text-[#2C1810]/60 rounded-full flex items-center gap-1">
-                      <Bed size={11} />
-                      {hab.capacidad}
-                    </span>
                   </div>
                   <p className="text-[#2C1810]/65 text-sm leading-relaxed">{hab.descripcion}</p>
                 </div>

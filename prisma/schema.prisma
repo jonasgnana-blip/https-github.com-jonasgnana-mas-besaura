@@ -122,6 +122,7 @@ model Actividad {
   duracion      String?
   activa        Boolean   @default(true)
   tipo_reserva  String    @default("simple")   // simple | con_fecha | comida | cabanya
+  fecha_unica   String?                        // YYYY-MM-DD — optional fixed date shown to user
   categoria     String?
   precio_texto  String?
   orden         Int       @default(0)

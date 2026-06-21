@@ -25,6 +25,7 @@ type RawActividad = {
   imagen_url: string | null;
   imagenes: string[];
   video_url: string | null;
+  fecha_unica: string | null;
   activa: boolean;
   tipo_reserva: string;
   categoria: string | null;
@@ -50,6 +51,7 @@ export default async function ActividadesPage() {
     imagen_url: a.imagen_url ?? null,
     imagenes: a.imagenes ?? [],
     video_url: a.video_url ?? null,
+    fecha_unica: (a as { fecha_unica?: string }).fecha_unica ?? null,
     activa: a.activa,
     tipo_reserva: a.tipo_reserva,
     categoria: a.categoria ?? null,

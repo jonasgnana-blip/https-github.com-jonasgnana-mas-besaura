@@ -20,53 +20,6 @@ function formatDateES(iso: string) {
   });
 }
 
-function isFuture(iso: string): boolean {
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  const [y, m, d] = iso.split("-").map(Number);
-  return new Date(y, m - 1, d) >= today;
-}
-
-// ── Session date pill picker (used for con_fecha activities) ───────────────────
-function SessionPicker({
-  dates,
-  selected,
-  onSelect,
-  label,
-}: {
-  dates: string[];
-  selected: string | null;
-  onSelect: (d: string) => void;
-  label?: string;
-}) {
-  const future = dates.filter(isFuture);
-  return (
-    <div className="flex flex-col gap-2">
-      {label && <label className="text-sm font-medium text-[#2C1810]">{label}</label>}
-      {future.length === 0 ? (
-        <p className="text-sm text-[#2C1810]/50 py-2">No hay fechas disponibles próximamente.</p>
-      ) : (
-        <div className="flex flex-wrap gap-2">
-          {future.map((iso) => (
-            <button
-              key={iso}
-              type="button"
-              onClick={() => onSelect(iso)}
-              className={`px-3 py-1.5 rounded-full text-sm border transition-all ${
-                selected === iso
-                  ? "bg-[#4A6741] text-[#F0EAD6] border-[#4A6741]"
-                  : "bg-white text-[#2C1810] border-[#E8DCC8] hover:border-[#4A6741] hover:text-[#4A6741]"
-              }`}
-            >
-              {formatDateES(iso)}
-            </button>
-          ))}
-        </div>
-      )}
-    </div>
-  );
-}
-
 // ── ActividadReserva (unified for ALL activity types) ─────────────────────────
 
 type ActividadReservaProps = {
@@ -74,12 +27,15 @@ type ActividadReservaProps = {
   precio: number;
   descripcion?: string;
   unavailableDates?: DateRange[];
-  availableDates?: string[];   // whitelist of bookable dates (con_fecha mode)
-  actividadId?: string;        // DB id — used for session blocking on payment
+  /** @deprecated use fechaUnica for fixed date, or leave undefined for free pick */
+  availableDates?: string[];
+  actividadId?: string;
   tipoPago?: "actividad" | "cabanya";
   btnLabel?: string;
   /** If true, no date picker is shown (tipo_reserva="simple") */
   sinFecha?: boolean;
+  /** Fixed date pre-selected by admin (YYYY-MM-DD) — shows chip, no calendar */
+  fechaUnica?: string | null;
 };
 
 export function ActividadReserva({
@@ -87,17 +43,17 @@ export function ActividadReserva({
   precio,
   descripcion = "",
   unavailableDates = [],
-  availableDates,
   actividadId,
   tipoPago = "actividad",
   btnLabel,
   sinFecha = false,
+  fechaUnica,
 }: ActividadReservaProps) {
   const { lang } = useLanguage();
   const tr = getT(lang);
 
   const [open, setOpen] = useState(false);
-  const [selectedDate, setSelectedDate] = useState<string | null>(null);
+  const [selectedDate, setSelectedDate] = useState<string | null>(fechaUnica ?? null);
   const [personas, setPersonas] = useState(1);
   const [guestNombre, setGuestNombre] = useState("");
   const [guestEmail, setGuestEmail] = useState("");
@@ -198,18 +154,21 @@ export function ActividadReserva({
           onSubmit={handleSubmit}
           className="flex flex-col gap-5 border border-[#E8DCC8] rounded-2xl p-5 bg-[#FAFAF6]"
         >
-          {/* ── Date selection (only when date is required) ── */}
+          {/* ── Date selection ── */}
           {!sinFecha && (
-            availableDates !== undefined ? (
-              /* Session whitelist: show pills for each available date */
-              <SessionPicker
-                dates={availableDates}
-                selected={selectedDate}
-                onSelect={setSelectedDate}
-                label={tr.act_card_fecha_label}
-              />
+            fechaUnica ? (
+              /* Fixed date set by admin — show chip, no calendar */
+              <div>
+                <p className="text-sm font-medium text-[#2C1810] mb-2">{tr.act_card_fecha_label}</p>
+                <div className="flex items-center gap-2 bg-[#4A6741]/10 rounded-xl px-3 py-2.5 w-fit">
+                  <CalendarDays size={13} className="text-[#4A6741] shrink-0" />
+                  <span className="text-sm text-[#4A6741] font-medium">
+                    {formatDateES(fechaUnica)}
+                  </span>
+                </div>
+              </div>
             ) : (
-              /* Free-pick calendar (cabanya, free activities) */
+              /* Free-pick calendar */
               <>
                 <SingleDatePicker
                   unavailableDates={unavailableDates}

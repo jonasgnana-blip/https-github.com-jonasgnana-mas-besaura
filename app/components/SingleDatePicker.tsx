@@ -103,6 +103,7 @@ function CalendarMonth({
           return (
             <div key={ds} className="flex items-center justify-center">
               <button
+                type="button"
                 disabled={disabled}
                 onClick={() => !disabled && onDayClick(date)}
                 className={`
@@ -177,6 +178,7 @@ export default function SingleDatePicker({
         {/* Navigation */}
         <div className="flex items-center justify-between mb-4">
           <button
+            type="button"
             onClick={handlePrev}
             className="w-8 h-8 rounded-full flex items-center justify-center hover:bg-[#E8DCC8] transition-colors text-[#2C1810]"
           >
@@ -184,6 +186,7 @@ export default function SingleDatePicker({
           </button>
           <div className="flex-1" />
           <button
+            type="button"
             onClick={handleNext}
             className="w-8 h-8 rounded-full flex items-center justify-center hover:bg-[#E8DCC8] transition-colors text-[#2C1810]"
           >

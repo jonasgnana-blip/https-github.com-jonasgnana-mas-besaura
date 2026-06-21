@@ -309,6 +309,7 @@ export async function adminCreateActividad(data: {
   imagen_url?: string;
   imagenes?: string[];
   video_url?: string;
+  fecha_unica?: string;
   tipo_reserva?: string;
   categoria?: string;
   precio_texto?: string;
@@ -332,6 +333,7 @@ export async function adminUpdateActividad(id: string, data: Partial<{
   imagen_url: string;
   imagenes: string[];
   video_url: string;
+  fecha_unica: string;
   activa: boolean;
   tipo_reserva: string;
   categoria: string;

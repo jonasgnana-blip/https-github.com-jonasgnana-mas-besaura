@@ -22,6 +22,7 @@ import {
 } from "lucide-react";
 import ImageUpload from "@/app/components/ImageUpload";
 import RichEditor from "@/app/components/RichEditor";
+import SingleDatePicker from "@/app/components/SingleDatePicker";
 
 type Sesion = {
   id: string;
@@ -45,6 +46,7 @@ type Actividad = {
   imagen_url: string | null;
   imagenes: string[];
   video_url: string | null;
+  fecha_unica: string | null;
   activa: boolean;
   tipo_reserva: string;
   categoria: string | null;
@@ -77,6 +79,7 @@ const EMPTY_FORM = {
   duracion: "",
   imagen_url: "",
   video_url: "",
+  fecha_unica: "",
   tipo_reserva: "simple",
   categoria: "",
   precio_texto: "",
@@ -177,6 +180,7 @@ export default function ActividadesClient({
       duracion: a.duracion ?? "",
       imagen_url: a.imagen_url ?? "",
       video_url: a.video_url ?? "",
+      fecha_unica: a.fecha_unica ?? "",
       tipo_reserva: a.tipo_reserva,
       categoria: a.categoria ?? "",
       precio_texto: a.precio_texto ?? "",
@@ -207,6 +211,7 @@ export default function ActividadesClient({
         imagen_url: form.imagen_url.trim() || undefined,
         imagenes: modalImagenes,
         video_url: form.video_url.trim() || undefined,
+        fecha_unica: form.fecha_unica.trim() || undefined,
         tipo_reserva: form.tipo_reserva,
         categoria: form.categoria.trim() || undefined,
         precio_texto: form.precio_texto.trim() || undefined,
@@ -247,6 +252,7 @@ export default function ActividadesClient({
               duracion: payload.duracion ?? null,
               imagen_url: payload.imagen_url ?? null,
               video_url: payload.video_url ?? null,
+              fecha_unica: payload.fecha_unica ?? null,
               categoria: payload.categoria ?? null,
               precio_texto: payload.precio_texto ?? null,
               orden: payload.orden ?? a.orden,
@@ -277,6 +283,7 @@ export default function ActividadesClient({
             imagen_url: created.imagen_url ?? null,
             imagenes: (created as { imagenes?: string[] }).imagenes ?? [],
             video_url: created.video_url ?? null,
+            fecha_unica: (created as { fecha_unica?: string }).fecha_unica ?? null,
             activa: created.activa,
             tipo_reserva: created.tipo_reserva,
             categoria: created.categoria ?? null,
@@ -793,6 +800,27 @@ export default function ActividadesClient({
                 placeholder="https://youtube.com/embed/... o https://vimeo.com/..."
               />
 
+              <div>
+                <p className="text-[10px] text-[#2C1810]/40 mb-2">
+                  Fecha única opcional — si la pones, el usuario verá esta fecha fija en lugar del calendario libre.
+                </p>
+                <SingleDatePicker
+                  unavailableDates={[]}
+                  selected={form.fecha_unica || null}
+                  onSelect={(d) => setForm((f) => ({ ...f, fecha_unica: d }))}
+                  label="Fecha única (opcional)"
+                />
+                {form.fecha_unica && (
+                  <button
+                    type="button"
+                    onClick={() => setForm((f) => ({ ...f, fecha_unica: "" }))}
+                    className="mt-2 text-xs text-[#2C1810]/40 hover:text-red-500 transition-colors"
+                  >
+                    Quitar fecha
+                  </button>
+                )}
+              </div>
+
               {/* ── Fechas disponibles (con_fecha / cabanya) ── */}
               {showSesionesSection && (
                 <div className="pt-2 border-t border-[#E8DCC8]">
@@ -849,34 +877,32 @@ export default function ActividadesClient({
                   )}
 
                   {/* Add date row */}
-                  <div className="flex gap-2 items-end">
-                    <div className="flex-1">
-                      <label className="block text-[10px] text-[#2C1810]/40 mb-1">Fecha</label>
-                      <input
-                        type="date"
-                        value={newSesionFecha}
-                        min={todayStr()}
-                        onChange={(e) => setNewSesionFecha(e.target.value)}
-                        className="w-full border border-[#E8DCC8] rounded-xl px-2.5 py-1.5 text-sm text-[#2C1810] bg-white focus:outline-none focus:border-[#4A6741]"
-                      />
+                  <div className="flex flex-col gap-2">
+                    <SingleDatePicker
+                      unavailableDates={[]}
+                      selected={newSesionFecha || null}
+                      onSelect={setNewSesionFecha}
+                      label="Selecciona fecha"
+                    />
+                    <div className="flex gap-2 items-center">
+                      <div className="flex-1">
+                        <label className="block text-[10px] text-[#2C1810]/40 mb-1">Hora (opc.)</label>
+                        <input
+                          type="time"
+                          value={newSesionHora}
+                          onChange={(e) => setNewSesionHora(e.target.value)}
+                          className="w-full border border-[#E8DCC8] rounded-xl px-2.5 py-1.5 text-sm text-[#2C1810] bg-white focus:outline-none focus:border-[#4A6741]"
+                        />
+                      </div>
+                      <button
+                        type="button"
+                        onClick={addPendingSesion}
+                        disabled={!newSesionFecha}
+                        className="flex items-center gap-1 px-3 py-1.5 rounded-xl bg-[#4A6741] text-[#F0EAD6] text-xs font-medium hover:bg-[#3d5636] transition-colors disabled:opacity-40 mt-5"
+                      >
+                        <Plus size={12} /> Añadir
+                      </button>
                     </div>
-                    <div className="w-24">
-                      <label className="block text-[10px] text-[#2C1810]/40 mb-1">Hora (opc.)</label>
-                      <input
-                        type="time"
-                        value={newSesionHora}
-                        onChange={(e) => setNewSesionHora(e.target.value)}
-                        className="w-full border border-[#E8DCC8] rounded-xl px-2.5 py-1.5 text-sm text-[#2C1810] bg-white focus:outline-none focus:border-[#4A6741]"
-                      />
-                    </div>
-                    <button
-                      type="button"
-                      onClick={addPendingSesion}
-                      disabled={!newSesionFecha}
-                      className="flex items-center gap-1 px-3 py-1.5 rounded-xl bg-[#4A6741] text-[#F0EAD6] text-xs font-medium hover:bg-[#3d5636] transition-colors disabled:opacity-40"
-                    >
-                      <Plus size={12} /> Añadir
-                    </button>
                   </div>
                 </div>
               )}

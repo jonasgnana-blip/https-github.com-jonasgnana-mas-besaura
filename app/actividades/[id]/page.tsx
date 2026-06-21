@@ -6,7 +6,7 @@ import ImageSlider from "@/app/components/ImageSlider";
 import { ActividadReserva, ComidaCaseraReserva } from "@/app/actividades/ActividadCard";
 import ShareButtons from "@/app/components/ShareButtons";
 import ActividadesFooter from "@/app/actividades/ActividadesFooter";
-import { getBlockedDatesActividad, getUnavailableDatesCabanya, getActiveSesionesActividad } from "@/app/actions/reservas";
+import { getBlockedDatesActividad, getUnavailableDatesCabanya } from "@/app/actions/reservas";
 import Link from "next/link";
 import { ChevronLeft } from "lucide-react";
 
@@ -52,15 +52,11 @@ export default async function ActividadPage({ params }: { params: { id: string }
   const allImages = [act.imagen_url, ...(act.imagenes ?? [])].filter((u): u is string => Boolean(u));
 
   let unavailableDates: import("@/app/actions/reservas").DateRange[] = [];
-  let availableDates: string[] | undefined;
 
   if (act.tipo_reserva === "cabanya") {
     unavailableDates = await getUnavailableDatesCabanya(act.id);
   } else {
     unavailableDates = await getBlockedDatesActividad(act.id);
-    if (act.tipo_reserva === "con_fecha") {
-      availableDates = await getActiveSesionesActividad(act.id);
-    }
   }
 
   const BookingBlock = () => {
@@ -85,10 +81,10 @@ export default async function ActividadPage({ params }: { params: { id: string }
         precio={precio}
         descripcion={act.descripcion}
         unavailableDates={unavailableDates}
-        availableDates={availableDates}
         actividadId={act.id}
         tipoPago={act.tipo_reserva === "cabanya" ? "cabanya" : "actividad"}
         sinFecha={act.tipo_reserva === "simple"}
+        fechaUnica={(act as unknown as { fecha_unica?: string }).fecha_unica || undefined}
       />
     );
   };

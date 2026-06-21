@@ -7,7 +7,7 @@ import { useContentKey } from "@/lib/SiteContentContext";
 
 // Traducciones específicas de la página estática de alquiler
 const INCLUYE_ES = [
-  { titulo: "Alojamiento", desc: "3 habitaciones de 4 plazas cada una" },
+  { titulo: "Alojamiento", desc: "Espacio cuidado con calefacción pellet, edredones y sábanas de algodón." },
   { titulo: "Pensión Completa", desc: "Comida saludable con productos de proximidad" },
   { titulo: "Sala Interior", desc: "26 m² para talleres y grupos reducidos" },
   { titulo: "La Cabanya", desc: "350 m² de sala exterior con arco de piedra" },
@@ -16,7 +16,7 @@ const INCLUYE_ES = [
 ];
 
 const INCLUYE_CA = [
-  { titulo: "Allotjament", desc: "3 habitacions de 4 places cadascuna" },
+  { titulo: "Allotjament", desc: "Espai cuidat amb calefacció de pellet, edredons i llençols de cotó." },
   { titulo: "Pensió Completa", desc: "Menjar saludable amb productes de proximitat" },
   { titulo: "Sala Interior", desc: "26 m² per a tallers i grups reduïts" },
   { titulo: "La Cabanya", desc: "350 m² de sala exterior amb arc de pedra" },
@@ -65,8 +65,8 @@ export function AlquilerDescripcion() {
   const { lang } = useLanguage();
   const isCA = lang === "ca";
   const descripcion  = useContentKey("page_alquiler_descripcion",  lang,
-    isCA ? "Lloga la casa per a les teves activitats professionals o trobades en grup. Tres habitacions de 4 places cadascuna. Possibilitat de càmping."
-         : "Alquila la casa para tus actividades profesionales o encuentros en grupo. Tres habitaciones de 4 plazas cada una. Posibilidad de camping.");
+    isCA ? "Lloga la casa per a les teves activitats professionals o trobades en grup."
+         : "Alquila la casa para tus actividades profesionales o encuentros en grupo.");
   const precioTexto  = useContentKey("page_alquiler_precio_texto",  lang,
     isCA ? "Inclou allotjament, pensió completa, sala exterior i interior. Menjar saludable amb productes de proximitat. Opció vegetariana."
          : "Incluye alojamiento, pensión completa, sala exterior e interior. Comida saludable con productos de proximidad. Opción vegetariana.");
@@ -228,11 +228,6 @@ export function AlquilerCondicionesSection() {
           icon: <CalendarX size={18} className="text-[#4A6741]" />,
           titulo: "Estancia mínima",
           desc: "2 noches en fines de semana · 3 noches en temporada alta",
-        },
-        {
-          icon: <Users size={18} className="text-[#4A6741]" />,
-          titulo: "Capacidad",
-          desc: "Hasta 12 personas en habitaciones · Zona de camping disponible",
         },
         {
           icon: <PawPrint size={18} className="text-[#4A6741]" />,
