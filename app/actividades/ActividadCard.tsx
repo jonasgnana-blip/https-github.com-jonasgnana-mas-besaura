@@ -20,6 +20,53 @@ function formatDateES(iso: string) {
   });
 }
 
+function isFuture(iso: string): boolean {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const [y, m, d] = iso.split("-").map(Number);
+  return new Date(y, m - 1, d) >= today;
+}
+
+// ── Session date pill picker (used for con_fecha activities) ───────────────────
+function SessionPicker({
+  dates,
+  selected,
+  onSelect,
+  label,
+}: {
+  dates: string[];
+  selected: string | null;
+  onSelect: (d: string) => void;
+  label?: string;
+}) {
+  const future = dates.filter(isFuture);
+  return (
+    <div className="flex flex-col gap-2">
+      {label && <label className="text-sm font-medium text-[#2C1810]">{label}</label>}
+      {future.length === 0 ? (
+        <p className="text-sm text-[#2C1810]/50 py-2">No hay fechas disponibles próximamente.</p>
+      ) : (
+        <div className="flex flex-wrap gap-2">
+          {future.map((iso) => (
+            <button
+              key={iso}
+              type="button"
+              onClick={() => onSelect(iso)}
+              className={`px-3 py-1.5 rounded-full text-sm border transition-all ${
+                selected === iso
+                  ? "bg-[#4A6741] text-[#F0EAD6] border-[#4A6741]"
+                  : "bg-white text-[#2C1810] border-[#E8DCC8] hover:border-[#4A6741] hover:text-[#4A6741]"
+              }`}
+            >
+              {formatDateES(iso)}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ── ActividadReserva (unified for ALL activity types) ─────────────────────────
 
 type ActividadReservaProps = {
@@ -151,25 +198,35 @@ export function ActividadReserva({
           onSubmit={handleSubmit}
           className="flex flex-col gap-5 border border-[#E8DCC8] rounded-2xl p-5 bg-[#FAFAF6]"
         >
-          {/* ── Calendar (only when date is required) ── */}
+          {/* ── Date selection (only when date is required) ── */}
           {!sinFecha && (
-            <>
-              <SingleDatePicker
-                unavailableDates={unavailableDates}
-                availableDates={availableDates}
+            availableDates !== undefined ? (
+              /* Session whitelist: show pills for each available date */
+              <SessionPicker
+                dates={availableDates}
                 selected={selectedDate}
                 onSelect={setSelectedDate}
                 label={tr.act_card_fecha_label}
               />
-              {selectedDate && (
-                <div className="flex items-center gap-2 bg-[#4A6741]/8 rounded-xl px-3 py-2">
-                  <CalendarDays size={13} className="text-[#4A6741] shrink-0" />
-                  <span className="text-xs text-[#4A6741] font-medium">
-                    {formatDateES(selectedDate)}
-                  </span>
-                </div>
-              )}
-            </>
+            ) : (
+              /* Free-pick calendar (cabanya, free activities) */
+              <>
+                <SingleDatePicker
+                  unavailableDates={unavailableDates}
+                  selected={selectedDate}
+                  onSelect={setSelectedDate}
+                  label={tr.act_card_fecha_label}
+                />
+                {selectedDate && (
+                  <div className="flex items-center gap-2 bg-[#4A6741]/8 rounded-xl px-3 py-2">
+                    <CalendarDays size={13} className="text-[#4A6741] shrink-0" />
+                    <span className="text-xs text-[#4A6741] font-medium">
+                      {formatDateES(selectedDate)}
+                    </span>
+                  </div>
+                )}
+              </>
+            )
           )}
 
           {/* ── Persons counter ── */}
