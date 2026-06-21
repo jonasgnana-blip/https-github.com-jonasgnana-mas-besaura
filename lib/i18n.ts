@@ -187,7 +187,7 @@ const translations = {
     // ── La Casa page ────────────────────────────────────────────────────────
     lacasa_title: "La Casa",
     lacasa_intro_label: "Espacio & Naturaleza",
-    lacasa_intro: "En Mas Besaura pueden alojarse hasta 14 personas (+ opción acampada) — 12 participantes más 2 facilitadores. Dispone de tres habitaciones, sala interior, salón comedor y la gran sala exterior La Cabanya. Rodeada de hayedos, ríos salvajes y cascadas, es un refugio para el descanso y la transformación. Pregunta por la opción de voluntariado.",
+    lacasa_intro: "Mas Besaura es un proyecto familiar que busca integrar la vida natural con actividades de crecimiento personal. La masía emblemática del s. XVIII, rodeada de hayedos, ríos salvajes y cascadas, es un refugio para el descanso y la transformación. Pregunta por la opción de voluntariado.",
     lacasa_rooms_label: "El descanso",
     lacasa_rooms_title: "",
     lacasa_espacios_label: "Espacios Comunes",
