@@ -47,7 +47,7 @@ export default async function LaCasa() {
             "espacio_salon_img", "espacio_habs_img", "espacio_sala_img",
             "espacio_salon_nombre", "espacio_habs_nombre", "espacio_sala_nombre",
             "cabanya_foto_1", "cabanya_foto_2",
-            "bosque_foto_1", "bosque_foto_2",
+            "bosque_foto_1", "bosque_foto_2", "bosque_precio",
             "slider_foto_1", "slider_foto_2", "slider_foto_3",
             "slider_foto_4", "slider_foto_5",
           ],
@@ -127,7 +127,7 @@ export default async function LaCasa() {
         unavailDates={bosqueUnavail}
         foto1={cfg["bosque_foto_1"] || undefined}
         foto2={cfg["bosque_foto_2"] || undefined}
-        precio={bosqueActividad ? Number(bosqueActividad.precio_base) : 35}
+        precio={cfg["bosque_precio"] ? Number(cfg["bosque_precio"]) : bosqueActividad ? Number(bosqueActividad.precio_base) : 35}
       />
 
       {/* ─── CTA ALOJAMIENTO ─── */}

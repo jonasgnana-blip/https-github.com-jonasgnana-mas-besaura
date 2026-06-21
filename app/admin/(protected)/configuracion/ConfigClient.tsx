@@ -28,7 +28,7 @@ type EspaciosCfg = {
   salonNombre: string; habsNombre: string; salaNombre: string;
 };
 type CabanyaCfg  = { foto1: string; foto2: string };
-type BosqueCfg   = { foto1: string; foto2: string };
+type BosqueCfg   = { foto1: string; foto2: string; precio: string };
 type SliderCfg  = { foto1: string; foto2: string; foto3: string; foto4: string; foto5: string };
 
 type PaginaInicioCfg = {
@@ -238,6 +238,7 @@ export default function ConfigClient({
       await Promise.all([
         adminUpsertSistemaConfig("bosque_foto_1", bosque.foto1),
         adminUpsertSistemaConfig("bosque_foto_2", bosque.foto2),
+        adminUpsertSistemaConfig("bosque_precio", bosque.precio),
       ]);
       flag(setSavedBosque);
     });
@@ -410,19 +411,30 @@ export default function ConfigClient({
       </Section>
 
       {/* ── 4. BOSQUE TERAPÉUTICO ── */}
-      <Section title="Bosque Terapéutico" subtitle="Las 2 fotos del slider en la sección Bosque Terapéutico de La Casa.">
+      <Section title="Bosque Terapéutico" subtitle="Fotos y precio de la sección Bosque Terapéutico de La Casa.">
         <div className="bg-white rounded-2xl border border-[#E8DCC8] p-6 space-y-6">
+          <FieldRow label="Precio por persona (€)">
+            <input
+              type="number"
+              min="0"
+              step="1"
+              value={bosque.precio}
+              onChange={e => setBosque(prev => ({ ...prev, precio: e.target.value }))}
+              placeholder="35"
+              className={INPUT}
+            />
+          </FieldRow>
           {([
             { label: "Foto 1", key: "foto1" as keyof BosqueCfg },
             { label: "Foto 2", key: "foto2" as keyof BosqueCfg },
           ]).map(({ label, key }) => (
             <ImgRow key={key} label={label}
-              url={bosque[key]}
+              url={bosque[key] as string}
               onUrl={v => setBosque(prev => ({ ...prev, [key]: v }))}
               onUpload={v => setBosque(prev => ({ ...prev, [key]: v }))}
             />
           ))}
-          <SaveBtn onClick={saveBosque} saving={isPending} saved={savedBosque} label="Guardar fotos Bosque" />
+          <SaveBtn onClick={saveBosque} saving={isPending} saved={savedBosque} label="Guardar Bosque" />
         </div>
       </Section>
 
