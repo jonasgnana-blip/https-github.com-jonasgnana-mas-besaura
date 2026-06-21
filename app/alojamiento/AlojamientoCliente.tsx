@@ -1099,30 +1099,21 @@ export default function AlojamientoCliente({
       {HABITACIONES.length > 0 && (
       <section className="bg-[#F0EAD6]">
         {HABITACIONES.length === 1 ? (
-          /* ── Single room: full-width hero image + card below ── */
-          <>
-            <div className="w-full aspect-[16/7] overflow-hidden">
-              <img
-                src={HABITACIONES[0].imagen}
-                alt={HABITACIONES[0].nombre}
-                className="w-full h-full object-cover object-center"
+          /* ── Single room: card only, no hero image ── */
+          <div className="py-10 px-6">
+            <div className="text-center mb-8">
+              <p className="text-[#4A6741] text-sm tracking-[0.2em] uppercase font-medium mb-3">
+                {tr.aloj_rooms_label}
+              </p>
+            </div>
+            <div className="max-w-xl mx-auto">
+              <RoomCard
+                habitacion={HABITACIONES[0]}
+                unavailableRanges={unavailableByRoom[HABITACIONES[0].id as HabitacionKey] ?? []}
+                complementos={complementos}
               />
             </div>
-            <div className="py-10 px-6">
-              <div className="text-center mb-8">
-                <p className="text-[#4A6741] text-sm tracking-[0.2em] uppercase font-medium mb-3">
-                  {tr.aloj_rooms_label}
-                </p>
-              </div>
-              <div className="max-w-xl mx-auto">
-                <RoomCard
-                  habitacion={HABITACIONES[0]}
-                  unavailableRanges={unavailableByRoom[HABITACIONES[0].id as HabitacionKey] ?? []}
-                  complementos={complementos}
-                />
-              </div>
-            </div>
-          </>
+          </div>
         ) : (
           /* ── Multi-room grid ── */
           <div className="py-20 px-6">
