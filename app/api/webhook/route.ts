@@ -13,8 +13,12 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
 });
 const resend = new Resend(process.env.RESEND_API_KEY!);
 
-const ADMIN_EMAIL = process.env.EMAIL_ADMIN ?? "info@masbesaura.com";
-const FROM_EMAIL  = process.env.EMAIL_FROM  ?? "no-reply@masbesaura.com";
+const ADMIN_EMAIL  = process.env.EMAIL_ADMIN ?? "info@masbesaura.com";
+const ADMIN_EMAIL2 = process.env.EMAIL_ADMIN2 ?? "masbesaura@gmail.com";
+const FROM_EMAIL   = process.env.EMAIL_FROM  ?? "no-reply@masbesaura.com";
+
+// All admin recipients (dedup in case they're the same)
+const ADMIN_TO = [...new Set([ADMIN_EMAIL, ADMIN_EMAIL2])];
 
 export const dynamic = "force-dynamic";
 
@@ -117,7 +121,7 @@ async function handleReservaAlojamiento(
   await Promise.all([
     resend.emails.send({
       from: FROM_EMAIL,
-      to: ADMIN_EMAIL,
+      to: ADMIN_TO,
       subject: `🏡 Nueva reserva: ${reserva.nombre_cliente} · ${fechaEntrada}`,
       html: renderEmailAdmin({
         ...emailProps,
@@ -223,7 +227,7 @@ async function handleReservaActividad(
 
   await resend.emails.send({
     from: FROM_EMAIL,
-    to: ADMIN_EMAIL,
+    to: ADMIN_TO,
     subject: `✅ ${label}: ${ra.nombre_cliente} · ${fechaEntrada}`,
     html,
   });
