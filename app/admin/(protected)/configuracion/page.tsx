@@ -18,6 +18,7 @@ export default async function AdminConfigPage() {
             "espacio_salon_img","espacio_habs_img","espacio_sala_img",
             "espacio_salon_nombre","espacio_habs_nombre","espacio_sala_nombre",
             "cabanya_foto_1","cabanya_foto_2",
+            "bosque_foto_1","bosque_foto_2",
             "slider_foto_1","slider_foto_2","slider_foto_3","slider_foto_4","slider_foto_5",
             "estancia_texto_es","estancia_texto_ca",
             // Página: Inicio
@@ -66,6 +67,10 @@ export default async function AdminConfigPage() {
       cabanyaInicial={{
         foto1: cfg["cabanya_foto_1"] ?? "",
         foto2: cfg["cabanya_foto_2"] ?? "",
+      }}
+      bosqueInicial={{
+        foto1: cfg["bosque_foto_1"] ?? "",
+        foto2: cfg["bosque_foto_2"] ?? "",
       }}
       sliderInicial={{
         foto1: cfg["slider_foto_1"] ?? "",

@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { prisma } from "@/lib/prisma";
-import { getUnavailableDates } from "@/app/actions/reservas";
+import { getUnavailableDates, getBlockedDatesActividad } from "@/app/actions/reservas";
 
 export const metadata: Metadata = {
   title: "La Casa",
@@ -24,6 +24,7 @@ import {
   LaCasaHabitaciones,
   LaCasaEspacios,
   LaCasaCalendario,
+  LaCasaBosqueTerapeutico,
   LaCasaCTA,
   LaCasaFooter,
 } from "./LaCasaTextos";
@@ -31,7 +32,8 @@ import {
 export const revalidate = 0; // always fresh — admin changes show immediately
 
 export default async function LaCasa() {
-  const [habitaciones, unavailDates, espacioConfigs] = await Promise.all([
+  // Try to find a bosque-terapeutico activity to get its price and blocked dates
+  const [habitaciones, unavailDates, espacioConfigs, bosqueActividad, bosqueUnavail] = await Promise.all([
     prisma.habitacion.findMany({
       where: { id: { in: ["artemisa", "selene", "hecate"] }, activa: true },
       orderBy: { nombre: "asc" },
@@ -45,12 +47,18 @@ export default async function LaCasa() {
             "espacio_salon_img", "espacio_habs_img", "espacio_sala_img",
             "espacio_salon_nombre", "espacio_habs_nombre", "espacio_sala_nombre",
             "cabanya_foto_1", "cabanya_foto_2",
+            "bosque_foto_1", "bosque_foto_2",
             "slider_foto_1", "slider_foto_2", "slider_foto_3",
             "slider_foto_4", "slider_foto_5",
           ],
         },
       },
     }),
+    prisma.actividad.findFirst({
+      where: { id: "bosque-terapeutico" },
+      select: { precio_base: true },
+    }),
+    getBlockedDatesActividad("bosque-terapeutico").catch(() => []),
   ]);
 
   const cfg = Object.fromEntries(espacioConfigs.map(c => [c.clave, c.valor]));
@@ -112,6 +120,14 @@ export default async function LaCasa() {
         unavailDates={unavailDates}
         foto1={cfg["cabanya_foto_1"] || undefined}
         foto2={cfg["cabanya_foto_2"] || undefined}
+      />
+
+      {/* ─── BOSQUE TERAPÉUTICO ─── */}
+      <LaCasaBosqueTerapeutico
+        unavailDates={bosqueUnavail}
+        foto1={cfg["bosque_foto_1"] || undefined}
+        foto2={cfg["bosque_foto_2"] || undefined}
+        precio={bosqueActividad ? Number(bosqueActividad.precio_base) : 35}
       />
 
       {/* ─── CTA ALOJAMIENTO ─── */}

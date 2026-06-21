@@ -537,6 +537,235 @@ export function LaCasaCalendario({ unavailDates = [], foto1, foto2 }: { unavailD
   );
 }
 
+export function LaCasaBosqueTerapeutico({
+  unavailDates = [],
+  foto1,
+  foto2,
+  precio = 35,
+}: {
+  unavailDates?: DateRange[];
+  foto1?: string;
+  foto2?: string;
+  precio?: number;
+}) {
+  const { lang } = useLanguage();
+  const locale = lang === "ca" ? "ca-ES" : "es-ES";
+  const monthNames = lang === "ca" ? MONTHS_CA : MONTHS_ES;
+  const dayNames   = lang === "ca" ? DAYS_CA   : DAYS_ES;
+
+  const FOTOS = [
+    { src: foto1 || "/images/hero3.jpg",  alt: "Bosque Terapéutico — sendero" },
+    { src: foto2 || "/images/hero4.jpg",  alt: "Bosque Terapéutico — bosque" },
+  ];
+
+  const [slide, setSlide] = useState(0);
+  useEffect(() => {
+    const t = setInterval(() => setSlide(s => (s + 1) % FOTOS.length), 4000);
+    return () => clearInterval(t);
+  }, []);
+
+  const [open, setOpen] = useState(false);
+  const now = new Date();
+  const [viewMonth, setViewMonth] = useState(now.getMonth());
+  const [viewYear,  setViewYear]  = useState(now.getFullYear());
+  const nextM = viewMonth === 11 ? 0  : viewMonth + 1;
+  const nextY = viewMonth === 11 ? viewYear + 1 : viewYear;
+
+  const [selectedDay, setSelectedDay] = useState<Date | null>(null);
+  const [personas,    setPersonas]    = useState(1);
+  const [nombre,      setNombre]      = useState("");
+  const [email,       setEmail]       = useState("");
+  const [tel,         setTel]         = useState("");
+  const [loading,     setLoading]     = useState(false);
+  const [error,       setError]       = useState("");
+
+  const total = personas * precio;
+
+  function handleDay(date: Date) {
+    setSelectedDay(d => (d && sameDay(d, date) ? null : date));
+  }
+
+  function prevMo() { if (viewMonth === 0) { setViewMonth(11); setViewYear(y => y - 1); } else setViewMonth(m => m - 1); }
+  function nextMo() { if (viewMonth === 11) { setViewMonth(0); setViewYear(y => y + 1); } else setViewMonth(m => m + 1); }
+
+  async function handleReservar() {
+    if (!selectedDay) { setError(lang === "ca" ? "Selecciona un dia" : "Selecciona un día"); return; }
+    if (!nombre.trim() || !email.trim()) { setError(lang === "ca" ? "Nom i email requerits" : "Nombre y email requeridos"); return; }
+    setLoading(true); setError("");
+    try {
+      const res = await fetch("/api/checkout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          tipo: "actividad",
+          nombre: "Bosque Terapéutico",
+          precio: total,
+          cantidad: personas,
+          fecha_entrada: fmtDate(selectedDay),
+          nombre_cliente: nombre.trim(),
+          email_cliente:  email.trim(),
+          telefono_cliente: tel.trim(),
+        }),
+      });
+      const data = await res.json();
+      if (data.url) window.location.href = data.url;
+      else { setError(data.error ?? "Error al iniciar el pago"); setLoading(false); }
+    } catch { setError("Error de red"); setLoading(false); }
+  }
+
+  return (
+    <section className="py-16 px-6 bg-[#FAFAF6]">
+      <div className="max-w-5xl mx-auto">
+
+        {/* Photo slider + header */}
+        <div className="relative rounded-2xl overflow-hidden mb-10 h-64 md:h-80">
+          {FOTOS.map((f, i) => (
+            <img key={f.src} src={f.src} alt={f.alt}
+              className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-1000 ${i === slide ? "opacity-100" : "opacity-0"}`}
+              onError={e => { (e.target as HTMLImageElement).src = "/images/hero3.jpg"; }}
+            />
+          ))}
+          <div className="absolute inset-0 bg-gradient-to-t from-[#2C1810]/70 via-transparent to-transparent" />
+          <div className="absolute bottom-4 left-0 right-0 flex justify-center gap-2">
+            {FOTOS.map((_, i) => (
+              <button key={i} onClick={() => setSlide(i)}
+                className={`w-2 h-2 rounded-full transition-all ${i === slide ? "bg-[#F0EAD6] scale-125" : "bg-[#F0EAD6]/50"}`}
+              />
+            ))}
+          </div>
+          <div className="absolute bottom-8 left-6 right-6">
+            <p className="text-[#C4A882] text-xs tracking-[0.2em] uppercase font-medium mb-1">
+              {lang === "ca" ? "Activitat a la natura" : "Actividad en la naturaleza"}
+            </p>
+            <h2 className="text-2xl md:text-3xl text-[#F0EAD6]"
+              style={{ fontFamily: "var(--font-playfair), Georgia, serif" }}>
+              Bosque Terapéutico
+            </h2>
+          </div>
+        </div>
+
+        {/* Booking card */}
+        <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
+          {/* Price bar */}
+          <div className="bg-[#2A3F24] px-8 py-5 flex items-center justify-between">
+            <div>
+              <p className="text-[#C4A882] text-xs tracking-[0.2em] uppercase font-medium mb-0.5">
+                {lang === "ca" ? "Preu base" : "Precio base"}
+              </p>
+              <span className="text-3xl font-bold text-[#F0EAD6]"
+                style={{ fontFamily: "var(--font-playfair), Georgia, serif" }}>
+                {precio}€
+              </span>
+              <span className="text-[#E8DCC8]/60 text-sm ml-2">
+                / {lang === "ca" ? "persona" : "persona"}
+              </span>
+            </div>
+            <button onClick={() => setOpen(v => !v)}
+              className="flex items-center gap-2 px-6 py-3 rounded-full bg-[#C4A882] text-[#2C1810] text-sm font-semibold hover:bg-[#F0EAD6] transition-colors">
+              {open
+                ? (lang === "ca" ? "Tancar" : "Cerrar")
+                : (lang === "ca" ? "Reservar" : "Reservar")}
+              <ChevronRight size={14} className={`transition-transform ${open ? "rotate-90" : ""}`} />
+            </button>
+          </div>
+
+          {/* Booking panel */}
+          {open && (
+            <div className="px-6 md:px-8 pb-8 pt-6 space-y-7">
+
+              {/* Calendar */}
+              <div>
+                <p className="text-xs font-medium text-[#2C1810]/50 uppercase tracking-wide mb-3">
+                  {lang === "ca" ? "Selecciona el dia" : "Selecciona el día"}
+                </p>
+                <div className="border border-[#E8DCC8] rounded-2xl p-4 bg-[#FAFAF6]">
+                  <div className="flex items-center justify-between mb-4">
+                    <button onClick={prevMo} className="w-8 h-8 rounded-full flex items-center justify-center hover:bg-[#E8DCC8] transition-colors text-[#2C1810]">
+                      <ChevronLeft size={16} />
+                    </button>
+                    <div className="flex-1" />
+                    <button onClick={nextMo} className="w-8 h-8 rounded-full flex items-center justify-center hover:bg-[#E8DCC8] transition-colors text-[#2C1810]">
+                      <ChevronRight size={16} />
+                    </button>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <CalMes year={viewYear} month={viewMonth} checkIn={selectedDay} checkOut={null}
+                      hovered={null} unavail={unavailDates} onDay={handleDay} onHover={() => {}}
+                      monthNames={monthNames} dayNames={dayNames} />
+                    <CalMes year={nextY} month={nextM} checkIn={selectedDay} checkOut={null}
+                      hovered={null} unavail={unavailDates} onDay={handleDay} onHover={() => {}}
+                      monthNames={monthNames} dayNames={dayNames} />
+                  </div>
+                  <div className="mt-4 pt-3 border-t border-[#E8DCC8] text-xs text-[#2C1810]/60">
+                    {!selectedDay && (lang === "ca" ? "Tria el dia de l'activitat" : "Elige el día de la actividad")}
+                    {selectedDay && (
+                      <span className="text-[#4A6741] font-medium">
+                        {selectedDay.toLocaleDateString(locale, { weekday: "long", day: "numeric", month: "long" })}
+                      </span>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* Personas */}
+              <div>
+                <p className="text-xs font-medium text-[#2C1810]/50 uppercase tracking-wide mb-3">
+                  {lang === "ca" ? "Nombre de persones" : "Número de personas"}
+                </p>
+                <div className="flex items-center gap-3">
+                  <button onClick={() => setPersonas(p => Math.max(1, p - 1))} disabled={personas <= 1}
+                    className="w-9 h-9 rounded-full border border-[#E8DCC8] bg-[#FAFAF6] flex items-center justify-center text-lg font-medium hover:bg-[#E8DCC8] transition-colors disabled:opacity-40">−</button>
+                  <span className="w-10 text-center text-[#2C1810] font-medium text-base tabular-nums">{personas}</span>
+                  <button onClick={() => setPersonas(p => Math.min(50, p + 1))} disabled={personas >= 50}
+                    className="w-9 h-9 rounded-full border border-[#E8DCC8] bg-[#FAFAF6] flex items-center justify-center text-lg font-medium hover:bg-[#E8DCC8] transition-colors disabled:opacity-40">+</button>
+                </div>
+              </div>
+
+              {/* Price summary */}
+              <div className="bg-[#F0EAD6] rounded-xl p-5 space-y-1.5">
+                <div className="flex justify-between text-sm text-[#2C1810]/60">
+                  <span>{personas} {lang === "ca" ? "persones" : "personas"} × {precio}€</span>
+                </div>
+                <div className="flex justify-between items-baseline">
+                  <span className="text-sm text-[#2C1810]/60">Total</span>
+                  <span className="text-2xl font-bold text-[#2C1810]"
+                    style={{ fontFamily: "var(--font-playfair), Georgia, serif" }}>{total}€</span>
+                </div>
+              </div>
+
+              {/* Contact */}
+              <div className="space-y-3">
+                <p className="text-xs font-medium text-[#2C1810]/50 uppercase tracking-wide">
+                  {lang === "ca" ? "Les teves dades" : "Tus datos"}
+                </p>
+                {[
+                  { label: lang === "ca" ? "Nom" : "Nombre", val: nombre, set: setNombre, type: "text",  ph: lang === "ca" ? "El teu nom" : "Tu nombre" },
+                  { label: "Email",                           val: email,  set: setEmail,  type: "email", ph: "tu@email.com" },
+                  { label: lang === "ca" ? "Telèfon" : "Teléfono", val: tel, set: setTel, type: "tel",   ph: "+34 600 000 000" },
+                ].map(f => (
+                  <div key={f.label}>
+                    <label className="block text-xs font-medium text-[#2C1810]/50 uppercase tracking-wide mb-1">{f.label}</label>
+                    <input type={f.type} value={f.val} onChange={e => f.set(e.target.value)} placeholder={f.ph}
+                      className="w-full px-4 py-3 rounded-xl border border-[#E8DCC8] bg-[#FAFAF6] text-[#2C1810] text-sm focus:outline-none focus:ring-2 focus:ring-[#4A6741]/30 placeholder:text-[#2C1810]/30" />
+                  </div>
+                ))}
+              </div>
+
+              {error && <p className="text-red-600 text-sm text-center">{error}</p>}
+
+              <button onClick={handleReservar} disabled={loading}
+                className="w-full flex items-center justify-center gap-2 px-6 py-4 rounded-full bg-[#4A6741] text-[#F0EAD6] text-sm font-semibold hover:bg-[#3A5432] transition-colors disabled:opacity-60">
+                {loading && <Loader2 size={16} className="animate-spin" />}
+                {lang === "ca" ? "Reservar ara" : "Reservar ahora"} — {total}€
+              </button>
+            </div>
+          )}
+        </div>
+      </div>
+    </section>
+  );
+}
+
 export function LaCasaCTA() {
   const { lang } = useLanguage();
   const tx = getT(lang);

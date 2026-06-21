@@ -27,7 +27,8 @@ type EspaciosCfg = {
   salonImg: string; habsImg: string; salaImg: string;
   salonNombre: string; habsNombre: string; salaNombre: string;
 };
-type CabanyaCfg = { foto1: string; foto2: string };
+type CabanyaCfg  = { foto1: string; foto2: string };
+type BosqueCfg   = { foto1: string; foto2: string };
 type SliderCfg  = { foto1: string; foto2: string; foto3: string; foto4: string; foto5: string };
 
 type PaginaInicioCfg = {
@@ -139,6 +140,7 @@ export default function ConfigClient({
   complementos: initialComps,
   espaciosInicial,
   cabanyaInicial,
+  bosqueInicial,
   sliderInicial,
   estanciaTextoEsInicial,
   estanciaTextoCaInicial,
@@ -150,6 +152,7 @@ export default function ConfigClient({
   complementos: Complemento[];
   espaciosInicial: EspaciosCfg;
   cabanyaInicial: CabanyaCfg;
+  bosqueInicial: BosqueCfg;
   sliderInicial: SliderCfg;
   estanciaTextoEsInicial: string;
   estanciaTextoCaInicial: string;
@@ -164,6 +167,7 @@ export default function ConfigClient({
   const [comps, setComps]   = useState(initialComps);
   const [espacios, setEspacios] = useState<EspaciosCfg>(espaciosInicial);
   const [cabanya, setCabanya]   = useState<CabanyaCfg>(cabanyaInicial);
+  const [bosque,  setBosque]    = useState<BosqueCfg>(bosqueInicial);
   const [slider,  setSlider]    = useState<SliderCfg>(sliderInicial);
   const [estanciaEs, setEstanciaEs] = useState(estanciaTextoEsInicial);
   const [estanciaCa, setEstanciaCa] = useState(estanciaTextoCaInicial);
@@ -175,6 +179,7 @@ export default function ConfigClient({
   const [savedComp,      setSavedComp]      = useState<string | null>(null);
   const [savedEspacios,  setSavedEspacios]  = useState(false);
   const [savedCabanya,   setSavedCabanya]   = useState(false);
+  const [savedBosque,    setSavedBosque]    = useState(false);
   const [savedSlider,    setSavedSlider]    = useState(false);
   const [savedEstancia,  setSavedEstancia]  = useState(false);
   const [savedPagInicio,   setSavedPagInicio]   = useState(false);
@@ -225,6 +230,16 @@ export default function ConfigClient({
         adminUpsertSistemaConfig("cabanya_foto_2", cabanya.foto2),
       ]);
       flag(setSavedCabanya);
+    });
+  }
+
+  function saveBosque() {
+    startTransition(async () => {
+      await Promise.all([
+        adminUpsertSistemaConfig("bosque_foto_1", bosque.foto1),
+        adminUpsertSistemaConfig("bosque_foto_2", bosque.foto2),
+      ]);
+      flag(setSavedBosque);
     });
   }
 
@@ -394,7 +409,24 @@ export default function ConfigClient({
         </div>
       </Section>
 
-      {/* ── 4. SLIDER LA CASA ── */}
+      {/* ── 4. BOSQUE TERAPÉUTICO ── */}
+      <Section title="Bosque Terapéutico" subtitle="Las 2 fotos del slider en la sección Bosque Terapéutico de La Casa.">
+        <div className="bg-white rounded-2xl border border-[#E8DCC8] p-6 space-y-6">
+          {([
+            { label: "Foto 1", key: "foto1" as keyof BosqueCfg },
+            { label: "Foto 2", key: "foto2" as keyof BosqueCfg },
+          ]).map(({ label, key }) => (
+            <ImgRow key={key} label={label}
+              url={bosque[key]}
+              onUrl={v => setBosque(prev => ({ ...prev, [key]: v }))}
+              onUpload={v => setBosque(prev => ({ ...prev, [key]: v }))}
+            />
+          ))}
+          <SaveBtn onClick={saveBosque} saving={isPending} saved={savedBosque} label="Guardar fotos Bosque" />
+        </div>
+      </Section>
+
+      {/* ── 5. SLIDER LA CASA ── */}
       <Section title="Slider La Casa" subtitle="Hasta 5 fotos extra en el slider del hero. Las fotos de habitaciones y espacios se añaden automáticamente.">
         <div className="bg-white rounded-2xl border border-[#E8DCC8] p-6 space-y-6">
           {(["foto1","foto2","foto3","foto4","foto5"] as (keyof SliderCfg)[]).map((key, i) => (
