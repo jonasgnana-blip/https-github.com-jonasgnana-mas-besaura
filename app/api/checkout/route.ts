@@ -395,6 +395,22 @@ async function handleLegacyReserva(reserva_id: string) {
   if (!reserva) {
     return NextResponse.json({ error: "Reserva no encontrada" }, { status: 404 });
   }
+
+  // If a Stripe session already exists for this reservation, reuse it
+  // instead of creating a duplicate. Handles double-click and page refresh.
+  if (reserva.stripe_session_id) {
+    try {
+      const existing = await getStripe().checkout.sessions.retrieve(
+        reserva.stripe_session_id
+      );
+      if (existing.status === "open" && existing.url) {
+        return NextResponse.json({ url: existing.url });
+      }
+    } catch {
+      // Session expired or invalid — fall through to create a new one
+    }
+  }
+
   if (reserva.estado !== "PENDIENTE_PAGO") {
     return NextResponse.json({ error: "Esta reserva ya no está disponible" }, { status: 409 });
   }
@@ -402,6 +418,10 @@ async function handleLegacyReserva(reserva_id: string) {
   const noches = Math.round(
     (reserva.fecha_salida.getTime() - reserva.fecha_entrada.getTime()) / 86400000
   );
+
+  if (noches <= 0) {
+    return NextResponse.json({ error: "Fechas de reserva inválidas" }, { status: 400 });
+  }
 
   const lineItems: Stripe.Checkout.SessionCreateParams["line_items"] = [
     {
@@ -425,16 +445,21 @@ async function handleLegacyReserva(reserva_id: string) {
     })),
   ];
 
-  const session = await getStripe().checkout.sessions.create({
-    mode: "payment",
-    line_items: lineItems,
-    customer_email: reserva.email_cliente,
-    locale: "es",
-    metadata: { reserva_id: reserva.id },
-    success_url: SUCCESS_URL,
-    cancel_url: CANCEL_URL,
-    payment_intent_data: { metadata: { reserva_id: reserva.id } },
-  });
+  // Idempotency key scoped to this reserva: if this function is called twice
+  // simultaneously (double-submit race), Stripe returns the same session.
+  const session = await getStripe().checkout.sessions.create(
+    {
+      mode: "payment",
+      line_items: lineItems,
+      customer_email: reserva.email_cliente,
+      locale: "es",
+      metadata: { reserva_id: reserva.id },
+      success_url: SUCCESS_URL,
+      cancel_url: CANCEL_URL,
+      payment_intent_data: { metadata: { reserva_id: reserva.id } },
+    },
+    { idempotencyKey: `checkout-${reserva.id}` }
+  );
 
   await prisma.reserva.update({
     where: { id: reserva.id },

@@ -112,44 +112,14 @@ export async function createReserva(
 
   if (noches <= 0) return { ok: false, error: "Fechas inválidas." };
 
-  // Verificar disponibilidad (anti-overbooking)
-  const now = new Date();
-  const conflicto = await prisma.reserva.findFirst({
-    where: {
-      habitacion_id,
-      OR: [
-        { estado: EstadoReserva.CONFIRMADA },
-        {
-          estado: EstadoReserva.PENDIENTE_PAGO,
-          OR: [{ expira_en: null }, { expira_en: { gt: now } }],
-        },
-      ],
-      AND: [
-        { fecha_entrada: { lt: salida } },
-        { fecha_salida: { gt: entrada } },
-      ],
-    },
-  });
-
-  if (conflicto) {
-    return {
-      ok: false,
-      error: "Esas fechas ya no están disponibles. Por favor elige otras.",
-    };
-  }
-
-  // Obtener habitación y complementos
-  const habitacion = await prisma.habitacion.findUnique({
-    where: { id: habitacion_id },
-  });
-  if (!habitacion) return { ok: false, error: "Habitación no encontrada." };
-
-  const complementos =
+  // Obtener habitación y complementos antes de la transacción
+  const [habitacion, complementos] = await Promise.all([
+    prisma.habitacion.findUnique({ where: { id: habitacion_id } }),
     complemento_ids.length > 0
-      ? await prisma.complemento.findMany({
-          where: { id: { in: complemento_ids } },
-        })
-      : [];
+      ? prisma.complemento.findMany({ where: { id: { in: complemento_ids } } })
+      : Promise.resolve([]),
+  ]);
+  if (!habitacion) return { ok: false, error: "Habitación no encontrada." };
 
   // Calcular precio total
   let precio_total = Number(habitacion.precio_noche) * noches;
@@ -160,33 +130,64 @@ export async function createReserva(
         : Number(c.precio);
   }
 
-  // Crear reserva en PENDIENTE_PAGO con expiración a 15 min
   const expira_en = new Date(Date.now() + 15 * 60 * 1000);
 
-  const reserva = await prisma.reserva.create({
-    data: {
-      habitacion_id,
-      fecha_entrada: entrada,
-      fecha_salida: salida,
-      estado: EstadoReserva.PENDIENTE_PAGO,
-      precio_total,
-      nombre_cliente: input.nombre_cliente,
-      email_cliente: input.email_cliente,
-      telefono_cliente: input.telefono_cliente,
-      expira_en,
-      complementos: {
-        create: complementos.map((c) => ({
-          complemento_id: c.id,
-          precio_aplicado:
-            c.tipo_cobro === "POR_NOCHE"
-              ? Number(c.precio) * noches
-              : Number(c.precio),
-        })),
-      },
-    },
-  });
+  // Atomic check + create: the findFirst and create run inside a single
+  // serializable transaction so two simultaneous requests for the same
+  // dates cannot both pass the availability check.
+  try {
+    const reserva = await prisma.$transaction(async (tx) => {
+      const now = new Date();
+      const conflicto = await tx.reserva.findFirst({
+        where: {
+          habitacion_id,
+          OR: [
+            { estado: EstadoReserva.CONFIRMADA },
+            {
+              estado: EstadoReserva.PENDIENTE_PAGO,
+              OR: [{ expira_en: null }, { expira_en: { gt: now } }],
+            },
+          ],
+          AND: [
+            { fecha_entrada: { lt: salida } },
+            { fecha_salida: { gt: entrada } },
+          ],
+        },
+      });
 
-  return { ok: true, reserva_id: reserva.id, precio_total };
+      if (conflicto) throw new Error("CONFLICT");
+
+      return tx.reserva.create({
+        data: {
+          habitacion_id,
+          fecha_entrada: entrada,
+          fecha_salida: salida,
+          estado: EstadoReserva.PENDIENTE_PAGO,
+          precio_total,
+          nombre_cliente: input.nombre_cliente,
+          email_cliente: input.email_cliente,
+          telefono_cliente: input.telefono_cliente,
+          expira_en,
+          complementos: {
+            create: complementos.map((c) => ({
+              complemento_id: c.id,
+              precio_aplicado:
+                c.tipo_cobro === "POR_NOCHE"
+                  ? Number(c.precio) * noches
+                  : Number(c.precio),
+            })),
+          },
+        },
+      });
+    });
+
+    return { ok: true, reserva_id: reserva.id, precio_total };
+  } catch (err) {
+    if (err instanceof Error && err.message === "CONFLICT") {
+      return { ok: false, error: "Esas fechas ya no están disponibles. Por favor elige otras." };
+    }
+    throw err;
+  }
 }
 
 // ── getActiveSesionesActividad ────────────────────────────────────────────────

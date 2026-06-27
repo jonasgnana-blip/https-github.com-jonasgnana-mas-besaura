@@ -74,6 +74,17 @@ async function handleReservaAlojamiento(
   session: Stripe.Checkout.Session,
   reserva_id: string,
 ) {
+  // Idempotency guard: if already CONFIRMADA, skip processing entirely.
+  // Stripe can deliver the same webhook event more than once.
+  const existing = await prisma.reserva.findUnique({
+    where: { id: reserva_id },
+    select: { estado: true },
+  });
+  if (existing?.estado === "CONFIRMADA") {
+    console.log(`[webhook] Alojamiento ${reserva_id} already CONFIRMADA, skip`);
+    return;
+  }
+
   const reserva = await prisma.reserva.update({
     where: { id: reserva_id },
     data: { estado: "CONFIRMADA", expira_en: null },
@@ -158,6 +169,15 @@ async function handleReservaActividad(
   session: Stripe.Checkout.Session,
   reserva_actividad_id: string,
 ) {
+  const existingRa = await prisma.reservaActividad.findUnique({
+    where: { id: reserva_actividad_id },
+    select: { estado: true },
+  });
+  if (existingRa?.estado === "CONFIRMADA") {
+    console.log(`[webhook] ReservaActividad ${reserva_actividad_id} already CONFIRMADA, skip`);
+    return;
+  }
+
   const ra = await prisma.reservaActividad.update({
     where: { id: reserva_actividad_id },
     data: { estado: "CONFIRMADA" },
