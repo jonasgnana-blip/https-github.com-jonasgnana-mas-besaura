@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import Stripe from "stripe";
 
 export const runtime = "nodejs";
+export const maxDuration = 30;
 
 const SITE_URL =
   process.env.NEXT_PUBLIC_SITE_URL || "https://masbesaura.com";
@@ -424,15 +425,14 @@ async function handleLegacyReserva(reserva_id: string) {
     })),
   ];
 
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? SITE_URL;
   const session = await getStripe().checkout.sessions.create({
     mode: "payment",
     line_items: lineItems,
     customer_email: reserva.email_cliente,
     locale: "es",
     metadata: { reserva_id: reserva.id },
-    success_url: `${appUrl}/reservar/exito?reserva_id=${reserva.id}`,
-    cancel_url: `${appUrl}/reservar/cancelado?reserva_id=${reserva.id}`,
+    success_url: SUCCESS_URL,
+    cancel_url: CANCEL_URL,
     payment_intent_data: { metadata: { reserva_id: reserva.id } },
   });
 

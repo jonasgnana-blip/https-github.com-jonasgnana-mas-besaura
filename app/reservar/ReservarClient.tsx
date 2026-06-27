@@ -221,13 +221,18 @@ export default function ReservarClient({
       });
 
       if (result.ok) {
-        // Crear sesión de Stripe y redirigir
         const res = await fetch("/api/checkout", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ reserva_id: result.reserva_id }),
         });
-        const data = await res.json();
+        let data: { url?: string; error?: string } = {};
+        try {
+          data = await res.json();
+        } catch {
+          setServerError("Error del servidor. Inténtalo de nuevo en unos segundos.");
+          return;
+        }
         if (data.url) {
           window.location.href = data.url;
         } else {
