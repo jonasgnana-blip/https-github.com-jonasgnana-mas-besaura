@@ -8,6 +8,8 @@ type Props = {
   fecha_entrada: string;
   fecha_salida: string;
   noches: number;
+  num_adultos?: number;
+  precio_noche: number;
   complementos: Complemento[];
   precio_total: number;
 };
@@ -18,6 +20,8 @@ export function renderEmailAdmin(p: Props): string {
     `Hola ${p.nombre_cliente}, te escribo sobre tu reserva en Mas Besaura del ${p.fecha_entrada} al ${p.fecha_salida}.`
   );
   const whatsappUrl = `https://wa.me/${whatsappNum}?text=${whatsappMsg}`;
+
+  const basePrice = p.precio_noche * p.noches;
 
   const filaComplementos = p.complementos
     .map(
@@ -49,15 +53,18 @@ export function renderEmailAdmin(p: Props): string {
       <div style="margin-bottom:24px;">
         <div style="font-family:Arial,sans-serif;font-size:11px;color:#4A6741;text-transform:uppercase;letter-spacing:1.5px;margin-bottom:8px;">Estancia</div>
         <div style="font-size:16px;color:#2C1810;">${p.habitacion}</div>
-        <div style="font-family:Arial,sans-serif;font-size:14px;color:#4A6741;margin-top:4px;">${p.fecha_entrada} → ${p.fecha_salida} · ${p.noches} noche${p.noches > 1 ? "s" : ""}</div>
+        <div style="font-family:Arial,sans-serif;font-size:14px;color:#4A6741;margin-top:4px;">
+          ${p.fecha_entrada} → ${p.fecha_salida} · ${p.noches} noche${p.noches > 1 ? "s" : ""}
+          ${p.num_adultos ? ` · ${p.num_adultos} persona${p.num_adultos > 1 ? "s" : ""}` : ""}
+        </div>
       </div>
 
       <div style="margin-bottom:24px;">
         <div style="font-family:Arial,sans-serif;font-size:11px;color:#4A6741;text-transform:uppercase;letter-spacing:1.5px;margin-bottom:8px;">Desglose</div>
         <table style="width:100%;border-collapse:collapse;">
           <tr>
-            <td style="padding:6px 0;font-family:Arial,sans-serif;font-size:14px;color:#2C1810;border-bottom:1px solid #F0EAD6;">${p.noches} noche${p.noches > 1 ? "s" : ""}</td>
-            <td style="padding:6px 0;font-family:Arial,sans-serif;font-size:14px;color:#2C1810;text-align:right;border-bottom:1px solid #F0EAD6;">${p.noches * 150}€</td>
+            <td style="padding:6px 0;font-family:Arial,sans-serif;font-size:14px;color:#2C1810;border-bottom:1px solid #F0EAD6;">${p.noches} noche${p.noches > 1 ? "s" : ""} × ${p.precio_noche}€</td>
+            <td style="padding:6px 0;font-family:Arial,sans-serif;font-size:14px;color:#2C1810;text-align:right;border-bottom:1px solid #F0EAD6;">${basePrice}€</td>
           </tr>
           ${filaComplementos}
           <tr>

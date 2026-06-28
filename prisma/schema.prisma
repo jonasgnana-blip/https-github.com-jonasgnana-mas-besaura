@@ -51,6 +51,7 @@ model Reserva {
   nombre_cliente    String
   email_cliente     String
   telefono_cliente  String
+  num_adultos       Int            @default(1)
   stripe_session_id String?        @unique
   createdAt         DateTime       @default(now())
   updatedAt         DateTime       @updatedAt

@@ -5,7 +5,6 @@ import { prisma } from "@/lib/prisma";
 import { renderEmailAdmin } from "@/lib/emails/email-admin";
 import { renderEmailCliente } from "@/lib/emails/email-cliente";
 import { createCalendarEvent } from "@/lib/googleCalendar";
-import { sendReservaConfirmada } from "@/lib/notifications";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   // @ts-ignore — fetch client required on Vercel
@@ -114,6 +113,8 @@ async function handleReservaAlojamiento(
     fecha_entrada: fechaEntrada,
     fecha_salida: fechaSalida,
     noches,
+    num_adultos: reserva.num_adultos,
+    precio_noche: Number(reserva.habitacion.precio_noche),
     complementos: complementosData,
     precio_total: Number(reserva.precio_total),
   };
@@ -148,19 +149,7 @@ async function handleReservaAlojamiento(
     }),
   ]);
 
-  console.log(`[webhook] Alojamiento ${reserva_id} CONFIRMADA`);
-
-  sendReservaConfirmada({
-    nombre_cliente: reserva.nombre_cliente,
-    email_cliente: reserva.email_cliente,
-    telefono_cliente: reserva.telefono_cliente,
-    habitacion: reserva.habitacion.nombre,
-    fecha_entrada: fechaEntrada,
-    fecha_salida: fechaSalida,
-    noches,
-    precio_total: Number(reserva.precio_total),
-    complementos: complementosData,
-  }).catch((e) => console.error("[webhook] notifications:", e));
+  console.log(`[webhook] Alojamiento ${reserva_id} CONFIRMADA · ${noches} noches · ${reserva.num_adultos} personas`);
 }
 
 // ── Actividad / Cabanya / Alquiler ────────────────────────────────────────────
@@ -200,15 +189,20 @@ async function handleReservaActividad(
   const personas = ra.num_adultos;
   const total = Number(ra.precio_total);
 
+  const fechasStr = fechaFin && fechaFin !== fechaEntrada
+    ? `${fechaEntrada} → ${fechaFin}`
+    : fechaEntrada;
+
   const whatsappNum = (process.env.ADMIN_WHATSAPP_NUMBER ?? "").replace(/\D/g, "");
-  const whatsappMsg = encodeURIComponent(
+  const whatsappMsgAdmin = encodeURIComponent(
     `Hola ${ra.nombre_cliente}, te escribo sobre tu reserva en Mas Besaura.`
   );
-  const whatsappUrl = `https://wa.me/${whatsappNum}?text=${whatsappMsg}`;
+  const whatsappUrl = `https://wa.me/${whatsappNum}?text=${whatsappMsgAdmin}`;
 
-  const html = `<!DOCTYPE html>
+  // ── Email admin ──────────────────────────────────────────────────────────────
+  const htmlAdmin = `<!DOCTYPE html>
 <html lang="es">
-<head><meta charset="utf-8"></head>
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
 <body style="margin:0;padding:0;background:#FAFAF6;font-family:Georgia,serif;">
   <div style="max-width:560px;margin:40px auto;background:white;border-radius:12px;overflow:hidden;border:1px solid #E8DCC8;">
     <div style="background:#2A3F24;padding:32px;text-align:center;">
@@ -225,12 +219,12 @@ async function handleReservaActividad(
         <div style="font-family:Arial,sans-serif;font-size:11px;color:#4A6741;text-transform:uppercase;letter-spacing:1.5px;margin-bottom:6px;">Reserva</div>
         <div style="font-size:16px;color:#2C1810;">${nombre}</div>
         <div style="font-family:Arial,sans-serif;font-size:14px;color:#4A6741;margin-top:4px;">
-          ${fechaEntrada}${fechaFin && fechaFin !== fechaEntrada ? " → " + fechaFin : ""} · ${personas} persona${personas !== 1 ? "s" : ""}
+          📅 ${fechasStr} · 👥 ${personas} persona${personas !== 1 ? "s" : ""}
         </div>
       </div>
-      <div style="margin-bottom:24px;background:#F0EAD6;border-radius:8px;padding:16px;display:flex;justify-content:space-between;">
+      <div style="margin-bottom:24px;background:#F0EAD6;border-radius:8px;padding:16px;display:flex;justify-content:space-between;align-items:center;">
         <span style="font-family:Arial,sans-serif;font-size:15px;color:#2C1810;font-weight:bold;">Total pagado</span>
-        <span style="font-family:Arial,sans-serif;font-size:15px;color:#4A6741;font-weight:bold;">${total}€</span>
+        <span style="font-family:Arial,sans-serif;font-size:18px;color:#4A6741;font-weight:bold;">${total}€</span>
       </div>
       <div style="text-align:center;">
         <a href="${whatsappUrl}" style="display:inline-block;padding:14px 28px;background:#25D366;color:white;text-decoration:none;border-radius:50px;font-family:Arial,sans-serif;font-size:15px;font-weight:bold;">
@@ -245,14 +239,96 @@ async function handleReservaActividad(
 </body>
 </html>`;
 
-  await resend.emails.send({
-    from: FROM_EMAIL,
-    to: ADMIN_TO,
-    subject: `✅ ${label}: ${ra.nombre_cliente} · ${fechaEntrada}`,
-    html,
-  });
+  // ── Email cliente ────────────────────────────────────────────────────────────
+  const primerNombre = ra.nombre_cliente.split(" ")[0];
+  const htmlCliente = `<!DOCTYPE html>
+<html lang="es">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
+<body style="margin:0;padding:0;background:#FAFAF6;font-family:Georgia,serif;">
+  <div style="max-width:560px;margin:40px auto;background:white;border-radius:12px;overflow:hidden;border:1px solid #E8DCC8;">
+    <div style="background:linear-gradient(160deg,#2A3F24 0%,#4A6741 100%);padding:48px 32px;text-align:center;">
+      <h1 style="color:#F0EAD6;margin:0 0 8px;font-size:32px;font-weight:normal;">Mas Besaura</h1>
+      <p style="color:#C4A882;margin:0;font-size:13px;font-family:Arial,sans-serif;letter-spacing:2px;text-transform:uppercase;">Tu reserva está confirmada</p>
+    </div>
+    <div style="padding:32px 32px 0;">
+      <p style="font-size:20px;color:#2C1810;margin:0;">Hola, ${primerNombre} 👋</p>
+    </div>
+    <div style="padding:20px 32px 32px;">
+      <p style="font-family:Arial,sans-serif;font-size:15px;color:#2C1810;line-height:1.7;margin-top:12px;">
+        ¡Estamos encantados de recibirte! Tu reserva de <strong>${nombre}</strong> en Mas Besaura ha quedado confirmada.
+      </p>
 
-  console.log(`[webhook] ReservaActividad ${reserva_actividad_id} CONFIRMADA · tipo=${ra.tipo}`);
+      <div style="background:#F0EAD6;border-radius:10px;padding:20px;margin:20px 0;">
+        <div style="font-family:Arial,sans-serif;font-size:11px;color:#4A6741;text-transform:uppercase;letter-spacing:1.5px;margin-bottom:10px;">Detalle de la reserva</div>
+        <table style="width:100%;border-collapse:collapse;">
+          <tr>
+            <td style="padding:6px 0;font-family:Arial,sans-serif;font-size:13px;color:#2C1810;opacity:0.65;width:110px;">Tipo</td>
+            <td style="padding:6px 0;font-family:Arial,sans-serif;font-size:13px;color:#2C1810;font-weight:bold;">${nombre}</td>
+          </tr>
+          <tr>
+            <td style="padding:6px 0;font-family:Arial,sans-serif;font-size:13px;color:#2C1810;opacity:0.65;">Fechas</td>
+            <td style="padding:6px 0;font-family:Arial,sans-serif;font-size:13px;color:#2C1810;font-weight:bold;">📅 ${fechasStr}</td>
+          </tr>
+          <tr>
+            <td style="padding:6px 0;font-family:Arial,sans-serif;font-size:13px;color:#2C1810;opacity:0.65;">Personas</td>
+            <td style="padding:6px 0;font-family:Arial,sans-serif;font-size:13px;color:#2C1810;font-weight:bold;">👥 ${personas} persona${personas !== 1 ? "s" : ""}</td>
+          </tr>
+          <tr>
+            <td style="padding:10px 0 0;font-family:Arial,sans-serif;font-size:15px;color:#2C1810;font-weight:bold;">Total pagado</td>
+            <td style="padding:10px 0 0;font-family:Arial,sans-serif;font-size:17px;color:#4A6741;font-weight:bold;">${total}€</td>
+          </tr>
+        </table>
+      </div>
+
+      ${ra.tipo !== "actividad" ? `
+      <div style="background:#2A3F24;border-radius:10px;padding:20px;margin:20px 0;">
+        <h3 style="margin:0 0 10px;font-size:14px;color:#C4A882;font-family:Arial,sans-serif;font-weight:bold;text-transform:uppercase;letter-spacing:1px;">🗺️ Llegada</h3>
+        <p style="font-family:Arial,sans-serif;font-size:13px;line-height:1.7;margin:0;color:#F0EAD6;opacity:0.85;">
+          Te enviaremos las indicaciones por WhatsApp unos días antes.
+          Check-in a partir de las <strong>16:00 h</strong> · Check-out antes de las <strong>11:00 h</strong>.
+        </p>
+      </div>
+      ` : `
+      <div style="background:#2A3F24;border-radius:10px;padding:20px;margin:20px 0;">
+        <h3 style="margin:0 0 10px;font-size:14px;color:#C4A882;font-family:Arial,sans-serif;font-weight:bold;text-transform:uppercase;letter-spacing:1px;">📍 Punto de encuentro</h3>
+        <p style="font-family:Arial,sans-serif;font-size:13px;line-height:1.7;margin:0;color:#F0EAD6;opacity:0.85;">
+          Nos pondremos en contacto contigo por WhatsApp para confirmar el lugar y hora exactos.
+        </p>
+      </div>
+      `}
+
+      <p style="font-family:Arial,sans-serif;font-size:14px;color:#2C1810;line-height:1.7;">
+        Si tienes cualquier pregunta escríbenos a
+        <a href="mailto:info@masbesaura.com" style="color:#4A6741;">info@masbesaura.com</a>
+        o llámanos al <a href="tel:+34665822542" style="color:#4A6741;">+34 665 822 542</a>.
+      </p>
+      <p style="font-size:18px;color:#2C1810;text-align:center;margin-top:28px;">¡Hasta pronto! 🌿</p>
+    </div>
+    <div style="padding:24px 32px;background:#F0EAD6;text-align:center;font-family:Arial,sans-serif;font-size:12px;color:#2C1810;">
+      <strong>Mas Besaura</strong><br>
+      <a href="mailto:info@masbesaura.com" style="color:#4A6741;">info@masbesaura.com</a> · +34 665 822 542<br>
+      Collsacabra · Girona
+    </div>
+  </div>
+</body>
+</html>`;
+
+  await Promise.all([
+    resend.emails.send({
+      from: FROM_EMAIL,
+      to: ADMIN_TO,
+      subject: `✅ ${label}: ${ra.nombre_cliente} · ${fechasStr} · ${personas} pers.`,
+      html: htmlAdmin,
+    }),
+    resend.emails.send({
+      from: FROM_EMAIL,
+      to: ra.email_cliente,
+      subject: `¡Tu reserva en Mas Besaura está confirmada! 🌿`,
+      html: htmlCliente,
+    }),
+  ]);
+
+  console.log(`[webhook] ReservaActividad ${reserva_actividad_id} CONFIRMADA · tipo=${ra.tipo} · ${personas} personas`);
 
   // Block the matching session so the date becomes unavailable for new bookings
   if (ra.actividad_id && ra.fecha_inicio) {

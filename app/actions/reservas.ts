@@ -15,6 +15,7 @@ export type CreateReservaInput = {
   email_cliente: string;
   telefono_cliente: string;
   complemento_ids: string[];
+  num_adultos?: number;
 };
 
 export type CreateReservaResult =
@@ -167,6 +168,7 @@ export async function createReserva(
           nombre_cliente: input.nombre_cliente,
           email_cliente: input.email_cliente,
           telefono_cliente: input.telefono_cliente,
+          num_adultos: input.num_adultos ?? 1,
           expira_en,
           complementos: {
             create: complementos.map((c) => ({

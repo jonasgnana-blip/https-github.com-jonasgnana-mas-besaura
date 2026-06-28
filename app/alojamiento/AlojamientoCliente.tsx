@@ -478,6 +478,7 @@ function BookingPanel({
         email_cliente: email.trim(),
         telefono_cliente: telefono.trim(),
         complemento_ids: selectedCompls,
+        num_adultos: personas,
       });
 
       if (!result.ok) {

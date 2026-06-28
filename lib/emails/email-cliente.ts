@@ -6,12 +6,15 @@ type Props = {
   fecha_entrada: string;
   fecha_salida: string;
   noches: number;
+  num_adultos?: number;
+  precio_noche: number;
   complementos: Complemento[];
   precio_total: number;
 };
 
 export function renderEmailCliente(p: Props): string {
   const primerNombre = p.nombre_cliente.split(" ")[0];
+  const basePrice = p.precio_noche * p.noches;
 
   const filaComplementos = p.complementos
     .map(
@@ -45,14 +48,19 @@ export function renderEmailCliente(p: Props): string {
       <div style="background:#F0EAD6;border-radius:10px;padding:20px;margin:20px 0;">
         <div style="font-family:Arial,sans-serif;font-size:11px;color:#4A6741;text-transform:uppercase;letter-spacing:1.5px;margin-bottom:8px;">Tu estancia</div>
         <div style="font-size:16px;color:#2C1810;font-weight:bold;">${p.habitacion}</div>
-        <div style="font-family:Arial,sans-serif;font-size:13px;color:#2C1810;opacity:0.6;margin-top:4px;">${p.fecha_entrada} → ${p.fecha_salida} · ${p.noches} noche${p.noches > 1 ? "s" : ""}</div>
+        <div style="font-family:Arial,sans-serif;font-size:13px;color:#2C1810;margin-top:6px;">
+          📅 ${p.fecha_entrada} → ${p.fecha_salida}
+        </div>
+        <div style="font-family:Arial,sans-serif;font-size:13px;color:#2C1810;opacity:0.7;margin-top:4px;">
+          ${p.noches} noche${p.noches > 1 ? "s" : ""}${p.num_adultos ? ` · ${p.num_adultos} persona${p.num_adultos > 1 ? "s" : ""}` : ""}
+        </div>
       </div>
 
       <div style="font-family:Arial,sans-serif;font-size:11px;color:#4A6741;text-transform:uppercase;letter-spacing:1.5px;margin-bottom:8px;">Resumen del pago</div>
       <table style="width:100%;border-collapse:collapse;">
         <tr>
-          <td style="padding:6px 0;font-family:Arial,sans-serif;font-size:14px;color:#2C1810;border-bottom:1px solid #E8DCC8;">${p.noches} noche${p.noches > 1 ? "s" : ""} × 150€</td>
-          <td style="padding:6px 0;font-family:Arial,sans-serif;font-size:14px;color:#2C1810;text-align:right;border-bottom:1px solid #E8DCC8;">${p.noches * 150}€</td>
+          <td style="padding:6px 0;font-family:Arial,sans-serif;font-size:14px;color:#2C1810;border-bottom:1px solid #E8DCC8;">${p.noches} noche${p.noches > 1 ? "s" : ""} × ${p.precio_noche}€</td>
+          <td style="padding:6px 0;font-family:Arial,sans-serif;font-size:14px;color:#2C1810;text-align:right;border-bottom:1px solid #E8DCC8;">${basePrice}€</td>
         </tr>
         ${filaComplementos}
         <tr>
@@ -81,7 +89,7 @@ export function renderEmailCliente(p: Props): string {
     <div style="padding:24px 32px;background:#F0EAD6;text-align:center;font-family:Arial,sans-serif;font-size:12px;color:#2C1810;">
       <strong>Mas Besaura</strong><br>
       <a href="mailto:info@masbesaura.com" style="color:#4A6741;">info@masbesaura.com</a> · +34 665 822 542<br>
-      Cataluña, España
+      Collsacabra · Girona
     </div>
   </div>
 </body>
