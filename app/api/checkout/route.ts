@@ -209,7 +209,7 @@ async function handleActividad(body: ActividadBody) {
       ...(codigoCode ? { codigo_descuento: body.codigo_descuento! } : {}),
     },
     customer_email: body.email_cliente || undefined,
-    success_url: SUCCESS_URL,
+    success_url: `${SUCCESS_URL}?reserva_actividad_id=${reservaAct.id}`,
     cancel_url: CANCEL_URL,
   });
 
@@ -270,7 +270,7 @@ async function handleCabanya(body: CabanyaBody) {
       ...(codigoCodeC ? { codigo_descuento: body.codigo_descuento! } : {}),
     },
     customer_email: body.email_cliente || undefined,
-    success_url: SUCCESS_URL,
+    success_url: `${SUCCESS_URL}?reserva_actividad_id=${reservaAct.id}`,
     cancel_url: CANCEL_URL,
   });
 
@@ -321,7 +321,7 @@ async function handleAlquiler(body: AlquilerBody) {
       dias: String(body.dias),
     },
     customer_email: body.email_cliente || undefined,
-    success_url: SUCCESS_URL,
+    success_url: `${SUCCESS_URL}?reserva_actividad_id=${reservaAct.id}`,
     cancel_url: CANCEL_URL,
   });
 
@@ -454,8 +454,8 @@ async function handleLegacyReserva(reserva_id: string) {
       customer_email: reserva.email_cliente,
       locale: "es",
       metadata: { reserva_id: reserva.id },
-      success_url: SUCCESS_URL,
-      cancel_url: CANCEL_URL,
+      success_url: `${SUCCESS_URL}?reserva_id=${reserva.id}`,
+      cancel_url: `${CANCEL_URL}?reserva_id=${reserva.id}`,
       payment_intent_data: { metadata: { reserva_id: reserva.id } },
     },
     { idempotencyKey: `checkout-${reserva.id}` }
