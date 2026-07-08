@@ -111,7 +111,7 @@ export async function createReserva(
     (salida.getTime() - entrada.getTime()) / 86400000
   );
 
-  if (noches <= 0) return { ok: false, error: "Fechas inválidas." };
+  if (noches < 2) return { ok: false, error: "La estancia mínima es de 2 noches." };
 
   // Obtener habitación y complementos antes de la transacción
   const [habitacion, complementos] = await Promise.all([

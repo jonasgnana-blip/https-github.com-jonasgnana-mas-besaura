@@ -21,6 +21,35 @@ const ADMIN_TO = [...new Set([ADMIN_EMAIL, ADMIN_EMAIL2])];
 
 export const dynamic = "force-dynamic";
 
+// ── Resend helper ─────────────────────────────────────────────────────────────
+// Resend SDK v6 returns { data, error } — it does NOT throw on API errors.
+// Log the full error so it shows in Vercel logs and always resolve (never throw)
+// so a failed email doesn't cause the webhook to return 500 (which would make
+// Stripe retry, but our idempotency guard would skip emails on the retry anyway).
+
+async function sendEmailSafe(params: {
+  to: string | string[];
+  subject: string;
+  html: string;
+  tag: string;
+}): Promise<void> {
+  try {
+    const { data, error } = await resend.emails.send({
+      from: FROM_EMAIL,
+      to: params.to,
+      subject: params.subject,
+      html: params.html,
+    });
+    if (error) {
+      console.error(`[webhook] email error (${params.tag}):`, JSON.stringify(error));
+    } else {
+      console.log(`[webhook] email ok (${params.tag}): id=${data?.id}`);
+    }
+  } catch (err) {
+    console.error(`[webhook] email exception (${params.tag}):`, err);
+  }
+}
+
 export async function POST(req: NextRequest) {
   const body = await req.text();
   const sig = req.headers.get("stripe-signature");
@@ -51,13 +80,21 @@ export async function POST(req: NextRequest) {
 
     // ── Alojamiento (legacy Reserva) ──────────────────────────────────────────
     if (meta.reserva_id) {
-      await handleReservaAlojamiento(session, meta.reserva_id);
+      try {
+        await handleReservaAlojamiento(session, meta.reserva_id);
+      } catch (err) {
+        console.error(`[webhook] handleReservaAlojamiento error (${meta.reserva_id}):`, err);
+      }
       return NextResponse.json({ received: true });
     }
 
     // ── Actividad / Cabanya / Alquiler (ReservaActividad) ─────────────────────
     if (meta.reserva_actividad_id) {
-      await handleReservaActividad(session, meta.reserva_actividad_id);
+      try {
+        await handleReservaActividad(session, meta.reserva_actividad_id);
+      } catch (err) {
+        console.error(`[webhook] handleReservaActividad error (${meta.reserva_actividad_id}):`, err);
+      }
       return NextResponse.json({ received: true });
     }
 
@@ -131,8 +168,7 @@ async function handleReservaAlojamiento(
   }).catch((e) => console.error("[webhook] Google Calendar:", e));
 
   await Promise.all([
-    resend.emails.send({
-      from: FROM_EMAIL,
+    sendEmailSafe({
       to: ADMIN_TO,
       subject: `🏡 Nueva reserva: ${reserva.nombre_cliente} · ${fechaEntrada}`,
       html: renderEmailAdmin({
@@ -140,12 +176,13 @@ async function handleReservaAlojamiento(
         email_cliente: reserva.email_cliente,
         telefono_cliente: reserva.telefono_cliente,
       }),
+      tag: `admin-alojamiento-${reserva_id}`,
     }),
-    resend.emails.send({
-      from: FROM_EMAIL,
+    sendEmailSafe({
       to: reserva.email_cliente,
       subject: `¡Tu reserva en Mas Besaura está confirmada! 🌿`,
       html: renderEmailCliente(emailProps),
+      tag: `cliente-alojamiento-${reserva_id}`,
     }),
   ]);
 
@@ -314,17 +351,17 @@ async function handleReservaActividad(
 </html>`;
 
   await Promise.all([
-    resend.emails.send({
-      from: FROM_EMAIL,
+    sendEmailSafe({
       to: ADMIN_TO,
       subject: `✅ ${label}: ${ra.nombre_cliente} · ${fechasStr} · ${personas} pers.`,
       html: htmlAdmin,
+      tag: `admin-actividad-${reserva_actividad_id}`,
     }),
-    resend.emails.send({
-      from: FROM_EMAIL,
+    sendEmailSafe({
       to: ra.email_cliente,
       subject: `¡Tu reserva en Mas Besaura está confirmada! 🌿`,
       html: htmlCliente,
+      tag: `cliente-actividad-${reserva_actividad_id}`,
     }),
   ]);
 

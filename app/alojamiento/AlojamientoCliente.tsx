@@ -462,6 +462,10 @@ function BookingPanel({
       setError(tr.aloj_booking_error_fechas);
       return;
     }
+    if (noches < 2) {
+      setError("La estancia mínima es de 2 noches.");
+      return;
+    }
     if (!nombre.trim() || !email.trim() || !telefono.trim()) {
       setError(tr.aloj_booking_error_contacto);
       return;
@@ -698,6 +702,13 @@ function BookingPanel({
           </div>
         )}
 
+        {/* Aviso mínimo 2 noches */}
+        {noches === 1 && (
+          <p className="text-amber-700 text-sm bg-amber-50 border border-amber-200 rounded-xl px-4 py-3">
+            La estancia mínima es de 2 noches. Añade al menos una noche más.
+          </p>
+        )}
+
         {/* Error */}
         {error && (
           <p className="text-red-600 text-sm bg-red-50 border border-red-200 rounded-xl px-4 py-3">
@@ -708,7 +719,7 @@ function BookingPanel({
         {/* Submit */}
         <button
           type="submit"
-          disabled={loading || !checkIn || !checkOut}
+          disabled={loading || !checkIn || !checkOut || (noches > 0 && noches < 2)}
           className="w-full flex items-center justify-center gap-2 px-6 py-4 rounded-xl bg-[#4A6741] text-[#F0EAD6] font-medium hover:bg-[#3A5432] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {loading && <Loader2 size={18} className="animate-spin" />}
